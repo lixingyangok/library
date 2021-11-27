@@ -1,5 +1,5 @@
 <template>
-    <HelloWorld msg="Hello Vue 3 + Vite ok 123 456" />
+    <router-view></router-view>
 </template>
 
 <script setup>
