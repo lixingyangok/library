@@ -5,10 +5,9 @@
 <script>
 export default {
     created(){
-        console.log(this)
-    }
-}
-
+        console.log(this);
+    },
+};
 </script>
 
 <style>
@@ -21,3 +20,4 @@ export default {
     margin-top: 60px;
 }
 </style>
+
