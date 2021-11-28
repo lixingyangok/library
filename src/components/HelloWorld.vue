@@ -1,7 +1,9 @@
 
 <template>
     <h1>{{ $store.state.userInfo.name }}</h1>
-    <button type="button" @click="count++">count is: {{ count }}</button>
+    <button type="button" @click="count++">
+        count is: {{ count }}
+    </button>
 </template>
 
 <script setup>
