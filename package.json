@@ -1,23 +1,49 @@
 {
-  "name": "library",
+  "name": "my-library",
   "version": "0.0.0",
-  "main": "main.js",
-  "license": "MIT",
+  "author": "Li Xingyang",
+  "main": "electron/electron.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "start": "electron ."
+    "electron": "wait-on tcp:3000 && cross-env IS_DEV=true electron .",
+    "electron:pack": "electron-builder --dir",
+    "electron:dev": "concurrently -k \"cross-env BROWSER=none yarn dev\" \"yarn electron\"",
+    "electron:builder": "electron-builder",
+    "build:for:electron": "vue-tsc --noEmit && cross-env ELECTRON=true vite build",
+    "app:build": "yarn build:for:electron && yarn electron:builder"
   },
   "dependencies": {
-    "vue": "^3.2.16",
-    "vue-router": "4"
+    "vue": "^3.2.16"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.9.3",
+    "concurrently": "^6.4.0",
+    "cross-env": "^7.0.3",
     "electron": "^16.0.2",
-    "eslint": "^8.3.0",
-    "eslint-plugin-vue": "^8.1.1",
-    "vite": "^2.6.4"
+    "electron-builder": "^22.14.5",
+    "vite": "^2.6.4",
+    "wait-on": "^6.0.0"
+  },
+  "build": {
+    "appId": "my-library",
+    "productName": "my-library",
+    "copyright": "",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist_electron"
+    }
   }
 }
