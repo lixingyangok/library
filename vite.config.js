@@ -6,3 +6,6 @@ export default defineConfig({
   base: process.env.ELECTRON=="true" ? './' : ".",
   plugins: [vue()]
 })
+
+// 原版
+// "build:for:electron": "vue-tsc --noEmit && cross-env ELECTRON=true vite build",
