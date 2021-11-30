@@ -2,13 +2,15 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-11-28 15:36:57
+ * @LastEditTime: 2021-11-30 21:20:28
  * @Description: 
  */
 // electron/electron.js
 const path = require('path');
 const { app, BrowserWindow } = require('electron');
 const isDev = process.env.IS_DEV == "true" ? true : false;
+
+// console.log('__dirname\n', __dirname);
 
 function createWindow() {
     // Create the browser window.
@@ -17,7 +19,8 @@ function createWindow() {
         height: 900,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            nodeIntegration: true,
+            nodeIntegration: true, // 值为true才能使用 require()
+            contextIsolation: false, // 官网似乎说是默认false，但是这里必须设置contextIsolation
         },
     });
 

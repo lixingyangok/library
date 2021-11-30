@@ -13,9 +13,11 @@
     "electron:dev": "concurrently -k \"cross-env BROWSER=none yarn dev\" \"yarn electron\"",
     "electron:builder": "electron-builder",
     "build:for:electron": "cross-env ELECTRON=true vite build",
-    "app:build": "yarn build:for:electron && yarn electron:builder"
+    "app:build": "yarn build:for:electron && yarn electron:builder",
+    "postinstall": "install-app-deps"
   },
   "dependencies": {
+    "sqlite3": "^5.0.2",
     "vue": "^3.2.16",
     "vue-router": "4",
     "vuex": "^4.0.2"
