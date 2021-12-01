@@ -9,3 +9,4 @@ export default defineConfig({
 
 // 原版
 // "build:for:electron": "vue-tsc --noEmit && cross-env ELECTRON=true vite build",
+// "electron:dev": "concurrently -k \"cross-env BROWSER=none yarn dev\" \"yarn electron\"",

@@ -5,7 +5,8 @@
 <script>
 export default {
     created(){
-        console.log(this);
+        console.log('this', this);
+        console.log('process', process);
     },
 };
 </script>
