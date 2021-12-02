@@ -2,19 +2,17 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 14:36:56
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-11-28 15:03:48
+ * @LastEditTime: 2021-12-02 20:28:55
  * @Description: 
  */
 import { createRouter, createWebHashHistory } from 'vue-router';
-import HelloWorld from '../components/HelloWorld.vue';
-
 
 const router = createRouter({
     history: createWebHashHistory(),
     routes: [
         {
             path: '/',
-            component: HelloWorld,
+            component: ()=>import(/* webpackChunkName: "welcome.vue" */ '../pages/welcome/welcome.vue'),
         },{
             path: '/t01',
             component: ()=>import(/* webpackChunkName: "t01" */ '../pages/t01.vue'),
