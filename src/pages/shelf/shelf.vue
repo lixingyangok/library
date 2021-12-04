@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-04 15:08:47
+ * @LastEditTime: 2021-12-04 15:15:24
  * @Description: 
 -->
 
@@ -84,5 +84,5 @@ export default {
 
 </script>
 
-<style src="./style/welcome.scss" lang="scss">
+<style src="./style/shelf.scss" lang="scss">
 </style>

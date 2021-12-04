@@ -1,9 +1,18 @@
 <template>
-    <router-view></router-view>
+    <myNav class="left-part" />
+    <div class="right-right">
+        <router-view></router-view>
+    </div>
 </template>
 
 <script>
+import myNav from './components/navigation/navigation.vue';
+
 export default {
+    name: "app",
+    components: {
+        myNav,
+    },
     created(){
         console.log('this', this);
         console.log('process', process);
@@ -11,17 +20,24 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss" >
 body{
     background: #eee;
 }
-#app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 60px;
+#app{
+    opacity: 1;
+    outline: solid 1px;
+    outline: solid 1px;
+    display: flex;
+    min-height: 100vh;
+}
+.left-part{
+    flex: none;
+}
+.right-right{
+    flex: auto;
 }
 </style>
+
+
 

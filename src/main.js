@@ -2,6 +2,10 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router/router.js';
 import store from './store/store.js';
+
+import './common/style/minireset.css';
+import './common/style/global.scss';
+
 const sqlite3 = require('sqlite3').verbose();
 
 const db = new sqlite3.Database('D:/myDB.db');
