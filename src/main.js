@@ -29,6 +29,40 @@ console.log('数据库数量：', iQuantity);
 // });
 // db.close();
 
+function toClone(source) {
+    if (!(source instanceof Object && typeof source == 'object' && source)) return source; //不处理非数组、非对象
+    let newObj = new source.constructor;
+    let iterator = source instanceof Array ? source.entries() : Object.entries(source);
+    for (let [key, val] of iterator) {
+        newObj[key] = val instanceof Object ? toClone(val) : val;
+    }
+    return newObj;
+}
+
+// ▼自定义方法
+Object.defineProperties(Object.prototype, {
+    '$dc': { // deep copy = 深拷贝
+        value: function () {
+            let val = null;
+            try {
+                val = toClone(this);
+            } catch (err) {
+                val = JSON.parse(JSON.stringify(this));
+            }
+            return val;
+        },
+    },
+    '$cpFrom': { // copy from = 将本对象的值修改为目标对象的值
+        value: function (source) {
+            for (let key of Object.keys(this)) {
+                if (key in source) this[key] = source[key];
+            }
+            return this;
+        },
+    },
+});
+
+
 const app = createApp(App);
 app.use(router);
 app.use(store);

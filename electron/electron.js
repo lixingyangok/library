@@ -2,10 +2,11 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-11-30 21:20:28
+ * @LastEditTime: 2021-12-05 09:26:49
  * @Description: 
  */
 // electron/electron.js
+const { default: installExtension, VUEJS3_DEVTOOLS } = require('electron-devtools-installer');
 const path = require('path');
 const { app, BrowserWindow } = require('electron');
 const isDev = process.env.IS_DEV == "true" ? true : false;
@@ -46,6 +47,11 @@ app.whenReady().then(() => {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+    installExtension(VUEJS3_DEVTOOLS).then((name) => {
+        console.log(`Added Extension:  ${name}`);
+    }).catch((err) => {
+        console.log('An error occurred: ', err);
     });
 });
 
