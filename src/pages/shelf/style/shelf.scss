@@ -2,3 +2,31 @@
 .outer{
     padding: 50px;
 }
+
+.directory-list{
+    display: flex;
+    background: #eee;
+    width: 82vw;
+    overflow-x: auto;
+    ul{
+        flex: none;
+        overflow-y: auto;
+        width: 220px;
+        height: 500px;
+        padding: 15px 20px;
+        border: solid 1px #999;
+        line-height: 1;
+    }
+    li{
+        cursor: pointer;
+        padding: 5px;
+        +li{
+            margin-top: 3px;
+        }
+        &:hover{
+            color: blue;
+            background: rgba($color: #000000, $alpha: 0.05);
+        }
+    }
+}
+

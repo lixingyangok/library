@@ -9,28 +9,18 @@
 import myNav from './components/navigation/navigation.vue';
 
 export default {
-    name: "app",
+    name: "my-app",
     components: {
         myNav,
     },
     created(){
-        console.log('this', this);
-        console.log('process', process);
+
     },
 };
 </script>
 
-<style lang="scss" >
-body{
-    background: #eee;
-}
-#app{
-    opacity: 1;
-    outline: solid 1px;
-    outline: solid 1px;
-    display: flex;
-    min-height: 100vh;
-}
+<style scoped lang="scss" >
+
 .left-part{
     flex: none;
 }
