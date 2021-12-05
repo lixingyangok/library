@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 14:36:56
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-04 15:35:05
+ * @LastEditTime: 2021-12-05 17:59:56
  * @Description: 
  */
 import { createRouter, createWebHashHistory } from 'vue-router';
@@ -17,13 +17,13 @@ export const routes = [
         name_: '书架',
         component: ()=>import(/* webpackChunkName: "shelf" */ '../pages/shelf/shelf.vue'),
     },{
-        path: '/t01',
-        name_: 't01',
-        component: ()=>import(/* webpackChunkName: "t01" */ '../pages/t01.vue'),
+        path: '/study-lounge',
+        name_: '自习室',
+        component: ()=>import(/* webpackChunkName: "t01" */ '../pages/study-lounge/study-lounge.vue'),
     },{
-        path: '/t02',
-        name_: 't02',
-        component: ()=>import(/* webpackChunkName: "t02" */ '../pages/t02.vue'),
+        path: '/settings',
+        name_: '设置',
+        component: ()=>import(/* webpackChunkName: "t02" */ '../pages/settings/settings.vue'),
     },
 ];
 

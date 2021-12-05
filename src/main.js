@@ -7,8 +7,9 @@ import './common/style/minireset.css';
 import './common/style/global.scss';
 
 const sqlite3 = require('sqlite3').verbose();
-
 const db = new sqlite3.Database('D:/myDB.db');
+const {exec} = require('child_process'); 
+
 
 // console.log('开始测试----\n', db);
 // console.log('__dirname\n', __dirname);
@@ -62,8 +63,17 @@ Object.defineProperties(Object.prototype, {
     },
 });
 
+exec('wmic logicaldisk get name', function(error, stdout, stderr){
+    if (error || stderr) {
+        console.error(`出错了\n: ${error || stderr}`);
+        return fnReject(error || stderr);
+    }
+    console.log('系统分区：', stdout.split(/\s+/g));
+    const arr = stdout.match(/\S+/g).slice(1);
+    document.body.disks = arr;
+    const app = createApp(App);
+    app.use(router);
+    app.use(store);
+    app.mount('#app');
+});
 
-const app = createApp(App);
-app.use(router);
-app.use(store);
-app.mount('#app');
