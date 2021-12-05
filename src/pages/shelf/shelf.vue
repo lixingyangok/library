@@ -2,19 +2,23 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-04 15:15:24
+ * @LastEditTime: 2021-12-05 09:07:32
  * @Description: 
 -->
 
 <template>
     <section class="outer" >
-        <h1>
-            welcome
-        </h1>
+        <p @click="showArr" >
+            {{aDisks}}<br/>
+            
+        </p>
+        {{aTest}}<br/>
+        <button @click="addOne" >
+            addOne
+        </button>
+        <br/>
         <ul>
-            <li v-for="(cur,idx) of aRoot" :key="idx" 
-                @click="getAllDirbyFilename(cur)"
-            >
+            <li v-for="(cur,idx) of aFolders" :key="idx" >
                 {{cur}}
             </li>
         </ul>
@@ -22,67 +26,99 @@
 </template>
 
 <script>
-const exec = require('child_process').exec; 
-const fs = require('fs');
+import getMethods from './js/shelf.js';
+const {exec} = require('child_process'); 
 
 export default {
-    name: "welcome",
+    name: "shelf",
+    setup(){
+        
+    },
     data(){
         return {
-            aRoot: [],
+            aRoot: ['●●', '■■'],
+            aDisks: ['aaa', 'bbb'],
+            aFolders: [],
+            aTest: [1,2,3],
         };
     },
     created(){
-        exec('wmic logicaldisk get name', (error, stdout, stderr) => { 
-            if (error) { 
-                return console.error(`出错了: ${error}`);
-            }
-            const arr = stdout.match(/\S+/g).slice(1);
-            this.aRoot = arr;
-            // console.log('系统分区：', arr);
-        });
-        this.getAllDirbyFilename('D:/天翼云盘同步盘/English dictation');
-        // this.getAllDirbyFilename('D:/软件shortcut');
+        console.log('书架页：created ★★★★★★★★★★');
+        console.log('旧值001：', this.aRoot.$dc());
+        // this.getRoot();
+        this.setDisks();
+        this.getAllDirbyFilename('d:/天翼云盘同步盘/English dictation');
+        this.aTest = [4,5,6];
+        // setTimeout(()=>{
+        //     console.log('延时赋值');
+        //     this.aTest = [7, 8, 9];
+        // }, 2* 1000);
     },
     methods: {
-        checkFile(sFilePath){
-            for (let cur of window.oConfig.aFileType) {
-                if (sFilePath.toLowerCase().endsWith(cur)) {
-                    return true;
-                }
-            }
+        ...getMethods(),
+        showArr(){
+            console.log('旧值：', this.aDisks.$dc());
         },
-        getAllDirbyFilename(dir) {
-            // const fn = this.getAllDirbyFilename;
-            let files = fs.readdirSync(dir); // 该文件夹下的所有文件名称 (文件夹 + 文件)
-            let resultArr = [];
-            var a1 = [];
-            var a2 = [];
-            files.forEach(file => {
-                const filePath = dir + '/' + file; // 当前文件 | 文件夹的路径
-                let isDirectory;
-                try{
-                    isDirectory = fs.statSync(filePath).isDirectory();
-                    if (isDirectory) {
-                        a1.push(filePath);
-                    }
-                    else if (this.checkFile(filePath)) {
-                        a2.push(filePath);
-                    }
-                }catch(err){
-                    if (0) console.log('err', err);
-                    console.log('----出错：', filePath);
+        addOne(){
+            console.log('旧值：', this.aRoot.$dc());
+            this.aRoot.push(123);
+        },
+        changeArr(arr){
+            console.log('旧值：', this.aRoot.$dc());
+            this.aRoot.splice(0, Infinity, ...arr);
+            // this.aRoot = arr;
+            console.log('赋值后：', this.aRoot.$dc());
+            console.log('赋值目标', this.aRoot);
+        },
+        async setDisks(){
+            const arr = await getDiskList();
+            console.log('盘符：', arr.$dc());
+            this.aDisks.splice(0, Infinity, ...arr);
+            this.aRoot= [111,222];
+            this.aFolders= [888, 999];
+            this.aTest = [7, 8, 9];
+        },
+        getRoot(){
+            const this_ = this;
+            const {changeArr} = this;
+            this_.changeArr([new Date().toString(), new Date().toString()])
+            exec('wmic logicaldisk get name', function(error, stdout, stderr){
+                if (error || stderr) {
+                    if (error) console.error(`出错了: ${error}`);
+                    console.error(`系统命令出错: ${error}`);
+                    return;
                 }
-                // if (isDirectory) resultArr.push(...fn(filePath));
+                console.log('系统分区查询到：', stdout.split(/\s+/g));
+                const arr = stdout.match(/\S+/g).slice(1);
+                changeArr(arr);
             });
-            console.log(a1);
-            console.log(a2);
-            return resultArr;
         },
+
     },
 };
+
+function getDiskList(){
+    let fnResolve;
+    let fnReject;
+    const oPromise = new Promise((f1, f2)=>{
+        fnResolve = f1;
+        fnReject = f2;
+    });
+    exec('wmic logicaldisk get name', function(error, stdout, stderr){
+        if (error || stderr) {
+            if (error) console.error(`出错了: ${error}`);
+            console.error(`系统命令出错: ${error}`);
+            return fnReject(error || stderr);
+        }
+        console.log('系统分区查询到：', stdout.split(/\s+/g));
+        const arr = stdout.match(/\S+/g).slice(1);
+        fnResolve(arr);
+    });
+    return oPromise;
+}
 
 </script>
 
 <style src="./style/shelf.scss" lang="scss">
 </style>
+
