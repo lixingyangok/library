@@ -63,17 +63,17 @@ Object.defineProperties(Object.prototype, {
     },
 });
 
+const app = createApp(App);
+app.use(router);
+app.use(store);
+
 exec('wmic logicaldisk get name', function(error, stdout, stderr){
     if (error || stderr) {
         console.error(`出错了\n: ${error || stderr}`);
         return fnReject(error || stderr);
     }
-    console.log('系统分区：', stdout.split(/\s+/g));
     const arr = stdout.match(/\S+/g).slice(1);
     document.body.disks = arr;
-    const app = createApp(App);
-    app.use(router);
-    app.use(store);
     app.mount('#app');
 });
 

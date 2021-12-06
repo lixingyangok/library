@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-05 19:02:38
+ * @LastEditTime: 2021-12-06 13:49:18
  * @Description: 
 -->
 
@@ -15,11 +15,15 @@
             </li>
         </ul>
         <br/>
+        <h2>{{aPath.join('/')}}</h2>
+        <br/>
         <!-- ▼宝库 -->
         <article class="directory-list" >
-            <ul>
-                <li v-for="(cur,idx) of aFolders" :key="idx" >
-                    {{cur.sItem}}
+            <ul v-for="(aColumn, i1) of aTree" :key="i1" >
+                <li v-for="(cur, i2) of aColumn" :key="i2"
+                    @click="ckickTree(i1, i2, cur)"
+                >
+                    {{cur.isDirectory ? '+' : ''}}{{cur.sItem}}
                 </li>
             </ul>
         </article>
@@ -34,12 +38,21 @@ export default {
     data(){
         return {
             aDisks: document.body.disks,
-            aFolders: [],
             oConfig: window.oConfig,
+            aPath: [window.oConfig.aRoot[0]],
+            aTree: [],
         };
     },
     created(){
-        this.getAllDirbyFilename(this.oConfig.aRoot[0]);
+    },
+    watch: {
+        aPath: {
+            deep: true,
+            immediate: true,
+            handler(aNewVal){
+                this.getDirChildren();
+            },
+        },
     },
     methods: {
         ...getMethods,

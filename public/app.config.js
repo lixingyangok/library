@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 14:52:15
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-05 17:56:53
+ * @LastEditTime: 2021-12-06 10:09:45
  * @Description: 
  */
 
@@ -12,8 +12,9 @@ window.oConfig = {
         'D:/English',
     ],
     aFileType: [
-        '.mp3', '.ogg', '.m4a',
         '.mp4',
+        '.mp3', '.ogg', '.m4a',
+        '.srt', '.pdf',
     ],
 };
 

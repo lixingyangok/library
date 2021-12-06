@@ -1,5 +1,4 @@
 import {reactive, toRefs} from 'vue';
-import { readdir } from 'fs/promises';
 const fs = require('fs');
 const {exec} = require('child_process'); 
 
@@ -11,8 +10,26 @@ const fn01 = {
             }
         }
     },
-    async getAllDirbyFilename(sDir) {
-        const aItems = await readdir(sDir); // 该文件夹下的所有文件名称 (文件夹 + 文件)
+    getDirChildren() {
+        const {setFileList} = this;
+        console.log('路径变化了：加载目录');
+        this.aTree.splice(this.aPath.length, Infinity);
+        for (const [idx] of this.aPath.entries()){
+            const sPath = this.aPath.slice(0, idx+1).join('/');
+            // fs.readdir(sPath, function(err, aItems){
+            //     // debugger;
+            //     console.log('目录分析完成');
+            //     if (err) {
+            //         return console.error('查询目录出错', err);
+            //     }
+            //     setFileList(idx, sPath, aItems);
+            // });
+            const aItems = fs.readdirSync(sPath);
+            if (!aItems) return;
+            setFileList(idx, sPath, aItems);
+        }
+    },
+    setFileList(idx, sDir, aItems){
         const [a1, a2] = [[], []];
         aItems.forEach(sItem => {
             const sCurPath = sDir + '/' + sItem;
@@ -28,7 +45,16 @@ const fn01 = {
                 console.log('判断是否为文件夹出错：\n', err);
             }
         });
-        this.aFolders = [...a1, ...a2];
+        this.aTree.splice(idx, 1, [...a1, ...a2]);
+    },
+    ckickTree(i1, i2){
+        const oAim = this.aTree[i1][i2];
+        console.log(i1, i2);
+        if (!oAim.isDirectory){
+            return console.log('非目录');
+        }
+        this.aPath.splice(i1 + 1, Infinity, oAim.sItem);
+        console.log(oAim.$dc());
     },
 };
 
