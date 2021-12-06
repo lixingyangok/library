@@ -1,0 +1,13 @@
+.outer{
+    display: flex;
+    padding: 10px;
+}
+
+.left{
+    flex: none;
+}
+
+.right{
+    flex: auto;
+}
+

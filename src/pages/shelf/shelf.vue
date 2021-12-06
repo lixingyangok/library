@@ -62,7 +62,7 @@ export default {
 };
 </script>
 
-<style src="./style/shelf.scss" lang="scss">
+<style scoped src="./style/shelf.scss" lang="scss">
 </style>
 
 

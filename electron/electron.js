@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-05 09:26:49
+ * @LastEditTime: 2021-12-06 21:12:20
  * @Description: 
  */
 // electron/electron.js
@@ -11,7 +11,14 @@ const path = require('path');
 const { app, BrowserWindow } = require('electron');
 const isDev = process.env.IS_DEV == "true" ? true : false;
 
+// ▼测试
+var http=require('http');
+var fs = require('fs');
+var url = require('url');
+
 // console.log('__dirname\n', __dirname);
+var exePath = path.dirname(app.getPath('exe'));
+console.log('exe位置：★★★★', exePath);
 
 function createWindow() {
     // Create the browser window.
@@ -63,3 +70,23 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
+
+
+//创建服务器
+http.createServer(function(request, response) {
+    console.log('请求来了★★★★★★★★★★★★★★★★★★★★');
+    console.log(request.url);
+    //解析请求，包括文件名
+    var pathname = 'D:/天翼云盘同步盘/English dictation/开言英语/A Party Invitation.mp3';
+    //从文件系统中都去请求的文件内容
+    fs.readFile(pathname, function(err, data) {
+        if(err) {
+            response.writeHead(404, {'Content-Type': 'text/html'});
+        } else {
+            response.writeHead(200,{'Content-Type': 'audio/mpeg'});
+            response.write(data);
+        }
+        //发送响应数据
+        response.end();
+    });
+}).listen(8899);

@@ -10,6 +10,11 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('D:/myDB.db');
 const {exec} = require('child_process'); 
 
+// ▼查询 exe 位置
+// const { remote } = require('electron');
+// const path = require('path');
+// const exePath = path.dirname(remote.app.getPath('exe'));
+// console.log('exePath', exePath);
 
 // console.log('开始测试----\n', db);
 // console.log('__dirname\n', __dirname);
