@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-04 15:37:14
+ * @LastEditTime: 2021-12-06 16:56:09
  * @Description: 
 -->
 
@@ -10,6 +10,7 @@
     <section >
         <h1 class="welcome" >
             Welcome
+            {{$store.state.userInfo.name}}
         </h1>
     </section>
 </template>

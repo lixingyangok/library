@@ -2,28 +2,21 @@ import {reactive, toRefs} from 'vue';
 const fs = require('fs');
 const {exec} = require('child_process'); 
 
+
 const fn01 = {
-    checkFile(sFilePath) {
-        for (let cur of window.oConfig.aFileType) {
-            if (sFilePath.toLowerCase().endsWith(cur)) {
-                return true;
-            }
-        }
+    choseRoot(sCurRoot){
+        this.aPath = [sCurRoot];
     },
+};
+
+const oAboutTree = {
+
     getDirChildren() {
         const {setFileList} = this;
         console.log('路径变化了：加载目录');
         this.aTree.splice(this.aPath.length, Infinity);
         for (const [idx] of this.aPath.entries()){
             const sPath = this.aPath.slice(0, idx+1).join('/');
-            // fs.readdir(sPath, function(err, aItems){
-            //     // debugger;
-            //     console.log('目录分析完成');
-            //     if (err) {
-            //         return console.error('查询目录出错', err);
-            //     }
-            //     setFileList(idx, sPath, aItems);
-            // });
             const aItems = fs.readdirSync(sPath);
             if (!aItems) return;
             setFileList(idx, sPath, aItems);
@@ -38,7 +31,7 @@ const fn01 = {
                 const obj = { sItem, isDirectory };
                 if (isDirectory) {
                     a1.push(obj);
-                } else if (this.checkFile(sCurPath)) {
+                } else if (checkFile(sCurPath)) {
                     a2.push(obj);
                 }
             } catch (err) {
@@ -49,17 +42,36 @@ const fn01 = {
     },
     ckickTree(i1, i2){
         const oAim = this.aTree[i1][i2];
-        console.log(i1, i2);
-        if (!oAim.isDirectory){
-            return console.log('非目录');
+        if (oAim.isDirectory){
+            this.aPath.splice(i1 + 1, Infinity, oAim.sItem);
+            return;
         }
-        this.aPath.splice(i1 + 1, Infinity, oAim.sItem);
-        console.log(oAim.$dc());
+        const isMedia = window.oConfig.aMedia.some(cur => {
+            return oAim.sItem.endsWith(cur);
+        });
+        if (!isMedia) return;
+        const sFilePath = `${this.aPath.join('/')}/${oAim.sItem}`;
+        this.goToLearn(sFilePath);
+    },
+    // ▼跳转
+    goToLearn(sFilePath){
+        console.log(sFilePath);
+        localStorage.setItem('sFilePath', sFilePath);
+        this.$router.push({name: 'studyLounge'});
     },
 };
 
+function checkFile(sFilePath) {
+    for (const cur of window.oConfig.aFileType) {
+        if (sFilePath.toLowerCase().endsWith(cur)) {
+            return true;
+        }
+    }
+}
+
 export default {
     ...fn01,
+    ...oAboutTree,
 };
 
 // ▼暂时弃用 ---------------------------------------------------

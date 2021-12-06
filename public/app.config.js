@@ -2,20 +2,25 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 14:52:15
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-06 10:09:45
+ * @LastEditTime: 2021-12-06 16:45:44
  * @Description: 
  */
 
-window.oConfig = {
-    aRoot: [
-        'D:/天翼云盘同步盘/English dictation',
-        'D:/English',
-    ],
-    aFileType: [
+window.oConfig = (function(){
+    const aMedia = [
         '.mp4',
         '.mp3', '.ogg', '.m4a',
-        '.srt', '.pdf',
-    ],
-};
+    ];
+    const aOthers = ['.srt', '.pdf'];
+    return {
+        aRoot: [
+            'D:/天翼云盘同步盘/English dictation',
+            'D:/English',
+        ],
+        aFileType: [...aMedia, ...aOthers],
+        aMedia,
+    };
+})();
+
 
 

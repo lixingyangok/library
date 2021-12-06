@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-06 13:49:18
+ * @LastEditTime: 2021-12-06 16:37:21
  * @Description: 
 -->
 
@@ -10,7 +10,9 @@
     <section class="outer" >
         <h2>{{aDisks}}</h2>
         <ul>
-            <li v-for="(cur,idx) of oConfig.aRoot" :key="idx">
+            <li v-for="(cur, idx) of oConfig.aRoot" :key="idx"
+                @click="choseRoot(cur)"
+            >
                 {{cur}}
             </li>
         </ul>
@@ -31,7 +33,7 @@
 </template>
 
 <script>
-import getMethods from './js/shelf.js';
+import oMethods from './js/shelf.js';
 
 export default {
     name: "shelf",
@@ -55,7 +57,7 @@ export default {
         },
     },
     methods: {
-        ...getMethods,
+        ...oMethods,
     },
 };
 </script>
