@@ -2,15 +2,9 @@
 const { ipcRenderer } = require('electron');
 
 export default {
+    // ▼给主进程送信
     logFn(){
-        // const v1 = ipcRenderer.sendSync('synchronous-message', 'ping1');
-        // console.log(v1); // prints "pong"
-
-        ipcRenderer.on('asynchronous-reply', (event, arg) => {
-            console.log('渲染页收到回复：'); // prints "pong"
-            console.log(arg); // prints "pong"
-        });
-        ipcRenderer.send('asynchronous-message', 'ping2');
+        ipcRenderer.send('asynchronous-message', '这个内容来自 welcome 页');
     },
 };
 

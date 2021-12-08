@@ -2,13 +2,19 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-08 18:00:59
+ * @LastEditTime: 2021-12-08 20:35:28
  * @Description: 
  */
 // electron/electron.js
+const fs = require('fs');
 const path = require('path');
+const urlib = require("url");
 const { default: installExtension, VUEJS3_DEVTOOLS } = require('electron-devtools-installer');
-const { app, BrowserWindow, protocol, ipcMain } = require('electron');
+const {
+    app, BrowserWindow, protocol, ipcMain,
+} = require('electron');
+
+
 const exePath = path.dirname(app.getPath('exe'));
 const isDev = process.env.IS_DEV == "true" ? true : false;
 // ▼启动服务
@@ -19,24 +25,25 @@ const isDev = process.env.IS_DEV == "true" ? true : false;
 // const router = express.Router();
 
 
-console.log('exe位置 ■■■■■■■■■■■■■■', exePath);
+console.log('■■■■■■■■■■■■■■■■\nexe位置 =', exePath);
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+let toLog = ()=>{};
 
 function createWindow() {
-    protocol.registerFileProtocol(
-        'your-custom-protocol', fileHandler,
-    );
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         width: 1400,
         height: 900,
         webPreferences: {
-            webSecurity: false,
+            webSecurity: true,
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true, // 值为true才能使用 require()
             contextIsolation: false, // 官网似乎说是默认false，但是这里必须设置contextIsolation
         },
     });
+    toLog = (...rest) => {
+        mainWindow.webContents.send('asynchronous-reply', ...rest);
+    };
     // and load the index.html of the app.
     // win.loadFile("index.html");
     mainWindow.loadURL(
@@ -44,30 +51,53 @@ function createWindow() {
             ? 'http://localhost:3000'
             : `file://${path.join(__dirname, '../dist/index.html')}`
     );
-    // Open the DevTools.
-    if (isDev) {
-        mainWindow.webContents.openDevTools();
-    }
+    
+    if (!isDev) return;
+    mainWindow.webContents.openDevTools(); // Open the DevTools.
 }
 
 ipcMain.on('asynchronous-message', (event, arg) => {
-    console.log('主进程收到了 ---', arg)
-    const sReturn = arg + '★返回';
-    console.log('主进程返回 ---', sReturn)
-    event.reply('asynchronous-reply', sReturn);
+    console.log('主进程收信了：', arg);
+    // const sReturn = arg + '★返回';
+    toLog('■■■■■■■■■■■■■■■■■■■■■\n这个内容是主进程收信后返回的');
+    // event.reply('asynchronous-reply', sReturn);
 });
 
+// ▼要放在 app.whenReady 之前执行，只能执行一次
+const privileges = { standard: true, secure: true, bypassCSP: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true };
+protocol.registerSchemesAsPrivileged([
+    { scheme: 'tube', privileges },
+    { scheme: 'pipe', privileges },
+]);
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+    protocol.registerFileProtocol('tube', function (req, callback){
+        var myobj = urlib.parse(req.url, true);
+        var pathVal = myobj.query.path;
+        toLog('触发 registerFileProtocol 请求路径 ■■\n' + pathVal);
+        callback({ path: pathVal });
+    });
+    protocol.interceptBufferProtocol('pipe', (request, callback) => {
+        toLog('触发 interceptBufferProtocol');
+        const filePath = 'D:/天翼云盘同步盘/English dictation/NCEE/2019年高考(上海II卷)英语听力真题 短对话.mp3';
+        fs.readFile(filePath, (err, data) => {
+            if (err) return callback();
+            // mimeType 值可以这样取得：getMimeType(filePath),
+            callback({ data, mimeType: 'audio/mpeg' });
+        });
+    });
+    
+    // ▼创建窗口
     createWindow();
     app.on('activate', function () {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
+    // ▼加载调试插件
     installExtension(VUEJS3_DEVTOOLS).then((name) => {
         console.log(`Added Extension:  ${name}`);
     }).catch((err) => {
@@ -85,16 +115,6 @@ app.on('window-all-closed', () => {
 });
 
 
-function fileHandler(req, callback){
-    const path = req.url;
-    console.log('收到请求路径 ■■■■■■■■■■■■■■■■■■■■\n', path);
-    // Write some code to resolve path, calculate absolute path etc
-    const isWrong = false;// Write some code here to check if you should return the file to renderer process
-    // -6 is FILE_NOT_FOUND
-    // https://source.chromium.org/chromium/chromium/src/+/master:net/base/net_error_list.h
-    if(isWrong) return callback({ error: -6 });
-    callback({ path });
-}
 
 // expressApp.use(cors());
 // router.get('/file/:name', function (req, res) {

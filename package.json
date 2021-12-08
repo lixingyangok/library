@@ -55,6 +55,8 @@
     "directories": {
       "buildResources": "assets",
       "output": "dist_electron"
-    }
+    },
+    "asar": false,
+    "asarUnpack": []
   }
 }
