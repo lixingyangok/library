@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-08 20:37:02
+ * @LastEditTime: 2021-12-08 20:45:48
  * @Description: 
 -->
 
@@ -11,10 +11,11 @@
         <h1 class="welcome" >
             Welcome
             {{$store.state.userInfo.name}}
+            <br/>
+            <button @click="logFn" >
+                给主进程送信
+            </button>
         </h1>
-        <button @click="logFn" >
-            给主进程送信
-        </button>
     </section>
 </template>
 

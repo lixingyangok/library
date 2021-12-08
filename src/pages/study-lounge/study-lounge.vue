@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-06 21:01:33
+ * @LastEditTime: 2021-12-08 20:38:01
  * @Description: 
 -->
 <template>
@@ -15,27 +15,16 @@
             <br/>
             <br/>
             <br/>
-            <br/>
             <h1 @click="a++" >
                 {{a}}
             </h1>
             <h1 @click="b++" >
                 {{b}}
             </h1>
-            
-            <audio width="320" height="240" controls
-                :src="sVideoSrc01"
-                
-            >
-            </audio>
             <br/>
-            <audio width="320" height="240" controls>
-                <source :src="sVideoSrc02"/>
-            </audio>
-            <br/>
-            <audio width="320" height="240" controls>
-                <source :src="sVideoSrc03"/>
-            </audio>
+            <video width="320" height="240" controls>
+                <source :src="sVideoSrc01"/>
+            </video>
         </section>
     </div>
 </template>
@@ -47,7 +36,7 @@ export default {
     name: 'study-lounge',
     setup(){
         const obj = f1();
-        obj.loadFile();
+
         return {
             ...obj,
         };
