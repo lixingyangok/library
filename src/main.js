@@ -9,6 +9,7 @@ import './common/style/global.scss';
 const {exec} = require('child_process'); 
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('D:/myDB.db');
+const isDev = process.env.IS_DEV == "true" ? true : false;
 
 
 // ▼查询 exe 位置
@@ -71,6 +72,9 @@ Object.defineProperties(Object.prototype, {
 const app = createApp(App);
 app.use(router);
 app.use(store);
+
+const sTail = isDev ? '  ★开发★' : '  发布了';
+document.title += sTail;
 
 exec('wmic logicaldisk get name', function(error, stdout, stderr){
     if (error || stderr) {
