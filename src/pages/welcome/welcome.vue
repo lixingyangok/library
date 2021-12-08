@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-06 16:56:09
+ * @LastEditTime: 2021-12-08 17:29:13
  * @Description: 
 -->
 
@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import oMethods from './js/welcome.js';
 
 export default {
     name: "welcome",
@@ -25,9 +26,12 @@ export default {
         };
     },
     created(){
-        
+        // this.logFn();
+        console.log(this.logFn);
     },
-    methods: {},
+    methods: {
+        ...oMethods,
+    },
 };
 
 </script>
