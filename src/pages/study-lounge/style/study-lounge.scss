@@ -11,3 +11,15 @@
     flex: auto;
 }
 
+.wave-bar{
+    display: flex;
+    .canvas-coat{
+        flex: auto;
+    }
+    .canvas{
+        height: 150px;
+        box-shadow: 0px 0px 3px red;
+        width: 500px;
+        background: #000;
+    }
+}

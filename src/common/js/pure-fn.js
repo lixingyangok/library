@@ -4,6 +4,30 @@
  * @Description: 
  */ 
 
+// ▼ 实际上1参接收的是一个Blob对象
+export async function fileToBuffer(oFile, isWantFakeBuffer=false){
+	if (!oFile) return {};
+	let resolveFn = xx => xx;
+	const promise = new Promise(resolve => resolveFn = resolve);
+	const onload = async evt => {
+		const arrayBuffer = evt.currentTarget.result;
+		let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+		let buffer = await audioContext.decodeAudioData(arrayBuffer).catch(err=>{
+			console.log('读取波形 buffer 出错\n', err);
+		});
+		audioContext = null; // 如果不销毁audioContext对象的话，audio标签是无法播放的
+		if (isWantFakeBuffer) buffer = getFaleBuffer(buffer);
+		resolveFn(buffer);
+	};
+	Object.assign(new FileReader(), {
+		onload,
+	}).readAsArrayBuffer(oFile);
+	return promise;
+}
+
+// ▲上方为启动项
+// ▼下方为待用项
+
 // ▼字符转字幕数据，用于显示
 export async function fileToTimeLines(oFile) {
 	if (!oFile) return [];
@@ -24,25 +48,7 @@ export async function fileToTimeLines(oFile) {
 	});
 }
 
-export async function fileToBuffer(oFile, isWantFakeBuffer=false){
-	if (!oFile) return {};
-	let resolveFn = xx => xx;
-	const promise = new Promise(resolve => resolveFn = resolve);
-	const onload = async evt => {
-		const arrayBuffer = evt.currentTarget.result;
-		let audioContext = new (window.AudioContext || window.webkitAudioContext)();
-		let buffer = await audioContext.decodeAudioData(arrayBuffer).catch(err=>{
-			console.log('读取波形 buffer 出错\n', err);
-		});
-		audioContext = null; // 如果不销毁audioContext对象的话，audio标签是无法播放的
-		if (isWantFakeBuffer) buffer = getFaleBuffer(buffer);
-		resolveFn(buffer);
-	};
-	Object.assign(new FileReader(), {
-		onload,
-	}).readAsArrayBuffer(oFile);
-	return promise;
-}
+
 
 // ▼浮点秒，转为时间轴的时间
 export function secToStr(fSecond, forShow){
