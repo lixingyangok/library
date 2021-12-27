@@ -99,17 +99,18 @@ export function getFaleBuffer(buffer){
 		sampleRate: buffer.sampleRate,
 		numberOfChannels: buffer.numberOfChannels,
 	}
+	const aChannelData = Int8Array.from( // int8的取值范围 -128 到 127
+		buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
+	);
 	return { //补充数据
 		...buffer_,
-		aChannelData_: [],
+		aChannelData_: aChannelData,
 		sDuration_: secToStr(buffer.duration).split(',')[0],
 		oChannelDataBlob_: (()=>{
-			console.time('转：Blob');
-			const aChannelData = Int8Array.from( // int8的取值范围 -128 到 127
-				buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
-			);
+			// const aChannelData = Int8Array.from( // int8的取值范围 -128 到 127
+			// 	buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
+			// );
 			const result = new Blob([aChannelData], {type: 'text/plain'});
-			console.timeEnd('转：Blob');
 			return result;
 		})(),
 	};

@@ -1,14 +1,15 @@
 import {toRefs, reactive, ref, onMounted} from 'vue';
 import {fileToBuffer} from '../../../common/js/pure-fn.js';
+const fs = require('fs');
 
 export function f1(){
+	const sFilePath = 'tube://a/?path=' + localStorage.getItem('sFilePath');
     const oCanvas = ref(null);
     const obj = reactive({
-        sMediaSrc: '',
+        sMediaSrc: sFilePath,
     });
     async function loadFile(){
-        const sFilePath = 'tube://a/?path=' + localStorage.getItem('sFilePath');
-        obj.sMediaSrc = sFilePath;
+		console.log('开始加载波形');
         const oFileBuffer = await fetch(sFilePath).then(res => {
             return res.blob();
         }).then(res=>{
@@ -17,15 +18,8 @@ export function f1(){
             console.log('读取媒体buffer未成功\n', res);
         });
         if (!oFileBuffer) return;
-        oFileBuffer.aChannelData_ = await (async ()=>{
-			const theBlob = oFileBuffer.oChannelDataBlob_;
-			if (!theBlob.arrayBuffer) return;
-			const res = await theBlob.arrayBuffer();
-			return new Int8Array(res);
-		})();
-        console.log('媒体blob\n', oFileBuffer);
-        const {aPeaks, fPerSecPx} = getPeaks(oFileBuffer, 130);
-        console.log('aPeaks', aPeaks);
+        const {aPeaks, fPerSecPx} = getPeaks(oFileBuffer, 200);
+		console.log('得到波形\n', oFileBuffer);
         console.log('fPerSecPx', fPerSecPx);
         toDraw(aPeaks);
     }
@@ -40,6 +34,7 @@ export function f1(){
 		const sampleSize = ~~(buffer.sampleRate / iPerSecPx); // 每一份的点数 = 每秒采样率 / 每秒像素
 		const aPeaks = [];
 		let idx = Math.round(left);
+		iCanvasWidth = document.querySelectorAll('.canvas-coat')[0].offsetWidth;
 		const last = idx + iCanvasWidth;
 		while (idx <= last) {
 			let start = idx * sampleSize;
@@ -62,17 +57,18 @@ export function f1(){
     function toDraw(aPeaks_) {
 		// this.cleanCanvas();
 		// const { iHeight } = this.state; //波形高
-		const iHeight = 0.4; //波形高
+		const iHeight = 0.9; //波形高
 		const aPeaks = aPeaks_;
 		const oCanvas = document.querySelectorAll('.canvas')[0];
 		const Context = oCanvas.getContext('2d');
 		const halfHeight = oCanvas.height / 2;
 		const fCanvasWidth = aPeaks.length / 2;
+		console.log('画面宽：', fCanvasWidth);
 		let idx = 0;
 		Context.fillStyle = '#55c655';
 		while (idx < fCanvasWidth) {
-			const cur1 = aPeaks[idx * 2] * iHeight;
-			const cur2 = aPeaks[idx * 2 + 1] * iHeight;
+			const cur1 = aPeaks[idx * 2] * iHeight | 0;
+			const cur2 = aPeaks[idx * 2 + 1] * iHeight | 0;
 			Context.fillRect(idx, (halfHeight - cur1), 1, cur1 - cur2);
 			idx++;
 		}
@@ -81,9 +77,9 @@ export function f1(){
 		return oCanvas;
 	}
     onMounted(()=>{
-        const canvas02 = document.querySelectorAll('.canvas')[0]
-        console.log('oCanvas', oCanvas.value);
-        console.log('oCanvas02', canvas02);
+        const canvasCoat = document.querySelectorAll('.canvas-coat')[0];
+        const canvas02 = document.querySelectorAll('.canvas')[0];
+		canvas02.style.width = `${canvasCoat.offsetWidth}px`;
         loadFile();
     });
     // ▼返回
