@@ -23,12 +23,12 @@ export default {
 </script>
 
 <style scoped lang="scss" >
-
 .left-part{
     flex: none;
 }
 .right-right{
     flex: auto;
+    overflow: hidden;
 }
 </style>
 

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-08 20:35:28
+ * @LastEditTime: 2021-12-27 20:05:52
  * @Description: 
  */
 // electron/electron.js
@@ -59,7 +59,13 @@ function createWindow() {
 ipcMain.on('asynchronous-message', (event, arg) => {
     console.log('主进程收信了：', arg);
     // const sReturn = arg + '★返回';
-    toLog('■■■■■■■■■■■■■■■■■■■■■\n这个内容是主进程收信后返回的');
+    // toLog('■■■■■■■■■■■■■■■■■■■■■\n这个内容是主进程收信后返回的');
+    // event.reply('asynchronous-reply', sReturn);
+});
+
+ipcMain.on('getWave', (event, arg) => {
+    console.log('主进程 getWave 通道：', arg);
+    // const sReturn = arg + '★返回';
     // event.reply('asynchronous-reply', sReturn);
 });
 
@@ -77,7 +83,7 @@ app.whenReady().then(() => {
     protocol.registerFileProtocol('tube', function (req, callback){
         var myobj = urlib.parse(req.url, true);
         var pathVal = myobj.query.path;
-        toLog('触发 registerFileProtocol 请求路径 ■■\n' + pathVal);
+        // toLog('触发 registerFileProtocol 请求路径 ■■\n' + pathVal);
         callback({ path: pathVal });
     });
     protocol.interceptBufferProtocol('pipe', (request, callback) => {
