@@ -16,7 +16,7 @@ export async function fileToBuffer(oFile, isWantFakeBuffer=false){
 			console.log('读取波形 buffer 出错\n', err);
 		});
 		audioContext = null; // 如果不销毁audioContext对象的话，audio标签是无法播放的
-		if (isWantFakeBuffer) buffer = getFaleBuffer(buffer);
+		if (isWantFakeBuffer) buffer = getFakeBuffer(buffer);
 		resolveFn(buffer);
 	};
 	Object.assign(new FileReader(), {
@@ -92,10 +92,10 @@ export function fileToStrings(oFile) {
 	return oPromise;
 }
 
-export function getFaleBuffer(buffer){
+export function getFakeBuffer(buffer){
 	const buffer_ = { //原始数据
-		duration: buffer.duration,
 		length: buffer.length, // === buffer.getChannelData(0).length
+		duration: buffer.duration,
 		sampleRate: buffer.sampleRate,
 		numberOfChannels: buffer.numberOfChannels,
 	}
@@ -106,13 +106,13 @@ export function getFaleBuffer(buffer){
 		...buffer_,
 		aChannelData_: aChannelData,
 		sDuration_: secToStr(buffer.duration).split(',')[0],
-		oChannelDataBlob_: (()=>{
-			// const aChannelData = Int8Array.from( // int8的取值范围 -128 到 127
-			// 	buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
-			// );
-			const result = new Blob([aChannelData], {type: 'text/plain'});
-			return result;
-		})(),
+		// oChannelDataBlob_: (()=>{
+		// 	// const aChannelData = Int8Array.from( // int8的取值范围 -128 到 127
+		// 	// 	buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
+		// 	// );
+		// 	const result = new Blob([aChannelData], {type: 'text/plain'});
+		// 	return result;
+		// })(),
 	};
 }
 
@@ -167,22 +167,22 @@ export function getTimeInfo(oTime, sType, oAim){
 }
 
 // ▼
-export function getFakeBuffer(buffer){
-	const buffer_ = { // ★原始数据
-		duration: buffer.duration,
-		length: buffer.length, // === buffer.getChannelData(0).length
-		sampleRate: buffer.sampleRate,
-		numberOfChannels: buffer.numberOfChannels,
-	}
-	return { // ★补充数据
-		...buffer_,
-		aChannelData_: Int8Array.from( // int8的取值范围 -128 到 127
-			buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
-		),
-		sDuration_: secToStr(buffer.duration).split(',')[0],
-		oChannelDataBlob_: null,
-	};
-}
+// export function getFakeBuffer(buffer){
+// 	const buffer_ = { // ★原始数据
+// 		duration: buffer.duration,
+// 		length: buffer.length, // === buffer.getChannelData(0).length
+// 		sampleRate: buffer.sampleRate,
+// 		numberOfChannels: buffer.numberOfChannels,
+// 	}
+// 	return { // ★补充数据
+// 		...buffer_,
+// 		aChannelData_: Int8Array.from( // int8的取值范围 -128 到 127
+// 			buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
+// 		),
+// 		sDuration_: secToStr(buffer.duration).split(',')[0],
+// 		oChannelDataBlob_: null,
+// 	};
+// }
 
 // ▼数组转 Blob，用于上传字幕
 export function arrToblob(arr){

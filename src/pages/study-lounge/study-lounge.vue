@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-09 20:54:05
+ * @LastEditTime: 2021-12-28 21:27:59
  * @Description: 
 -->
 <template>
@@ -19,7 +19,18 @@
             <article class="wave-bar">
                 <div class="canvas-coat">
                     <canvas class="canvas" ref="oCanvas" />
+                    <div class="canvas-neighbor"
+                        @scroll="waveWrapScroll"
+                    >
+                        <div :style="{width: `${oFileBuffer.duration* fPerSecPx}px`}">
+                            
+                        </div>
+                    </div>
                 </div>
+            </article>
+            <article class="wave-below" >
+                <br/>
+                时长：{{oFileBuffer.sDuration_}}
             </article>
         </section>
     </div>

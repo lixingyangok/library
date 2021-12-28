@@ -1,6 +1,7 @@
 .outer{
     display: flex;
     padding: 10px;
+    overflow: hidden;
 }
 
 .left{
@@ -9,16 +10,33 @@
 
 .right{
     flex: auto;
-    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    // width: 900px;
 }
 
 .wave-bar{
+    max-width: 100%;
+    overflow-x: hidden;
     .canvas-coat{
         overflow-x: auto !important;
     }
     .canvas{
+        display: block;
         height: 140px;
         box-shadow: 0px 0px 3px red;
+        margin: 0;
+        padding: 0;
         background: #000;
+        width: 100%;
+    }
+    .canvas-neighbor{
+        overflow-x: auto;
+        background: #eee;
+        >*{
+            height: 100px;
+        }
     }
 }
+
+
