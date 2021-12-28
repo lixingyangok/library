@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-27 20:07:10
+ * @LastEditTime: 2021-12-27 21:35:38
  * @Description: 
 -->
 
@@ -22,8 +22,17 @@
             <button @click="showFFmpeg" >
                 showFFmpeg
             </button>
+            <br/>
+            <button @click="runBat" >
+                runBat01
+            </button>
         </h1>
     </section>
+    <ul>
+        <li v-for="(cur,idx) of aLog" :key="idx" >
+            {{cur}}
+        </li>
+    </ul>
 </template>
 
 <script>
@@ -34,6 +43,7 @@ export default {
     data(){
         return {
             aRoot: [],
+            aLog: [],
         };
     },
     created(){

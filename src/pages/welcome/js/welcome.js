@@ -1,6 +1,7 @@
 
-const { ipcRenderer } = require('electron');
 const fs = require('fs');
+var child_process = require("child_process");
+const { ipcRenderer } = require('electron');
 const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -27,5 +28,48 @@ export default {
         // );
         // process.exit(0);
     },
+    runBat(){
+        // const sBatPath = 'C:/Users/lixin/Desktop/关屏幕-知乎.bat';
+        const sBatPath = '关屏幕-知乎.bat';
+        const obj = {cwd: 'C:/Users/lixin/Desktop'};
+        const {showScreen} = this;
+        const This = this;
+        This.aLog.push('■■■调用.bat文件');
+        child_process.execFile(sBatPath, null, obj, function(error, stdout, stderr){
+            if(error !== null){
+                console.log("exec error\n" + error);
+                return;
+            }
+            setTimeout(()=>{
+                showScreen();
+            }, 3 * 1000);
+            This.aLog.push('■■■关屏幕成功');
+            console.log("■■■关屏幕成功");
+            console.log('stdout: ' + stdout);
+            console.log('stderr: ' + stderr);
+        });
+    },
+    showScreen(){
+        const sBatPath = '移动鼠标.bat';
+        const obj = {cwd: 'C:/Users/lixin/Desktop'};
+        const This = this;
+        child_process.execFile(sBatPath, null, obj, function(error, stdout, stderr){
+            if(error !== null){
+                console.log("exec error" + error)
+                return;
+            }
+            This.aLog.push('■■■移动鼠标成功');
+            console.log("■■■移动鼠标成功");
+        });
+    },
 };
 
+
+// ▼执行系统命令
+// child_process.exec('mspaint', function(error, stdout, stderr){
+//     if (error || stderr) {
+//         console.error(`出错了\n: ${error || stderr}`);
+//         return;
+//     }
+//     This.aLog.push('■■■ 显示画图');      
+// });
