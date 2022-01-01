@@ -15,7 +15,7 @@ export default {
         myNav,
     },
     created(){
-        ipcRenderer.on('asynchronous-reply', (event, arg) => {
+        ipcRenderer.on('asynchronous-reply', (event, ...arg) => {
             console.log('主进程来信打印如下：\n', arg);
         });
     },

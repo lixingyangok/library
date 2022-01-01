@@ -9,7 +9,7 @@ const ffmpeg = createFFmpeg({ log: true });
 export default {
     // ▼给主进程送信
     logFn() {
-        ipcRenderer.send('asynchronous-message', '这个内容来自 welcome 页');
+        ipcRenderer.send('asynchronous-message', '张三');
     },
     async showFFmpeg() {
         // D:/English video/【34集全】 • 看动画学英语 Peter Pan《彼得潘》/1.Pete(Av415205386,P1).mp4

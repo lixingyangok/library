@@ -11,28 +11,24 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('D:/myDB.db');
 const isDev = process.env.IS_DEV == "true" ? true : false;
 
-
 // ▼查询 exe 位置
 // const { remote } = require('electron');
 // const path = require('path');
 // const exePath = path.dirname(remote.app.getPath('exe'));
 // console.log('exePath', exePath);
-
 // console.log('开始测试----\n', db);
 // console.log('__dirname\n', __dirname);
 
-const stmt = db.prepare("INSERT INTO lorem VALUES (?)");
-for (var i = 0; i < 3; i++) {
-    stmt.run(new Date().toLocaleString());
-}
+const stmt = db.prepare("INSERT INTO dev_history VALUES (?)");
+stmt.run(new Date().toLocaleString());
 stmt.finalize();
-// db.each("SELECT rowid AS id, info FROM lorem", function(err, row) {
-db.each("SELECT count(*) FROM lorem", function(err, row) {
-    console.log('数据库数量：', row);
+db.each("SELECT count(*) FROM dev_history", function(err, row) {
+    console.log('数据库数量：', row['count(*)']);
 });
 
+// ▼建表的语句
 // db.serialize(function() {
-//     db.run("CREATE TABLE lorem (info TEXT)");
+//     db.run("CREATE TABLE dev_history (info TEXT)");
 // });
 // db.close();
 
@@ -75,6 +71,7 @@ app.use(store);
 
 const sTail = isDev ? '  ★开发★' : '  发布了';
 document.title += sTail;
+app.mount('#app');
 
 exec('wmic logicaldisk get name', function(error, stdout, stderr){
     if (error || stderr) {
@@ -83,6 +80,7 @@ exec('wmic logicaldisk get name', function(error, stdout, stderr){
     }
     const arr = stdout.match(/\S+/g).slice(1);
     document.body.disks = arr;
-    app.mount('#app');
+    console.log('盘符', arr);
+    // app.mount('#app');
 });
 
