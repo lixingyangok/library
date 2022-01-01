@@ -1,34 +1,37 @@
 import {toRefs, reactive, ref, onMounted} from 'vue';
 import {fileToBuffer, SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
+// import {WaveMaker} from './wave.js';
 const ipcRenderer = require("electron").ipcRenderer;
-import {MyWave} from './wave.js';
-const fsPromises = require('fs').promises;
 
-// const w01 = new MyWave(1,2,3);
+// const w01 = new WaveMaker(1,2,3);
 // console.log('w01', w01);
+// window.wv = w01;
 
 const oCanvasDom = ref(null);
 const oCanvasNeighbor = ref(null);
 const oCanvasCoat = ref(null);
+const oPointer = ref(null);
+const oAudio = ref(null);
 // ▲ dom
 const oData = reactive({
 	sMediaSrc: '',
 	sSubtitleSrc: '',
 	oBuffer: {}, // 媒体的 buffer
-	aLines: [],
+	aLineArr: [],
+	iCurLineIdx: 0,
 	...{ // 波形相关
-		iHeight: 0.5,
+		iHeight: 0.8,
 		iCanvasHeight: 110,
 		iCanvasTop: 18,
-		iPerSecPx: 200,
+		iPerSecPx: 100,
 		fPerSecPx: 0,
 		iScrollLeft: 0,
+		playing: false,
 	},
 });
 
 // ▲数据
 // ▼方法
-
 
 export function f1(){
 	const sFilePath = localStorage.getItem('sFilePath');
@@ -44,7 +47,7 @@ export function f1(){
 	function readSrtFile(event, sSubtitles){
 		const aRes = SubtitlesStr2Arr(sSubtitles);
 		if (!aRes) return;
-		oData.aLines.splice(0, Infinity, ...aRes);
+		oData.aLineArr.splice(0, Infinity, ...aRes);
 	}
 	// ▲数据部分
 	// ▼加载音频文件的 buffer 
@@ -76,13 +79,10 @@ export function f1(){
 			Context.fillRect(idx, (halfHeight - cur1), 1, cur1 - cur2);
 			idx++;
 		}
-		// Context.fillStyle = '#0f0';
-		// Context.fillRect(0, ~~halfHeight, 9999, 1);
 		return oCanvas;
 	}
 	// ▼滚轮动了
 	function wheelOnWave(ev) {
-		// console.log('滚轮动了');
 		ev.preventDefault();
 		ev.stopPropagation();
 		ev.returnValue = false;
@@ -98,13 +98,17 @@ export function f1(){
 	}
 	// ▼使Dom滚动条横向滚动
 	function scrollToFn(deltaY) {
-		const oDom = oCanvasNeighbor.value;
 		const iOneStepLong = 350; // 步长
-		const newVal = (() => {
+		const oDom = oCanvasNeighbor.value;
+		const iMax = oDom.children[0].offsetWidth - oCanvasCoat.value.offsetWidth;
+		console.log('iMax', iMax);
+		let newVal = (() => {
 			let oldVal = oDom.scrollLeft;
 			if (deltaY >= 0) return oldVal - iOneStepLong;
 			else return oldVal + iOneStepLong;
 		})();
+		if (newVal < 0) newVal = 0;
+		if (newVal > iMax) newVal = iMax;
 		oData.iScrollLeft = newVal;
 		oDom.scrollTo(newVal, 0);
 	}
@@ -116,12 +120,14 @@ export function f1(){
 			oBuffer, iPerSecPx, scrollLeft, offsetWidth,
 		);
 		toDraw(aPeaks);
+		oData.iScrollLeft = Math.max(0, scrollLeft);
 		// const newObj = {aPeaks};
 		// if (fPerSecPx !== this.state.fPerSecPx) newObj.fPerSecPx = fPerSecPx;;
 		// this.setState(newObj);
 	}
 	function setCanvasWidth(){
-		const iWidth = oCanvasCoat.value.offsetWidth;
+		const iWidth = oCanvasCoat.value?.offsetWidth;
+		if (!iWidth) return;
 		oCanvasDom.value.width = iWidth;
 		const {aPeaks, fPerSecPx} = getPeaks(oData.oBuffer, oData.iPerSecPx, 0, iWidth);
 		if (!aPeaks) return;
@@ -137,6 +143,30 @@ export function f1(){
 		// oCanvas.width = width;
 		Context.clearRect(0, 0, 5_000, 200);
 	}
+	// ▼播放
+	async function toPlay(isFromHalf) {
+		clearInterval(oData.playing); //把之前播放的关闭再说
+		const { fPerSecPx } = oData;
+		const { start, end } = oData.aLineArr[1];
+		const long = end - start;
+		const Audio = oAudio.value;
+		if (!Audio) return console.log('有没音频对象');
+		const { style={} } = oPointer.value || {}; 
+		const fStartTime = start + (isFromHalf ? long * 0.4 : 0);
+		style.left = `${fStartTime * fPerSecPx}px`;
+		Audio.currentTime = fStartTime;
+		Audio.play && Audio.play();
+		const playing = setInterval(() => {
+			const { currentTime: cTime } = Audio;
+			if (cTime < oData.aLineArr[1].end && oData.playing) {
+				return style.left = `${cTime * oData.fPerSecPx}px`;
+			}
+			Audio.pause();
+			clearInterval(oData.playing);
+			oData.playing = false;
+		}, ~~(1000 / 70)); //每秒执行次数70
+		oData.playing = playing;
+	}
 	// ▼生命周期 & 方法调用 ==========================================================
 	window.onresize = setCanvasWidth;
 	ipcRenderer._events.getSubtitlesArrReply = readSrtFile;
@@ -147,18 +177,21 @@ export function f1(){
 		setCanvasWidth();
     });
     // ▼最终返回 ==========================================================
-    return {
+    return ({
         ...toRefs(oData),
 		...{ // dom
 			oCanvasDom,
 			oCanvasNeighbor,
 			oCanvasCoat,
+			oPointer,
+			oAudio,
 		},
 		...{ // fn
 			wheelOnWave,
 			waveWrapScroll,
+			toPlay,
 		},
-    };
+    });
 };
 
 // buffer.sampleRate  // 采样率：浮点数，单位为 sample/s

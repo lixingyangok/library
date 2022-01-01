@@ -67,7 +67,39 @@
 
 .scale{
     display: flex;
+    position: relative;
+    height: var(--canvas-top);
     li{
+        position: absolute;
+        z-index: 2;
         color: white;
     }
 }
+
+.region-ul{
+    display: flex;
+    position: relative;
+    li{
+        position: absolute;
+        height: var(--canvas-height);
+        background: rgba($color: yellow, $alpha: 0.3);
+        left: var(--left);
+        width: var(--width);
+        color: rgba($color: white, $alpha: 0.5);
+    }
+}
+
+.pointer{
+    width: 1px;
+    height: var(--canvas-height);
+    background: white;
+    position: absolute;
+    left: 100px;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.4s;
+    &[class~=playing]{
+        opacity: 1;
+    }
+}
+
