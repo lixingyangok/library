@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-01 17:32:07
+ * @LastEditTime: 2022-01-01 21:08:12
  * @Description: 
 -->
 <template>
@@ -15,11 +15,15 @@
             <video controls ref="oAudio" :src="sMediaSrc">
                 <!-- <source :src="sMediaSrc"/> -->
             </video>
+            <p>{{sFilePath}}</p>
             <button @click="()=>toPlay()">
                 播放
             </button>
             <button @click="()=>toPlay(true)" >
                 播放50%
+            </button>
+            <button @click="saveBlob" >
+                保存saveBlob
             </button>
             <article class="wave-bar"
                 :style="{
@@ -46,7 +50,7 @@
                                 <li v-for="(cur) of aShowingArr" :key="cur"
                                     :style="{left: `${cur * fPerSecPx}px`}"
                                 >
-                                    {{cur}}
+                                    &nbsp;{{~~(cur/60)}}'{{cur%60}}
                                 </li>
                             </ul>
                             <ul class="region-ul" >

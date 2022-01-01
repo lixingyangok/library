@@ -13,10 +13,12 @@ export async function fileToBuffer(oFile, isWantFakeBuffer=false){
 	const promise = new Promise(resolve => resolveFn = resolve);
 	const onload = async evt => {
 		const arrayBuffer = evt.currentTarget.result;
-		let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+		let audioContext = new window.AudioContext();
+		console.time('读取波形耗时-');
 		let buffer = await audioContext.decodeAudioData(arrayBuffer).catch(err=>{
 			console.log('读取波形 buffer 出错\n', err);
 		});
+		console.timeEnd('读取波形耗时-');
 		audioContext = null; // 如果不销毁audioContext对象的话，audio标签是无法播放的
 		if (isWantFakeBuffer) buffer = getFakeBuffer(buffer);
 		resolveFn(buffer);

@@ -72,7 +72,11 @@
     li{
         position: absolute;
         z-index: 2;
-        color: white;
+        color: #ccc;
+        font-size: 11px;
+        height: 100%;
+        line-height: var(--canvas-top);
+        border-left: solid 1px white;
     }
 }
 
@@ -82,7 +86,7 @@
     li{
         position: absolute;
         height: var(--canvas-height);
-        background: rgba($color: yellow, $alpha: 0.3);
+        background: rgba($color: yellow, $alpha: 0.2);
         left: var(--left);
         width: var(--width);
         color: rgba($color: white, $alpha: 0.5);

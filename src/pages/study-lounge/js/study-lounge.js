@@ -14,13 +14,15 @@ const oPointer = ref(null);
 const oAudio = ref(null);
 // ▲ dom
 const oData = reactive({
+	sFilePath: '',
 	sMediaSrc: '',
 	sSubtitleSrc: '',
 	oBuffer: {}, // 媒体的 buffer
 	aLineArr: [],
 	iCurLineIdx: 0,
+	aPeaks: [],
 	...{ // 波形相关
-		iHeight: 0.8,
+		iHeight: 0.3,
 		iCanvasHeight: 110,
 		iCanvasTop: 18,
 		iPerSecPx: 100,
@@ -35,35 +37,45 @@ const oData = reactive({
 
 export function f1(){
 	const sFilePath = localStorage.getItem('sFilePath');
+	oData.sFilePath = sFilePath;
 	oData.sMediaSrc = 'tube://a/?path=' + sFilePath;
 	oData.sSubtitleSrc = (()=>{
 		const arr = sFilePath.split('.');
 		arr[arr.length-1] = 'srt';
 		return arr.join('.');
 	})();
+	oData.aLineArr.splice(0, Infinity);
 	ipcRenderer.send("getSubtitlesArr", oData.sSubtitleSrc);
 	
 	// ▼取得字幕数据
 	function readSrtFile(event, sSubtitles){
 		const aRes = SubtitlesStr2Arr(sSubtitles);
-		if (!aRes) return;
+		if (!aRes) {
+			return console.log('查询字幕未成功');
+		}
 		oData.aLineArr.splice(0, Infinity, ...aRes);
 	}
 	// ▲数据部分
 	// ▼加载音频文件的 buffer 
     async function loadFile(){
+		console.time('加载文件');
         const oBuffer = await fetch(oData.sMediaSrc).then(res => {
+			console.timeEnd('加载文件');
+			console.time('转Blob');
             return res.blob();
         }).then(res=>{
+			console.timeEnd('转Blob');
             return fileToBuffer(res, true);
         }).catch(res=>{
             console.log('读取媒体buffer未成功\n', res);
         });
+		console.log('媒体buffer\n', oBuffer);
         return oBuffer;
     }
 
 	// ▼按收到的数据 => 绘制
     function toDraw(aPeaks) {
+		aPeaks = aPeaks || oData.aPeaks;
 		cleanCanvas();
 		const { iHeight } = oData; // 波形高
 		const oCanvas = oCanvasDom.value;
@@ -89,9 +101,11 @@ export function f1(){
 		const {altKey, ctrlKey, shiftKey, wheelDeltaY, deltaY} = ev;
 		if (0) console.log(shiftKey, deltaY);
 		if (ctrlKey) {
-			this.zoomWave(ev);
+			console.log('横向缩放');
+			// this.zoomWave(ev);
 		} else if (altKey) {
-			this.changeWaveHeigh(wheelDeltaY);
+			console.log('纵向缩放');
+			changeWaveHeigh(wheelDeltaY);
 		} else {
 			scrollToFn(wheelDeltaY);
 		}
@@ -167,6 +181,29 @@ export function f1(){
 		}, ~~(1000 / 70)); //每秒执行次数70
 		oData.playing = playing;
 	}
+	function saveBlob(){
+		// type: "application/zip"
+		const text = JSON.stringify(oData.oBuffer);
+		const blob = new Blob([text], {type: "application/json"});
+		const downLink = Object.assign(document.createElement('a'), {
+			download: 'fileName.blob',
+			href: URL.createObjectURL(blob),
+		});
+		// document.body.appendChild(downLink); // 链接插入到页面
+		downLink.click();
+		// document.body.removeChild(downLink); // 移除下载链接
+	}
+	// 改变波形高度
+	function changeWaveHeigh(deltaY) {
+		let { iHeight } = oData;
+		const [min, max, iStep] = [0.1, 3, 0.2];
+		if (deltaY >= 0) iHeight += iStep;
+		else iHeight -= iStep;
+		if (iHeight < min) iHeight = min;
+		if (iHeight > max) iHeight = max;
+		oData.iHeight = iHeight;
+		toDraw();
+	}
 	// ▼生命周期 & 方法调用 ==========================================================
 	window.onresize = setCanvasWidth;
 	ipcRenderer._events.getSubtitlesArrReply = readSrtFile;
@@ -190,6 +227,7 @@ export function f1(){
 			wheelOnWave,
 			waveWrapScroll,
 			toPlay,
+			saveBlob,
 		},
     });
 };
@@ -221,6 +259,7 @@ function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
 	}
 	// ▼返回浮点型的每秒宽度(px)
 	const fPerSecPx = buffer.length / sampleSize / buffer.duration;
+	oData.aPeaks.splice(0, Infinity, ...aPeaks);
 	return {aPeaks, fPerSecPx};
 }
 
