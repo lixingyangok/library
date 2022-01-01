@@ -3,6 +3,8 @@
  * @LastEditors: 李星阳
  * @Description: 
  */ 
+const fs = require('fs');
+const fsPromises = require('fs').promises;
 
 // ▼ 实际上1参接收的是一个Blob对象
 export async function fileToBuffer(oFile, isWantFakeBuffer=false){
@@ -29,16 +31,14 @@ export async function fileToBuffer(oFile, isWantFakeBuffer=false){
 // ▼下方为待用项
 
 // ▼字符转字幕数据，用于显示
-export async function fileToTimeLines(oFile) {
-	if (!oFile) return [];
-	const text = await fileToStrings(oFile);
+export function SubtitlesStr2Arr(sSubtitles) {
 	const aLine = [];
-	let strArr = text.split('\n');
+	let strArr = sSubtitles.split('\n');
 	strArr = strArr.filter((cur, idx) => {
 		const isTime = /\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}/.test(cur);
-		if (!isTime) return false;
+		if (!isTime) return;
 		aLine.push(strArr[idx + 1]);
-		return isTime;
+		return true;
 	});
 	return strArr.map((cur, idx) => {
 		const [aa, bb] = cur.split(' --> ');
@@ -47,7 +47,6 @@ export async function fileToTimeLines(oFile) {
 		return {start, end, text}; // fixTime({start, end, text});
 	});
 }
-
 
 
 // ▼浮点秒，转为时间轴的时间
@@ -82,7 +81,7 @@ export function fixTime(oTarget){
 	return oTarget;
 }
 
-// ▼【文件】转字符
+// ▼【文件】转字符（旧版的）
 export function fileToStrings(oFile) {
 	let resolveFn = xx => xx;
 	const oPromise = new Promise(fn => resolveFn = fn);
@@ -92,6 +91,15 @@ export function fileToStrings(oFile) {
 	return oPromise;
 }
 
+// ▼听写页加载时调用
+export async function getChannelDataFromBlob(oBlob){
+	const arrayBuffer = await oBlob.arrayBuffer();
+	const aInt8Array = new Int8Array(arrayBuffer);
+	return aInt8Array;
+}
+
+
+// ▼将音频 buffer 转为假对象
 export function getFakeBuffer(buffer){
 	const buffer_ = { //原始数据
 		length: buffer.length, // === buffer.getChannelData(0).length
@@ -116,24 +124,35 @@ export function getFakeBuffer(buffer){
 	};
 }
 
-// ▼听写页加载时调用
-export async function getChannelDataFromBlob(oBlob){
-	const arrayBuffer = await oBlob.arrayBuffer();
-	const aInt8Array = new Int8Array(arrayBuffer);
-	return aInt8Array;
-}
-
-// ▼将收到的数组转换为【文本文件】并下载
-// 将来下载文本时会用到
-export function downloadString(aStr, fileName='文本文件', suffix='txt'){
-	const blob = new Blob([aStr]);
-	Object.assign(document.createElement('a'), {
-		download: `${fileName}.${suffix}`,
-		href: URL.createObjectURL(blob),
-	}).click();
-}
-
+// ▲ 被使用的方法
+// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// ▼ 没有被使用的方法
 // ▼有后台功能之后的新方法---------------------------
+
+
+// ▼数组转 Blob，用于上传字幕
+export function arrToblob(arr){
+	const newArr = arr.map(cur=>({ // 净化
+		start: cur.start.toFixed(2) * 1,
+		end: cur.end.toFixed(2) * 1,
+		text: cur.text, // 考虑加上 trim 
+	}));
+	const file = new Blob(
+		[JSON.stringify(newArr)],
+		{type: 'application/json;charset=utf-8'},
+	);
+	return file;
+}
+
+
+// ▼可能是上传字幕用的
+export async function fileToBlob(oFile){
+	const res = await fileToTimeLines(oFile);
+	const oBlob = arrToblob(res || []);
+	return oBlob;
+}
+
 
 // ▼将收到的数组转换为【字幕文件】并下载
 export function downloadSrt(aLines, fileName='字幕文件'){
@@ -142,13 +161,6 @@ export function downloadSrt(aLines, fileName='字幕文件'){
 		return `${idx + 1}\n${t01} --> ${t02}\n${text}\n`;
 	}).join('\n');
 	downloadString(aStr, fileName, 'srt');
-}
-
-// ▼可能是上传字幕用的
-export async function fileToBlob(oFile){
-	const res = await fileToTimeLines(oFile);
-	const oBlob = arrToblob(res || []);
-	return oBlob;
 }
 
 // ▼得到时间信息
@@ -165,6 +177,17 @@ export function getTimeInfo(oTime, sType, oAim){
 	if (oAim) Object.assign(oAim, oResult)
 	return oResult;
 }
+
+// ▼将收到的数组转换为【文本文件】并下载
+// 将来下载文本时会用到
+export function downloadString(aStr, fileName='文本文件', suffix='txt'){
+	const blob = new Blob([aStr]);
+	Object.assign(document.createElement('a'), {
+		download: `${fileName}.${suffix}`,
+		href: URL.createObjectURL(blob),
+	}).click();
+}
+
 
 // ▼
 // export function getFakeBuffer(buffer){
@@ -183,18 +206,3 @@ export function getTimeInfo(oTime, sType, oAim){
 // 		oChannelDataBlob_: null,
 // 	};
 // }
-
-// ▼数组转 Blob，用于上传字幕
-export function arrToblob(arr){
-	const newArr = arr.map(cur=>({ // 净化
-		start: cur.start.toFixed(2) * 1,
-		end: cur.end.toFixed(2) * 1,
-		text: cur.text, // 考虑加上 trim 
-	}));
-	const file = new Blob(
-		[JSON.stringify(newArr)],
-		{type: 'application/json;charset=utf-8'},
-	);
-	return file;
-}
-

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-27 20:05:52
+ * @LastEditTime: 2022-01-01 09:31:35
  * @Description: 
  */
 // electron/electron.js
@@ -17,12 +17,7 @@ const {
 
 const exePath = path.dirname(app.getPath('exe'));
 const isDev = process.env.IS_DEV == "true" ? true : false;
-// ▼启动服务
-// const http = require('http');
-// const express = require('express');
-// const expressApp = express();
-// const cors = require('cors');
-// const router = express.Router();
+
 
 
 console.log('■■■■■■■■■■■■■■■■\nexe位置 =', exePath);
@@ -57,16 +52,17 @@ function createWindow() {
 }
 
 ipcMain.on('asynchronous-message', (event, arg) => {
-    console.log('主进程收信了：', arg);
+    toLog('主进程收信了：\n', arg);
     // const sReturn = arg + '★返回';
     // toLog('■■■■■■■■■■■■■■■■■■■■■\n这个内容是主进程收信后返回的');
     // event.reply('asynchronous-reply', sReturn);
 });
 
-ipcMain.on('getWave', (event, arg) => {
-    console.log('主进程 getWave 通道：', arg);
-    // const sReturn = arg + '★返回';
-    // event.reply('asynchronous-reply', sReturn);
+ipcMain.on('getSubtitlesArr', function(event, sPath) {
+    fs.readFile(sPath, "utf8", (err, data)=>{
+        if (err) return toLog("读取失败\n", err);
+        event.sender.send('getSubtitlesArrReply', data);
+    });
 });
 
 // ▼要放在 app.whenReady 之前执行，只能执行一次
@@ -120,33 +116,4 @@ app.on('window-all-closed', () => {
     }
 });
 
-
-
-// expressApp.use(cors());
-// router.get('/file/:name', function (req, res) {
-//     const filename = req.params.name;
-//     console.log('filename ■■■■■■■■■■■■■■■■■■■■', filename);
-//     res.sendFile(filename);
-// });
-// expressApp.use('/', router);
-// http.createServer(expressApp).listen(8899);
-
-//创建服务器
-// http.createServer(function(request, response) {
-//     console.log('请求来了★★★★★★★★★★★★★★★★★★★★');
-//     console.log(request.url);
-//     //解析请求，包括文件名
-//     var pathname = 'D:/天翼云盘同步盘/English dictation/开言英语/A Party Invitation.mp3';
-//     //从文件系统中都去请求的文件内容
-//     fs.readFile(pathname, function(err, data) {
-//         if(err) {
-//             response.writeHead(404, {'Content-Type': 'text/html'});
-//         } else {
-//             response.writeHead(200,{'Content-Type': 'audio/mpeg'});
-//             response.write(data);
-//         }
-//         //发送响应数据
-//         response.end();
-//     });
-// }).listen(8899);
 
