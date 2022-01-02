@@ -1,0 +1,76 @@
+// ▼字幕列表
+
+.sentence-wrap{
+    overflow-y: auto;
+	list-style: none;
+	margin: 20px 0 0;
+	border: solid #aaa;
+	border-width: 1px 0;
+    height: 500px;
+	.one-line{
+		display: flex;
+		border: solid #d1d1d1;
+		border-width:  0 0 1px;
+		font-size: 16px;
+		font-weight: 500;
+		height: 35px;
+		cursor: pointer;
+		overflow: hidden;
+		// &:hover{
+		// 	height: auto;
+		// }
+		&[class~=cur]{
+			background: #ceffe7;
+		}
+		&:hover{
+			background: #aef3d1;
+		}
+	}
+}
+
+.one-line{
+    .idx{
+		flex: none;
+		font-style: normal;
+		font-weight: normal;
+		text-align: center;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-width: 2em;
+		width: var(--width);
+	}
+	.time{
+		flex: none;
+		width: 180px;
+		border: solid #aaa;
+		border-width: 0 1px;
+		margin: 0 0.6em 0 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 0 10px;
+		i{
+			margin: 0 2px;
+		}
+		em{
+			font-style: normal;
+			font-weight: normal;
+		}
+	}
+    p{
+        min-height: 1.3em;
+        line-height: 1.3;
+        margin: 0 10px 0 0;
+        padding: 0.4em 0;
+        box-sizing: content-box;
+        /* word-break: break-all; */
+        /* white-space: break-spaces; */
+        word-break: break-word;
+        .word{
+            &:hover{
+                background: yellow;
+            }
+        }
+    }
+}

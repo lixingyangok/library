@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-02 08:53:10
+ * @LastEditTime: 2022-01-02 09:50:09
  * @Description: 
 -->
 <template>
@@ -86,11 +86,26 @@
                 </button>
             </div>
             <!--  -->
+            <div class="type-box" v-if="aLineArr[iCurLineIdx]">
+                <textarea v-model="aLineArr[iCurLineIdx].text">
+                    
+                </textarea>
+                <textarea v-if="0"></textarea>
+            </div>
             <article>
                 <br/><br/>
-                <ul>
-                    <li v-for="(cur,idx) of aLineArr" :key="idx">
-                        {{cur.text}}
+                <ul class="sentence-wrap" >
+                    <li v-for="(cur,idx) of aLineArr" :key="idx"
+                        class="one-line"
+                        :style="{'--width': `${String(aLineArr.length || 0).length}em`}"
+                    >
+                        <i className="idx">{{idx + 1}}</i>
+                        <span className="time">
+                            <em>{{cur.start}}</em><i>-</i><em>{{cur.end}}</em>
+                        </span>
+                        <p>
+                            {{cur.text}}
+                        </p>
                     </li>
                 </ul>
             </article>
@@ -99,14 +114,14 @@
 </template>
 
 <script>
-import {computed} from 'vue';
+import {computed, toRefs} from 'vue';
 import {f1} from './js/study-lounge.js';
 
 
 export default {
     name: 'study-lounge',
     setup(){
-        const oData = f1();
+        const oData = toRefs(f1());
         const aShowingRegion = computed(() => {
             const oWaveWrap = oData.oCanvasNeighbor?.value;
             if (!oWaveWrap) return [0, 0];
@@ -149,5 +164,7 @@ export default {
 };
 </script>
 
-<style scoped src="./style/study-lounge.scss" />
+<style scoped src="./style/study-lounge.scss"></style>
+<style scoped src="./style/type-box.scss"></style>
+<style scoped src="./style/line-list.scss"></style>
 

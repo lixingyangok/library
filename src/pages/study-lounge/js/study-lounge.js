@@ -241,6 +241,32 @@ export function f1(){
 			waveWrapScroll();
 		}
 	}
+	// ▼跳至某行
+	async function goLine(iAimLine, oNewLine, doNotSave) {
+		const {aLineArr, iCurLineIdx, sCurLineTxt=''} = this.state;
+		const oNewState = {aLineArr, iCurLineIdx};
+		if (typeof iAimLine === 'number') { // 观察：能不能进来？
+			oNewState.iCurLineIdx = iAimLine;
+		}else{
+			iAimLine = iCurLineIdx;
+		}
+		const isDifferent = aLineArr[iCurLineIdx].text !== sCurLineTxt;
+		if (isDifferent){
+			aLineArr[iCurLineIdx].text = sCurLineTxt.trim(); // 旧的值，存起来
+		}
+		if (iAimLine % 2 && (!aLineArr[iAimLine] || isDifferent)) {
+			this.toSaveInDb();
+		}
+		if (oNewLine) {
+			oNewState.aLineArr.push(oNewLine);
+			oNewState.sCurLineTxt = oNewLine.text;
+		}else{
+			oNewState.sCurLineTxt = aLineArr[iAimLine].text;
+		}
+		if (!doNotSave) this.saveHistory(oNewState); // 有报错补上 dc_
+		this.setState(oNewState);
+		this.setLinePosition(oNewLine || aLineArr[iAimLine], iAimLine);
+	}
 	// ▼得到点击处的秒数，收受一个事件对象
 	function getPointSec({ clientX }) {
 		const {scrollLeft, parentElement: {offsetLeft}} = oCanvasNeighbor.value;
@@ -258,7 +284,7 @@ export function f1(){
 		setCanvasWidth();
     });
     // ▼最终返回 ==========================================================
-    return ({
+    return reactive({
         ...toRefs(oData),
 		...{ // dom
 			oCanvasDom,
