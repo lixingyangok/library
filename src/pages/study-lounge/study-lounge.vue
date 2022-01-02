@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-01 21:08:12
+ * @LastEditTime: 2022-01-02 08:53:10
  * @Description: 
 -->
 <template>
@@ -12,19 +12,11 @@
         </section>
         <!-- 左右分界 -->
         <section class="right">
-            <video controls ref="oAudio" :src="sMediaSrc">
+            <video controls ref="oAudio" :src="sMediaSrc"
+                v-show="0"
+            >
                 <!-- <source :src="sMediaSrc"/> -->
             </video>
-            <p>{{sFilePath}}</p>
-            <button @click="()=>toPlay()">
-                播放
-            </button>
-            <button @click="()=>toPlay(true)" >
-                播放50%
-            </button>
-            <button @click="saveBlob" >
-                保存saveBlob
-            </button>
             <article class="wave-bar"
                 :style="{
                     '--canvas-top': `${iCanvasTop}px`,
@@ -48,18 +40,27 @@
                         <div :style="{width: `${(oBuffer.duration + 1) * fPerSecPx}px`}">
                             <ul class="scale">
                                 <li v-for="(cur) of aShowingArr" :key="cur"
+                                    class="one-second"
+                                    :class="cur%10==0 ? 'ten-times': ''"
                                     :style="{left: `${cur * fPerSecPx}px`}"
                                 >
-                                    &nbsp;{{~~(cur/60)}}'{{cur%60}}
+                                    <b className="mark"/>
+                                    <span>
+                                        {{~~(cur/60)}}'{{cur%60}}
+                                    </span>
                                 </li>
                             </ul>
                             <ul class="region-ul" >
                                 <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
+                                    class="region"
+                                    :class="cur.idx === iCurLineIdx ? 'cur' : ''"
                                     :style="{
                                         left: `${cur.start * fPerSecPx}px`,
                                         width: `${(cur.end - cur.start) * fPerSecPx}px`,
                                     }"
-                                ></li>
+                                >
+                                    <i class="idx">{{cur.idx+1}}</i>
+                                </li>
                             </ul>
                             <i ref="oPointer" class="pointer"
                                 :class="playing ? 'playing': ''"
@@ -68,10 +69,22 @@
                     </div>
                 </div>
             </article>
-            <article class="wave-below" >oBuffer
+            <article class="wave-below" >
                 <br/>
-                时长：{{oBuffer.sDuration_}}
+                时长：{{oBuffer.sDuration_}}&emsp;
+                文件：{{sFilePath}}
             </article>
+            <div>
+                <button @click="()=>toPlay()">
+                    播放
+                </button>
+                <button @click="()=>toPlay(true)" >
+                    播放50%
+                </button>
+                <button @click="saveBlob" >
+                    保存saveBlob
+                </button>
+            </div>
             <!--  -->
             <article>
                 <br/><br/>
@@ -120,6 +133,7 @@ export default {
                 const {end} = aLineArr.value[idx];
                 const IsShow = end > nowSec || end > endSec;
                 if (!IsShow) continue;
+                aLineArr.value[idx].idx = idx;
                 myArr.push(aLineArr.value[idx]);
                 if (end > endSec) break;
             }

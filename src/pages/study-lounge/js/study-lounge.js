@@ -8,7 +8,7 @@ const ipcRenderer = require("electron").ipcRenderer;
 // window.wv = w01;
 
 const oCanvasDom = ref(null);
-const oCanvasNeighbor = ref(null);
+const oCanvasNeighbor = ref(null); // oWaveWrap
 const oCanvasCoat = ref(null);
 const oPointer = ref(null);
 const oAudio = ref(null);
@@ -21,6 +21,7 @@ const oData = reactive({
 	aLineArr: [],
 	iCurLineIdx: 0,
 	aPeaks: [],
+	drawing: false,
 	...{ // 波形相关
 		iHeight: 0.3,
 		iCanvasHeight: 110,
@@ -91,6 +92,7 @@ export function f1(){
 			Context.fillRect(idx, (halfHeight - cur1), 1, cur1 - cur2);
 			idx++;
 		}
+		oData.drawing = false;
 		return oCanvas;
 	}
 	// ▼滚轮动了
@@ -101,10 +103,8 @@ export function f1(){
 		const {altKey, ctrlKey, shiftKey, wheelDeltaY, deltaY} = ev;
 		if (0) console.log(shiftKey, deltaY);
 		if (ctrlKey) {
-			console.log('横向缩放');
-			// this.zoomWave(ev);
+			zoomWave(ev);
 		} else if (altKey) {
-			console.log('纵向缩放');
 			changeWaveHeigh(wheelDeltaY);
 		} else {
 			scrollToFn(wheelDeltaY);
@@ -126,7 +126,7 @@ export function f1(){
 		oData.iScrollLeft = newVal;
 		oDom.scrollTo(newVal, 0);
 	}
-	// ▼滚动条动了
+	// ▼滚动条动后调用
 	function waveWrapScroll() {
 		const {oBuffer, iPerSecPx} = oData;
 		const {offsetWidth, scrollLeft} = oCanvasNeighbor.value;
@@ -135,9 +135,7 @@ export function f1(){
 		);
 		toDraw(aPeaks);
 		oData.iScrollLeft = Math.max(0, scrollLeft);
-		// const newObj = {aPeaks};
-		// if (fPerSecPx !== this.state.fPerSecPx) newObj.fPerSecPx = fPerSecPx;;
-		// this.setState(newObj);
+		oData.fPerSecPx = fPerSecPx;
 	}
 	function setCanvasWidth(){
 		const iWidth = oCanvasCoat.value?.offsetWidth;
@@ -161,7 +159,7 @@ export function f1(){
 	async function toPlay(isFromHalf) {
 		clearInterval(oData.playing); //把之前播放的关闭再说
 		const { fPerSecPx } = oData;
-		const { start, end } = oData.aLineArr[1];
+		const { start, end } = oData.aLineArr[oData.iCurLineIdx];
 		const long = end - start;
 		const Audio = oAudio.value;
 		if (!Audio) return console.log('有没音频对象');
@@ -172,7 +170,8 @@ export function f1(){
 		Audio.play && Audio.play();
 		const playing = setInterval(() => {
 			const { currentTime: cTime } = Audio;
-			if (cTime < oData.aLineArr[1].end && oData.playing) {
+			const oCur = oData.aLineArr[oData.iCurLineIdx]; 
+			if (cTime < oCur.end && oData.playing) {
 				return style.left = `${cTime * oData.fPerSecPx}px`;
 			}
 			Audio.pause();
@@ -196,13 +195,58 @@ export function f1(){
 	// 改变波形高度
 	function changeWaveHeigh(deltaY) {
 		let { iHeight } = oData;
-		const [min, max, iStep] = [0.1, 3, 0.2];
+		const [min, max, iStep] = [0.1, 3, 0.15];
 		if (deltaY >= 0) iHeight += iStep;
 		else iHeight -= iStep;
 		if (iHeight < min) iHeight = min;
 		if (iHeight > max) iHeight = max;
 		oData.iHeight = iHeight;
 		toDraw();
+	}
+	function zoomWave(ev){
+		if (oData.drawing) return; //防抖
+		const {iPerSecPx: perSecPxOld, oBuffer} = oData;
+		const {deltaY, clientX = window.innerWidth / 2} = ev;
+		const [min, max, iStep] = [35, 250, 20]; //每秒最小/大宽度（px），缩放步幅
+		const oWaveWrap = oCanvasNeighbor.value;
+		// ▼说明：小到头了就不要再缩小了，大到头了也就要放大了
+		if (deltaY > 0 ? perSecPxOld <= min : perSecPxOld >= max){
+			oData.drawing = false;
+			return;
+		}
+		if (!oWaveWrap) {
+			oData.drawing = false;
+			return console.log('波形外套的dom没得到');
+		}
+		console.log('开始缩放');
+		const {parentElement:{offsetLeft}, children:[markBar]} = oWaveWrap;
+		const iPerSecPx = (() => { //新-每秒宽度
+			const result = perSecPxOld + iStep * (deltaY <= 0 ? 1 : -1);
+			if (result < min) return min;
+			else if (result > max) return max;
+			return result;
+		})();
+		const fPerSecPx = (()=>{ // 新-每秒宽度（精确）
+			const sampleSize = ~~(oBuffer.sampleRate / iPerSecPx); // 每一份的点数 = 每秒采样率 / 每秒像素
+			return oBuffer.length / sampleSize / oBuffer.duration; 
+		})();
+		markBar.style.width = fPerSecPx * oBuffer.duration + 'px';
+		const iNewLeftPx = getPointSec({clientX}) * fPerSecPx - (clientX - offsetLeft);
+		oPointer.value.style.left = `${oAudio.value.currentTime * fPerSecPx}px`;
+		oData.iPerSecPx = iPerSecPx;
+		oData.drawing = true;
+		oWaveWrap.scrollLeft = iNewLeftPx; // 在此触发了缩放
+		if (iNewLeftPx <= 0) {
+			console.log('小于0 =', iNewLeftPx);
+			waveWrapScroll();
+		}
+	}
+	// ▼得到点击处的秒数，收受一个事件对象
+	function getPointSec({ clientX }) {
+		const {scrollLeft, parentElement: {offsetLeft}} = oCanvasNeighbor.value;
+		const iLeftPx = clientX - offsetLeft + scrollLeft; //鼠标距左边缘的px长度
+		const iNowSec = iLeftPx / oData.fPerSecPx; //当前指向时间（秒）
+		return iNowSec;
 	}
 	// ▼生命周期 & 方法调用 ==========================================================
 	window.onresize = setCanvasWidth;
