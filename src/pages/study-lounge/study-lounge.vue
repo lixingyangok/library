@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-03 10:15:10
+ * @LastEditTime: 2022-01-03 20:26:58
  * @Description: 
 -->
 <template>
@@ -65,7 +65,10 @@
                     </div>
                 </div>
             </article>
-            <MyWave/>
+            <br/>
+            <MyWave v-if="sMediaSrc"
+                :media-path="sMediaSrc"
+            />
             <article class="wave-below" >
                 <br/>
                 时长：{{oBuffer.sDuration_}}&emsp;

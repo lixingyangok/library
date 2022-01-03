@@ -1,16 +1,23 @@
-.wave-bar{
+// 样式文件
+.my-wave-bar{
+	--total-height: 140px;
+	--canvas-top: 18px;
+	--canvas-height: 110px;
+	--waist-line: calc(var(--canvas-top) + var(--canvas-height) / 2);
+
+
+    position: relative;
     max-width: 100%;
+	height: var(--total-height);
     overflow-x: hidden;
     background: #000;
-    position: relative;
-	height: 140px;
     &::before{
         content: "";
         display: block;
         width: 100%;
         height: 1px;
         background: #0f0;
-        margin-top: var(--line-top);
+        margin-top: var(--waist-line);
         position: absolute;
         z-index: 3;
     }
@@ -18,8 +25,9 @@
         display: block;
         width: 100%;
         margin-top: var(--canvas-top);
+		height: var(--canvas-height);
     }
-    .canvas-coat{
+    .wave-wrap{
 		width: 100%;
 		position: absolute;
         top: 0px;
@@ -28,15 +36,15 @@
     }
 }
 
-.canvas-coat{
+
+.wave-wrap{
     .canvas-neighbor{
         overflow-x: auto;
         overflow-y: hidden;
         max-width: 100%;
         height: 100%;
-
         &::-webkit-scrollbar{
-            height: 12px;
+            height: calc(var(--total-height) - var(--canvas-top) - var(--canvas-height));
             background: transparent;
         }
         &::-webkit-scrollbar-thumb{
