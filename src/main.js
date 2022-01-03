@@ -23,7 +23,7 @@ const stmt = db.prepare("INSERT INTO dev_history VALUES (?)");
 stmt.run(new Date().toLocaleString());
 stmt.finalize();
 db.each("SELECT count(*) FROM dev_history", function(err, row) {
-    console.log('数据库数量：', row['count(*)']);
+    console.log('开发记录数量：', row['count(*)']);
 });
 
 // ▼建表的语句

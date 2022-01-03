@@ -14,11 +14,10 @@ export async function fileToBuffer(oFile, isWantFakeBuffer=false){
 	const onload = async evt => {
 		const arrayBuffer = evt.currentTarget.result;
 		let audioContext = new window.AudioContext();
-		console.time('读取波形耗时-');
+		// 近8分钟音频耗时 1,117ms
 		let buffer = await audioContext.decodeAudioData(arrayBuffer).catch(err=>{
 			console.log('读取波形 buffer 出错\n', err);
 		});
-		console.timeEnd('读取波形耗时-');
 		audioContext = null; // 如果不销毁audioContext对象的话，audio标签是无法播放的
 		if (isWantFakeBuffer) buffer = getFakeBuffer(buffer);
 		resolveFn(buffer);
@@ -27,6 +26,21 @@ export async function fileToBuffer(oFile, isWantFakeBuffer=false){
 		onload,
 	}).readAsArrayBuffer(oFile);
 	return promise;
+}
+
+// ▼浮点秒，转为时间轴的时间
+export function secToStr(fSecond, forShow){
+	const iHour = Math.floor(fSecond / 3600) + ''; //时
+	const iMinut = Math.floor((fSecond - iHour * 3600) / 60) + ''; //分
+	const fSec = fSecond - (iHour*3600 + iMinut*60) + ''; //秒
+	const [sec01, sec02='000'] = fSec.split('.');
+	let sTime = `${iHour.padStart(2, 0)}:${iMinut.padStart(2, 0)}:${sec01.padStart(2, 0)}`;
+	let iTail = `,${sec02.slice(0, 3).padEnd(3, 0)}`;
+	if (forShow){
+		sTime = sTime.slice(1);
+		iTail = '.' + iTail.slice(1, 3);
+	}
+	return sTime + iTail;
 }
 
 // ▲上方为启动项
@@ -51,20 +65,7 @@ export function SubtitlesStr2Arr(sSubtitles) {
 }
 
 
-// ▼浮点秒，转为时间轴的时间
-export function secToStr(fSecond, forShow){
-	const iHour = Math.floor(fSecond / 3600) + ''; //时
-	const iMinut = Math.floor((fSecond - iHour * 3600) / 60) + ''; //分
-	const fSec = fSecond - (iHour*3600 + iMinut*60) + ''; //秒
-	const [sec01, sec02='000'] = fSec.split('.');
-	let sTime = `${iHour.padStart(2, 0)}:${iMinut.padStart(2, 0)}:${sec01.padStart(2, 0)}`;
-	let iTail = `,${sec02.slice(0, 3).padEnd(3, 0)}`;
-	if (forShow){
-		sTime = sTime.slice(1);
-		iTail = '.' + iTail.slice(1, 3);
-	}
-	return sTime + iTail;
-}
+
 
 // ▼时间轴的时间转秒
 export function getSeconds(text) {
@@ -109,20 +110,17 @@ export function getFakeBuffer(buffer){
 		sampleRate: buffer.sampleRate,
 		numberOfChannels: buffer.numberOfChannels,
 	}
+	// ▼近8分钟音频耗时 478ms
 	const aChannelData = Int8Array.from( // int8的取值范围 -128 到 127
 		buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
 	);
+	// ▼ 近8分钟音频耗时 11ms 可忽略不计,
+	const oChannelDataBlob_ = new Blob([aChannelData], {type: 'application/json'});
 	return { //补充数据
 		...buffer_,
-		aChannelData_: aChannelData,
 		sDuration_: secToStr(buffer.duration).split(',')[0],
-		// oChannelDataBlob_: (()=>{
-		// 	// const aChannelData = Int8Array.from( // int8的取值范围 -128 到 127
-		// 	// 	buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
-		// 	// );
-		// 	const result = new Blob([aChannelData], {type: 'text/plain'});
-		// 	return result;
-		// })(),
+		aChannelData_: aChannelData,
+		oChannelDataBlob_, 
 	};
 }
 
