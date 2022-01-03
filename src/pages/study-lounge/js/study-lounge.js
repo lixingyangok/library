@@ -3,8 +3,8 @@ import {fileToBuffer, SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 // import {WaveMaker} from './wave.js';
 const ipcRenderer = require("electron").ipcRenderer;
 
-// const w01 = new WaveMaker(1,2,3);
-// console.log('w01', w01);
+// console.log('waveDom', oData.oWaveBar);
+// const w01 = new WaveMaker({a:1});
 // window.wv = w01;
 
 const oCanvasDom = ref(null);
@@ -12,6 +12,10 @@ const oCanvasNeighbor = ref(null); // oWaveWrap
 const oCanvasCoat = ref(null);
 const oPointer = ref(null);
 const oAudio = ref(null);
+const oDom = {
+	oWaveBar: null,
+};
+
 // ▲ dom
 const oData = reactive({
 	sFilePath: '',
@@ -22,6 +26,7 @@ const oData = reactive({
 	iCurLineIdx: 0,
 	aPeaks: [],
 	drawing: false,
+	...oDom,
 	...{ // 波形相关
 		iHeight: 0.3,
 		iCanvasHeight: 110,
@@ -59,18 +64,15 @@ export function f1(){
 	// ▲数据部分
 	// ▼加载音频文件的 buffer 
     async function loadFile(){
-		console.time('加载文件');
         const oBuffer = await fetch(oData.sMediaSrc).then(res => {
-			console.timeEnd('加载文件');
-			console.time('转Blob');
+			// 8M-1小时的《爱情与金钱》 加载文件: 145.626953125 ms
             return res.blob();
         }).then(res=>{
-			console.timeEnd('转Blob');
+			// 8M-1小时的《爱情与金钱》 转Blob: 46.30615234375 ms
             return fileToBuffer(res, true);
         }).catch(res=>{
             console.log('读取媒体buffer未成功\n', res);
         });
-		console.log('媒体buffer\n', oBuffer);
         return oBuffer;
     }
 
@@ -115,7 +117,6 @@ export function f1(){
 		const iOneStepLong = 350; // 步长
 		const oDom = oCanvasNeighbor.value;
 		const iMax = oDom.children[0].offsetWidth - oCanvasCoat.value.offsetWidth;
-		console.log('iMax', iMax);
 		let newVal = (() => {
 			let oldVal = oDom.scrollLeft;
 			if (deltaY >= 0) return oldVal - iOneStepLong;

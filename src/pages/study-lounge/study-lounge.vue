@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-02 09:50:09
+ * @LastEditTime: 2022-01-03 10:15:10
  * @Description: 
 -->
 <template>
@@ -12,25 +12,21 @@
         </section>
         <!-- 左右分界 -->
         <section class="right">
-            <video controls ref="oAudio" :src="sMediaSrc"
-                v-show="0"
-            >
+            <video controls ref="oAudio" :src="sMediaSrc" >
                 <!-- <source :src="sMediaSrc"/> -->
             </video>
-            <article class="wave-bar"
+            <article class="wave-bar" ref="oWaveBar"
                 :style="{
                     '--canvas-top': `${iCanvasTop}px`,
                     '--canvas-height': `${iCanvasHeight}px`,
                     '--line-top': `${iCanvasTop + iCanvasHeight / 2}px`,
                 }"
             >
-                <div class="canvas-coat" ref="oCanvasCoat"
-                    :style="{height: '140px' || `${iCanvasHeight + iCanvasTop}px`}"
-                >
-                    <canvas class="canvas" ref="oCanvasDom" 
-                        :height="iCanvasHeight"
-                        :style="{height: `${iCanvasHeight}px`}"
-                    />
+                <canvas class="canvas" ref="oCanvasDom" 
+                    :height="iCanvasHeight"
+                    :style="{height: `${iCanvasHeight}px`}"
+                />
+                <div class="canvas-coat" ref="oCanvasCoat" >
                     <div class="canvas-neighbor"
                         ref="oCanvasNeighbor"
                         @mousewheel="wheelOnWave"
@@ -50,7 +46,7 @@
                                     </span>
                                 </li>
                             </ul>
-                            <ul class="region-ul" >
+                            <ul class="region-ul">
                                 <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
                                     class="region"
                                     :class="cur.idx === iCurLineIdx ? 'cur' : ''"
@@ -69,6 +65,7 @@
                     </div>
                 </div>
             </article>
+            <MyWave/>
             <article class="wave-below" >
                 <br/>
                 时长：{{oBuffer.sDuration_}}&emsp;
@@ -116,10 +113,13 @@
 <script>
 import {computed, toRefs} from 'vue';
 import {f1} from './js/study-lounge.js';
-
+import MyWave from '../../components/wave/wave.vue';
 
 export default {
     name: 'study-lounge',
+    components: {
+        MyWave,
+    },
     setup(){
         const oData = toRefs(f1());
         const aShowingRegion = computed(() => {
@@ -165,6 +165,7 @@ export default {
 </script>
 
 <style scoped src="./style/study-lounge.scss"></style>
+<style scoped src="./style/wave.scss"></style>
 <style scoped src="./style/type-box.scss"></style>
 <style scoped src="./style/line-list.scss"></style>
 
