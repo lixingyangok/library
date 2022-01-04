@@ -59,6 +59,9 @@ export function f1(){
 		if (!aRes) {
 			return console.log('查询字幕未成功');
 		}
+		aRes.forEach((cur,idx)=>{
+			cur.idx = idx;
+		});
 		oData.aLineArr.splice(0, Infinity, ...aRes);
 	}
 	// ▲数据部分

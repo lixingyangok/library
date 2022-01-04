@@ -4,8 +4,6 @@
 	--canvas-top: 18px;
 	--canvas-height: 110px;
 	--waist-line: calc(var(--canvas-top) + var(--canvas-height) / 2);
-
-
     position: relative;
     max-width: 100%;
 	height: var(--total-height);
@@ -38,7 +36,7 @@
 
 
 .wave-wrap{
-    .canvas-neighbor{
+    .long-bar{
         overflow-x: auto;
         overflow-y: hidden;
         max-width: 100%;

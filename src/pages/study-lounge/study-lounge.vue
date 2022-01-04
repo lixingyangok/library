@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-03 20:26:58
+ * @LastEditTime: 2022-01-04 21:16:04
  * @Description: 
 -->
 <template>
@@ -68,6 +68,7 @@
             <br/>
             <MyWave v-if="sMediaSrc"
                 :media-path="sMediaSrc"
+                :a-line-arr="aLineArr"
             />
             <article class="wave-below" >
                 <br/>

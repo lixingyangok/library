@@ -2,20 +2,19 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-03 21:02:08
+ * @LastEditTime: 2022-01-04 21:26:51
  * @Description: 
 -->
 <template>
     <article class="my-wave-bar" ref="oWaveBar">
         <canvas class="canvas" ref="oCanvasDom"/>
         <!-- ▼舞台▼ -->
-        <div class="wave-wrap" ref="oWaveWrap" >
-            <div class="canvas-neighbor"
-                ref="oCanvasNeighbor"
+        <div class="wave-wrap" ref="oWaveWrap">
+            <div class="long-bar" ref="oLongBar"
+                @mousewheel="wheelOnWave"
+                @scroll="waveWrapScroll"
             >
-                <!-- @mousewheel="wheelOnWave"
-                @scroll="waveWrapScroll" -->
-                <div :style="{width: '9999px' || '${(oBuffer.duration + 1) * fPerSecPx}px'}">
+                <div :style="{width: `${(oMediaBuffer.duration + 1) * fPerSecPx}px`}">
                     <ul class="scale">
                         <!-- <li v-for="(cur) of aShowingArr" :key="cur"
                             class="one-second"
@@ -29,7 +28,7 @@
                         </li> -->
                     </ul>
                     <ul class="region-ul">
-                        <!-- <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
+                        <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
                             class="region"
                             :class="cur.idx === iCurLineIdx ? 'cur' : ''"
                             :style="{
@@ -38,7 +37,7 @@
                             }"
                         >
                             <i class="idx">{{cur.idx+1}}</i>
-                        </li> -->
+                        </li>
                     </ul>
                     <i ref="oPointer" class="pointer"
                         :class="'playing' ? 'playing': ''"
@@ -47,47 +46,54 @@
             </div>
         </div>
     </article>
-    
-    <p @click="aa+='-1'" >
-        {{aa}}
-    </p>
 </template>
 <!--  -->
 <script>
-import { toRefs } from 'vue';
+import { toRefs, computed, toRef } from 'vue';
 import w01, {} from './js/wave.js';
 
 export default {
     name: 'my-wave',
     props: {
         mediaPath: String,
+        aLineArr: {
+            type: Array,
+            default: ()=>[],
+        },
     },
     setup(props){
         const {oDom, oFn, oData} = w01();
         oFn.audioBufferGetter(props.mediaPath);
+        console.log('setup-props-', props.aLineArr);
+        // const {aLineArr} = toRef(props);
+        const aShowingRegion = computed(() => {
+            const {offsetWidth} = oDom.oWaveBar || {};
+            if (!offsetWidth) return [0, 0];
+            let start = ~~(oData.iScrollLeft / oData.fPerSecPx) - 1;
+            const end = ~~((oData.iScrollLeft + offsetWidth) / oData.fPerSecPx)  + 1;
+            return [Math.max(start, 0), end];
+        });
+        const aShowingGaps = computed(() => {
+            const {iCurLineIdx, fPerSecPx} = (oData);
+            const myArr = [];
+            let [nowSec, endSec] = aShowingRegion.value;
+            for (let idx = 0, len = props.aLineArr.length; idx < len; idx++){
+                const {end} = props.aLineArr[idx];
+                const IsShow = end > nowSec || end > endSec;
+                if (!IsShow) continue;
+                props.aLineArr[idx].idx = idx;
+                myArr.push(props.aLineArr[idx]);
+                if (end > endSec) break;
+            }
+            return myArr;
+        });
         return {
             ...toRefs(oDom),
             ...toRefs(oData),
+            ...oFn,
+            aShowingGaps,
         };
     },
 };
-
-// import {toRefs} from 'vue';
-// import w01, {} from './js/wave.js';
-
-// const props = defineProps({
-//     mediaPath: String,
-// });
-// // console.log('props\n', props.mediaPath);
-
-// const {oDom, oFn, oData} = w01();
-// const {oWaveBar} = toRefs(oDom);
-
-// oFn.audioBufferGetter(props.mediaPath);
 </script>
-<script setup>
-
-
-</script>
-
 <style scoped src="./style/wave.scss"></style>
