@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-05 20:17:29
+ * @LastEditTime: 2022-01-05 20:56:13
  * @Description: 
 -->
 <template>
@@ -63,36 +63,34 @@ export default {
         },
     },
     setup(props){
+        console.log('波形组件接参\n', props.$dc());
         const {oDom, oFn, oData} = w01();
         oFn.audioBufferGetter(props.mediaPath);
-        console.log('setup-props-', props.aLineArr);
-        // const {aLineArr} = toRef(props);
+        // ▼视口范围，起点秒&终点秒
         const aShowingRegion = computed(() => {
-            const {offsetWidth} = oDom.oWaveBar || {};
-            if (!offsetWidth) return [0, 0];
-            let start = ~~(oData.iScrollLeft / oData.fPerSecPx) - 1;
-            const end = ~~((oData.iScrollLeft + offsetWidth) / oData.fPerSecPx)  + 1;
+            const iWidth = window.innerWidth;
+            const start = ~~(oData.iScrollLeft / oData.fPerSecPx) - 1;
+            const end = ~~((oData.iScrollLeft + iWidth) / oData.fPerSecPx);
             return [Math.max(start, 0), end];
         });
         const aShowingArr = computed(() => {
             const arr = [];
-            const [idxVal, end] = aShowingRegion.value;
-            for(let idx = idxVal; idx<end; idx++ ) {
+            const [iLeftSec, iRightSec] = aShowingRegion.value;
+            for(let idx = iLeftSec; idx < iRightSec; idx++ ) {
                 arr.push(idx);
             }
             return arr;
         });
         const aShowingGaps = computed(() => {
-            const {iCurLineIdx, fPerSecPx} = (oData);
             const myArr = [];
-            let [nowSec, endSec] = aShowingRegion.value;
-            for (let idx = 0, len = props.aLineArr.length; idx < len; idx++){
+            const [iLeftSec, iRightSec] = aShowingRegion.value;
+            const {length} = props.aLineArr;
+            for (let idx = 0; idx < length; idx++){
                 const {end} = props.aLineArr[idx];
-                const IsShow = end > nowSec || end > endSec;
+                const IsShow = end > iLeftSec || end > iRightSec; // 此处正确无误
                 if (!IsShow) continue;
-                props.aLineArr[idx].idx = idx;
                 myArr.push(props.aLineArr[idx]);
-                if (end > endSec) break;
+                if (end > iRightSec) break;
             }
             return myArr;
         });

@@ -3,7 +3,7 @@ import {fileToBuffer} from '../../../common/js/pure-fn.js';
 
 export default function(){
     const oDom = reactive({ // 从上到下，从外到内
-        oMyWaveBar: null, // 最外层
+        // oMyWaveBar: null, // 最外层
         oCanvasDom: null, // canvas画布
         oViewport: null, // 视口
         oLongBar: null, // 视口内的横长条
@@ -65,7 +65,7 @@ export default function(){
 	function scrollToFn(deltaY) {
 		const iOneStepLong = 350; // 步长
         const {oViewport, oLongBar} = oDom;
-		const iMax = oLongBar.offsetWidth - oViewport.children;
+		const iMax = oLongBar.offsetWidth - oViewport.offsetWidth;
 		let newVal = (() => {
 			let oldVal = oViewport.scrollLeft;
 			if (deltaY >= 0) return oldVal - iOneStepLong;
@@ -99,7 +99,7 @@ export default function(){
     }
     // ▼设宽并绘制
     function setCanvasWidthAndDraw(){
-        const iWidth = oDom.oMyWaveBar?.offsetWidth || 500;
+        const iWidth = oDom.oViewport?.offsetWidth || 500;
 		oDom.oCanvasDom.width = iWidth;
         if (!oData.oMediaBuffer.duration) return;
 		const {aPeaks, fPerSecPx} = getPeaks(oData.oMediaBuffer, oData.iPerSecPx, 0, iWidth);
@@ -115,13 +115,13 @@ export default function(){
 	}
     // ▼特殊方法和最终返回内容 ========================================
     watch(oDom, (oNew)=>{
-        if (!oNew.oMyWaveBar) return;
+        if (!oNew.oViewport) return;
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
             const {width} = entryArr[0].contentRect;
             if (0) console.log('大小位置', width);
         });
-        myObserver.observe(oNew.oMyWaveBar);
+        myObserver.observe(oNew.oViewport);
     });
     return {
         oDom,
@@ -129,8 +129,6 @@ export default function(){
         oFn,
     };
 }
-
-
 
 
 // buffer.sampleRate  // 采样率：浮点数，单位为 sample/s
