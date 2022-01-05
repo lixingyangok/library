@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-04 21:16:04
+ * @LastEditTime: 2022-01-05 21:06:54
  * @Description: 
 -->
 <template>
@@ -69,6 +69,7 @@
             <MyWave v-if="sMediaSrc"
                 :media-path="sMediaSrc"
                 :a-line-arr="aLineArr"
+                :i-cur-line-idx="iCurLineIdx"
             />
             <article class="wave-below" >
                 <br/>
@@ -99,6 +100,7 @@
                     <li v-for="(cur,idx) of aLineArr" :key="idx"
                         class="one-line"
                         :style="{'--width': `${String(aLineArr.length || 0).length}em`}"
+                        @click="iCurLineIdx = idx"
                     >
                         <i className="idx">{{idx + 1}}</i>
                         <span className="time">

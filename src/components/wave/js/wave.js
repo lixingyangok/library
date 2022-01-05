@@ -1,4 +1,4 @@
-import {reactive, ref, watch} from 'vue';
+import {reactive, getCurrentInstance, watch, computed} from 'vue';
 import {fileToBuffer} from '../../../common/js/pure-fn.js';
 
 export default function(){
@@ -7,6 +7,8 @@ export default function(){
         oCanvasDom: null, // canvas画布
         oViewport: null, // 视口
         oLongBar: null, // 视口内的横长条
+        oAudio: null,
+        oPointer: null,
     });
     const oData = reactive({
         oMediaBuffer: {}, // 媒体的 buffer
@@ -16,8 +18,14 @@ export default function(){
         fPerSecPx: 0,
 		iHeight: 0.3,
         iScrollLeft: 0,
-        iCurLineIdx: 0,
     });
+    const oInstance = getCurrentInstance();
+    const oCurLine = computed(()=>{
+        return oInstance.props.aLineArr[
+            oInstance.props.iCurLineIdx
+        ];
+    });
+    // console.log('oInstance\n', oInstance);
     const oFn = {
         async audioBufferGetter(sPath){
             const oBuffer = await fetch(sPath).then(res => {
@@ -58,9 +66,11 @@ export default function(){
             toDraw(aPeaks);
             oData.iScrollLeft = Math.max(0, scrollLeft);
             oData.fPerSecPx = fPerSecPx;
-        }
+        },
+        toPlay,
     };
-    // ■■■■■■■■■■■■■■■■■■■■■■ ▲外部方法 ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // ▼使Dom滚动条横向滚动
 	function scrollToFn(deltaY) {
 		const iOneStepLong = 350; // 步长
@@ -112,6 +122,28 @@ export default function(){
 	function cleanCanvas() {
 		const Context = oDom.oCanvasDom.getContext('2d');
 		Context.clearRect(0, 0, 5_000, 200);
+	}
+    // ▼播放
+	function toPlay(isFromHalf=false) {
+		clearInterval(oData.playing); //把之前播放的关闭
+		const { start, end } = oCurLine.value;
+		const long = end - start;
+		const { style } = oDom.oPointer; 
+		const fStartTime = start + long * (isFromHalf ? 0.4 : 0);
+		style.left = `${fStartTime * oData.fPerSecPx}px`;
+		oDom.oAudio.currentTime = fStartTime;
+		oDom.oAudio.play();
+		const playing = setInterval(() => {
+			const { currentTime: cTime } = oDom.oAudio;
+			const {end} = oCurLine.value;
+			if (cTime < end && oData.playing) {
+				return style.left = `${cTime * oData.fPerSecPx-1}px`;
+			}
+			oDom.oAudio.pause();
+			clearInterval(oData.playing);
+			oData.playing = false;
+		}, ~~(1000 / 70)); //每秒执行次数70
+		oData.playing = playing;
 	}
     // ▼特殊方法和最终返回内容 ========================================
     watch(oDom, (oNew)=>{

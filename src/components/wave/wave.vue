@@ -2,11 +2,14 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-05 20:56:13
+ * @LastEditTime: 2022-01-05 21:15:56
  * @Description: 
 -->
 <template>
     <article class="my-wave-bar" ref="oMyWaveBar">
+        <video controls ref="oAudio" :src="mediaPath" v-show="0">
+            <!-- <source :src="sMediaSrc"/> -->
+        </video>
         <canvas class="canvas" ref="oCanvasDom"/>
         <!-- ▲画布 -->
         <!-- ▼横长条的视口 -->
@@ -42,11 +45,15 @@
                     </li>
                 </ul>
                 <i ref="oPointer" class="pointer"
-                    :class="'playing' ? 'playing': ''"
+                    :class="playing ? 'playing': ''"
                 />
             </div>
         </section>
     </article>
+    <br/>
+    <button @click="toPlay()">
+        实验
+    </button>
 </template>
 <!--  -->
 <script>
@@ -60,6 +67,10 @@ export default {
         aLineArr: {
             type: Array,
             default: ()=>[],
+        },
+        iCurLineIdx: {
+            type: Number,
+            default: 0,
         },
     },
     setup(props){
