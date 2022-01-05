@@ -3,9 +3,10 @@ import {fileToBuffer} from '../../../common/js/pure-fn.js';
 
 export default function(){
     const oDom = reactive({ // 从上到下，从外到内
-        oWaveBar: null,
-        oCanvasDom: null,
-        oWaveWrap: null,
+        oMyWaveBar: null, // 最外层
+        oCanvasDom: null, // canvas画布
+        oViewport: null, // 视口
+        oLongBar: null, // 视口内的横长条
     });
     const oData = reactive({
         oMediaBuffer: {}, // 媒体的 buffer
@@ -39,21 +40,20 @@ export default function(){
             ev.returnValue = false;
             const {altKey, ctrlKey, shiftKey, wheelDeltaY, deltaY} = ev;
             if (0) console.log(shiftKey, deltaY);
-            console.log('用户滚动了');
-            // if (ctrlKey) {
-            //     zoomWave(ev);
-            // } else if (altKey) {
-            //     changeWaveHeigh(wheelDeltaY);
-            // } else {
-            //     scrollToFn(wheelDeltaY);
-            // }
+            if (ctrlKey) {
+                zoomWave(ev);
+            } else if (altKey) {
+                changeWaveHeigh(wheelDeltaY);
+            } else {
+                scrollToFn(wheelDeltaY);
+            }
         },
         // ▼滚动条动后调用
         waveWrapScroll() {
-            const {oBuffer, iPerSecPx} = oData;
-            const {offsetWidth, scrollLeft} = oCanvasNeighbor.value;
+            const {oMediaBuffer, iPerSecPx} = oData;
+            const {offsetWidth, scrollLeft} = oDom.oViewport;
             const {aPeaks, fPerSecPx} = getPeaks(
-                oBuffer, iPerSecPx, scrollLeft, offsetWidth,
+                oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth,
             );
             toDraw(aPeaks);
             oData.iScrollLeft = Math.max(0, scrollLeft);
@@ -61,7 +61,21 @@ export default function(){
         }
     };
     // ■■■■■■■■■■■■■■■■■■■■■■ ▲外部方法 ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-
+    // ▼使Dom滚动条横向滚动
+	function scrollToFn(deltaY) {
+		const iOneStepLong = 350; // 步长
+        const {oViewport, oLongBar} = oDom;
+		const iMax = oLongBar.offsetWidth - oViewport.children;
+		let newVal = (() => {
+			let oldVal = oViewport.scrollLeft;
+			if (deltaY >= 0) return oldVal - iOneStepLong;
+			else return oldVal + iOneStepLong;
+		})();
+		if (newVal < 0) newVal = 0;
+		if (newVal > iMax) newVal = iMax;
+		oData.iScrollLeft = newVal;
+		oViewport.scrollTo(newVal, 0);
+	}
     // ▼按收到的数据 => 绘制
     function toDraw(aPeaks) {
         aPeaks = aPeaks || oData.aPeaks;
@@ -85,7 +99,7 @@ export default function(){
     }
     // ▼设宽并绘制
     function setCanvasWidthAndDraw(){
-        const iWidth = oDom.oWaveBar?.offsetWidth || 500;
+        const iWidth = oDom.oMyWaveBar?.offsetWidth || 500;
 		oDom.oCanvasDom.width = iWidth;
         if (!oData.oMediaBuffer.duration) return;
 		const {aPeaks, fPerSecPx} = getPeaks(oData.oMediaBuffer, oData.iPerSecPx, 0, iWidth);
@@ -101,13 +115,13 @@ export default function(){
 	}
     // ▼特殊方法和最终返回内容 ========================================
     watch(oDom, (oNew)=>{
-        if (!oNew.oWaveBar) return;
+        if (!oNew.oMyWaveBar) return;
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
             const {width} = entryArr[0].contentRect;
             if (0) console.log('大小位置', width);
         });
-        myObserver.observe(oNew.oWaveBar);
+        myObserver.observe(oNew.oMyWaveBar);
     });
     return {
         oDom,

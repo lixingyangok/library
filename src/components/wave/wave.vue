@@ -2,58 +2,59 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-04 21:26:51
+ * @LastEditTime: 2022-01-05 20:17:29
  * @Description: 
 -->
 <template>
-    <article class="my-wave-bar" ref="oWaveBar">
+    <article class="my-wave-bar" ref="oMyWaveBar">
         <canvas class="canvas" ref="oCanvasDom"/>
-        <!-- ▼舞台▼ -->
-        <div class="wave-wrap" ref="oWaveWrap">
-            <div class="long-bar" ref="oLongBar"
-                @mousewheel="wheelOnWave"
-                @scroll="waveWrapScroll"
+        <!-- ▲画布 -->
+        <!-- ▼横长条的视口 -->
+        <section class="viewport" ref="oViewport"
+            @mousewheel="wheelOnWave"
+            @scroll="waveWrapScroll"
+        >
+            <div ref="oLongBar"
+                :style="{width: `${(oMediaBuffer.duration + 1) * fPerSecPx}px`}"
             >
-                <div :style="{width: `${(oMediaBuffer.duration + 1) * fPerSecPx}px`}">
-                    <ul class="scale">
-                        <!-- <li v-for="(cur) of aShowingArr" :key="cur"
-                            class="one-second"
-                            :class="cur%10==0 ? 'ten-times': ''"
-                            :style="{left: `${cur * fPerSecPx}px`}"
-                        >
-                            <b className="mark"/>
-                            <span>
-                                {{~~(cur/60)}}'{{cur%60}}
-                            </span>
-                        </li> -->
-                    </ul>
-                    <ul class="region-ul">
-                        <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
-                            class="region"
-                            :class="cur.idx === iCurLineIdx ? 'cur' : ''"
-                            :style="{
-                                left: `${cur.start * fPerSecPx}px`,
-                                width: `${(cur.end - cur.start) * fPerSecPx}px`,
-                            }"
-                        >
-                            <i class="idx">{{cur.idx+1}}</i>
-                        </li>
-                    </ul>
-                    <i ref="oPointer" class="pointer"
-                        :class="'playing' ? 'playing': ''"
-                    />
-                </div>
+                <ul class="scale-ul">
+                    <li v-for="(cur) of aShowingArr" :key="cur"
+                        class="one-second"
+                        :class="cur%10==0 ? 'ten-times': ''"
+                        :style="{left: `${cur * fPerSecPx}px`}"
+                    >
+                        <b className="mark"/>
+                        <span>
+                            {{~~(cur/60)}}'{{cur%60}}
+                        </span>
+                    </li>
+                </ul>
+                <ul class="region-ul">
+                    <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
+                        class="region"
+                        :class="cur.idx === iCurLineIdx ? 'cur' : ''"
+                        :style="{
+                            left: `${cur.start * fPerSecPx}px`,
+                            width: `${(cur.end - cur.start) * fPerSecPx}px`,
+                        }"
+                    >
+                        <i class="idx">{{cur.idx+1}}</i>
+                    </li>
+                </ul>
+                <i ref="oPointer" class="pointer"
+                    :class="'playing' ? 'playing': ''"
+                />
             </div>
-        </div>
+        </section>
     </article>
 </template>
 <!--  -->
 <script>
-import { toRefs, computed, toRef } from 'vue';
+import { toRefs, computed } from 'vue';
 import w01, {} from './js/wave.js';
 
 export default {
-    name: 'my-wave',
+    name: 'my-wave-bar',
     props: {
         mediaPath: String,
         aLineArr: {
@@ -72,6 +73,14 @@ export default {
             let start = ~~(oData.iScrollLeft / oData.fPerSecPx) - 1;
             const end = ~~((oData.iScrollLeft + offsetWidth) / oData.fPerSecPx)  + 1;
             return [Math.max(start, 0), end];
+        });
+        const aShowingArr = computed(() => {
+            const arr = [];
+            const [idxVal, end] = aShowingRegion.value;
+            for(let idx = idxVal; idx<end; idx++ ) {
+                arr.push(idx);
+            }
+            return arr;
         });
         const aShowingGaps = computed(() => {
             const {iCurLineIdx, fPerSecPx} = (oData);
@@ -92,6 +101,7 @@ export default {
             ...toRefs(oData),
             ...oFn,
             aShowingGaps,
+            aShowingArr,
         };
     },
 };

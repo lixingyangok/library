@@ -7,7 +7,7 @@
     position: relative;
     max-width: 100%;
 	height: var(--total-height);
-    overflow-x: hidden;
+    overflow: hidden;
     background: #000;
     &::before{
         content: "";
@@ -19,42 +19,36 @@
         position: absolute;
         z-index: 3;
     }
-	.canvas{
-        display: block;
-        width: 100%;
-        margin-top: var(--canvas-top);
-		height: var(--canvas-height);
-    }
-    .wave-wrap{
-		width: 100%;
-		position: absolute;
-        top: 0px;
-        left: 0px;
-        overflow-x: auto !important;
-    }
 }
 
-
-.wave-wrap{
-    .long-bar{
-        overflow-x: auto;
-        overflow-y: hidden;
-        max-width: 100%;
-        height: 100%;
-        &::-webkit-scrollbar{
-            height: calc(var(--total-height) - var(--canvas-top) - var(--canvas-height));
-            background: transparent;
-        }
-        &::-webkit-scrollbar-thumb{
-            background: #00c800;
-        }
-        >*{
-            height: 100%;
-        }
-    }
+.canvas{
+	display: block;
+	width: 100%;
+	margin-top: var(--canvas-top);
+	height: var(--canvas-height);
 }
 
-.scale{
+.viewport{
+	overflow-x: auto;
+	overflow-y: hidden;
+	max-width: 100%;
+	height: 100%;
+	position: absolute;
+    top: 0;
+    left: 0;
+	&::-webkit-scrollbar{
+		height: calc(var(--total-height) - var(--canvas-top) - var(--canvas-height));
+		background: transparent;
+	}
+	&::-webkit-scrollbar-thumb{
+		background: #00c800;
+	}
+	>*{
+		height: 100%;
+	}
+}
+
+.scale-ul{
     display: flex;
     position: relative;
     height: var(--canvas-top);
