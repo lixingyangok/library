@@ -7,7 +7,7 @@ const fs = require('fs');
 const fsPromises = require('fs').promises;
 
 // ▼ 实际上1参接收的是一个Blob对象
-export async function fileToBuffer(oFile, isWantFakeBuffer=false){
+export async function fileToBuffer(oFile, bGetFake=false){
 	if (!oFile) return {};
 	let resolveFn = xx => xx;
 	const promise = new Promise(resolve => resolveFn = resolve);
@@ -19,7 +19,7 @@ export async function fileToBuffer(oFile, isWantFakeBuffer=false){
 			console.log('读取波形 buffer 出错\n', err);
 		});
 		audioContext = null; // 如果不销毁audioContext对象的话，audio标签是无法播放的
-		if (isWantFakeBuffer) buffer = getFakeBuffer(buffer);
+		if (bGetFake) buffer = getFakeBuffer(buffer);
 		resolveFn(buffer);
 	};
 	Object.assign(new FileReader(), {

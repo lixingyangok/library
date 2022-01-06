@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-06 20:26:01
+ * @LastEditTime: 2022-01-06 20:35:37
  * @Description: 
 -->
 <template>
@@ -19,9 +19,8 @@
                 :i-cur-line-idx="iCurLineIdx"
             />
             <article class="wave-below" >
-                时长：{{oBuffer.sDuration_}}&emsp;
+                时长：{{'oBuffer'.sDuration_}}&emsp;
             </article>
-            <!--  -->
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
                 <textarea v-model="aLineArr[iCurLineIdx].text">
                     

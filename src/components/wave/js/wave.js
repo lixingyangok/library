@@ -2,6 +2,7 @@ import {reactive, getCurrentInstance, watch, computed} from 'vue';
 import {fileToBuffer} from '../../../common/js/pure-fn.js';
 
 export default function(){
+    let aPeaksData = []; // 波形数据
     const oDom = reactive({ // 从上到下，从外到内
         // oMyWaveBar: null, // 最外层
         oCanvasDom: null, // canvas画布
@@ -12,9 +13,8 @@ export default function(){
     });
     const oData = reactive({
         oMediaBuffer: {}, // 媒体的 buffer
-        aPeaks: [],
         playing: false,
-        iPerSecPx: 100,
+        iPerSecPx: 70,
         fPerSecPx: 0,
 		iHeight: 0.3,
         iScrollLeft: 0,
@@ -64,10 +64,10 @@ export default function(){
             const {aPeaks, fPerSecPx} = getPeaks(
                 oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth,
             );
-            toDraw(aPeaks);
             oData.iScrollLeft = Math.max(0, scrollLeft);
             oData.fPerSecPx = fPerSecPx;
-            oData.aPeaks = aPeaks;
+            aPeaksData = aPeaks;
+            toDraw();
         },
         toPlay,
     };
@@ -89,19 +89,18 @@ export default function(){
 		oViewport.scrollTo(newVal, 0);
 	}
     // ▼按收到的数据 => 绘制
-    function toDraw(aPeaks) {
-        aPeaks = aPeaks || oData.aPeaks;
+    function toDraw() {
         cleanCanvas();
         const { iHeight } = oData; // 波形高
         const {oCanvasDom} = oDom
-        const fCanvasWidth = aPeaks.length / 2;
+        const fCanvasWidth = aPeaksData.length / 2;
         const halfHeight = oCanvasDom.height / 2;
         const Context = oCanvasDom.getContext('2d');
         let idx = 0;
         Context.fillStyle = '#55c655';
         while (idx < fCanvasWidth) {
-            const cur1 = aPeaks[idx * 2] * iHeight | 0;
-            const cur2 = aPeaks[idx * 2 + 1] * iHeight | 0;
+            const cur1 = aPeaksData[idx * 2] * iHeight | 0;
+            const cur2 = aPeaksData[idx * 2 + 1] * iHeight | 0;
             if (cur1 % 1 > 0 || cur2 % 1 > 0) debugger;
             Context.fillRect(idx, (halfHeight - cur1), 1, cur1 - cur2);
             idx++;
@@ -111,14 +110,14 @@ export default function(){
     }
     // ▼设宽并绘制
     function setCanvasWidthAndDraw(){
+        const canGo = oDom.oViewport && oData?.oMediaBuffer?.duration;
+        if (!canGo) return;
         const iWidth = oDom.oViewport?.offsetWidth || 500;
 		oDom.oCanvasDom.width = iWidth;
-        if (!oData.oMediaBuffer.duration) return;
 		const {aPeaks, fPerSecPx} = getPeaks(oData.oMediaBuffer, oData.iPerSecPx, 0, iWidth);
-		if (!aPeaks) return;
-        toDraw(aPeaks);
 		oData.fPerSecPx = fPerSecPx;
-		oData.aPeaks = aPeaks;
+        aPeaksData = aPeaks;
+        toDraw();
 	}
     // ▼清空画布
 	function cleanCanvas() {
