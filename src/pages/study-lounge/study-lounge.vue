@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-06 19:29:24
+ * @LastEditTime: 2022-01-06 20:26:01
  * @Description: 
 -->
 <template>
@@ -12,60 +12,7 @@
         </section>
         <!-- 左右分界 -->
         <section class="right">
-            <video controls ref="oAudio" :src="sMediaSrc" >
-                <!-- <source :src="sMediaSrc"/> -->
-            </video>
-            <article class="wave-bar" ref="oWaveBar"
-                :style="{
-                    '--canvas-top': `${iCanvasTop}px`,
-                    '--canvas-height': `${iCanvasHeight}px`,
-                    '--line-top': `${iCanvasTop + iCanvasHeight / 2}px`,
-                }"
-            >
-                <canvas class="canvas" ref="oCanvasDom" 
-                    :height="iCanvasHeight"
-                    :style="{height: `${iCanvasHeight}px`}"
-                />
-                <div class="canvas-coat" ref="oCanvasCoat" >
-                    <div class="canvas-neighbor"
-                        ref="oCanvasNeighbor"
-                        @mousewheel="wheelOnWave"
-                        @scroll="waveWrapScroll"
-                    >
-                        <!-- ▼刻度的容器 -->
-                        <div :style="{width: `${(oBuffer.duration + 1) * fPerSecPx}px`}">
-                            <ul class="scale">
-                                <li v-for="(cur) of aShowingArr" :key="cur"
-                                    class="one-second"
-                                    :class="cur%10==0 ? 'ten-times': ''"
-                                    :style="{left: `${cur * fPerSecPx}px`}"
-                                >
-                                    <b className="mark"/>
-                                    <span>
-                                        {{~~(cur/60)}}'{{cur%60}}
-                                    </span>
-                                </li>
-                            </ul>
-                            <ul class="region-ul">
-                                <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
-                                    class="region"
-                                    :class="cur.idx === iCurLineIdx ? 'cur' : ''"
-                                    :style="{
-                                        left: `${cur.start * fPerSecPx}px`,
-                                        width: `${(cur.end - cur.start) * fPerSecPx}px`,
-                                    }"
-                                >
-                                    <i class="idx">{{cur.idx+1}}</i>
-                                </li>
-                            </ul>
-                            <i ref="oPointer" class="pointer"
-                                :class="playing ? 'playing': ''"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </article>
-            <br/>
+            <br/><br/>
             <MyWave v-if="sMediaSrc"
                 :media-path="sMediaSrc"
                 :a-line-arr="aLineArr"
@@ -115,42 +62,7 @@ export default {
     },
     setup(){
         const oData = toRefs(f1());
-        const aShowingRegion = computed(() => {
-            const oWaveWrap = oData.oCanvasNeighbor?.value;
-            if (!oWaveWrap) return [0, 0];
-            const fPerSecPx = oData.fPerSecPx.value;
-            const iScrollLeft = oData.iScrollLeft.value;
-            const offsetWidth = oWaveWrap.offsetWidth;
-            let start = ~~(iScrollLeft / fPerSecPx - 1);
-            const end = ~~((iScrollLeft + offsetWidth) / fPerSecPx + 1);
-            return [Math.max(start, 0), end];
-        });
-        const aShowingArr = computed(() => {
-            const arr = [];
-            const [idxVal, end] = aShowingRegion.value;
-            for(let idx = idxVal; idx<end; idx++ ) {
-                arr.push(idx);
-            }
-            return arr;
-        });
-        const aShowingGaps = computed(() => {
-            const {aLineArr=[], iCurLineIdx, fPerSecPx} = (oData);
-            const myArr = [];
-            let [nowSec, endSec] = aShowingRegion.value;
-            for (let idx = 0, len = aLineArr.value.length; idx < len; idx++){
-                const {end} = aLineArr.value[idx];
-                const IsShow = end > nowSec || end > endSec;
-                if (!IsShow) continue;
-                aLineArr.value[idx].idx = idx;
-                myArr.push(aLineArr.value[idx]);
-                if (end > endSec) break;
-            }
-            return myArr;
-        });
         return {
-            aShowingRegion,
-            aShowingArr,
-            aShowingGaps,
             ...oData,
         };
     },
