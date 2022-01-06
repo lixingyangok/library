@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import { createApp, ref } from 'vue';
 import App from './App.vue';
 import router from './router/router.js';
 import store from './store/store.js';
@@ -75,12 +75,24 @@ app.mount('#app');
 
 exec('wmic logicaldisk get name', function(error, stdout, stderr){
     if (error || stderr) {
-        console.error(`出错了\n: ${error || stderr}`);
-        return fnReject(error || stderr);
+        console.error(`查询盘符出错了\n: ${error || stderr}`);
+        return;
     }
     const arr = stdout.match(/\S+/g).slice(1);
     document.body.disks = arr;
     console.log('盘符', arr);
-    // app.mount('#app');
 });
+
+
+// 参考并改造：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/__lookupGetter__
+const oProtoType = Object.getPrototypeOf(ref());
+Object.defineProperty(oProtoType, 'v', {
+    get: Object.getOwnPropertyDescriptor(oProtoType, "value").get,
+    set: Object.getOwnPropertyDescriptor(oProtoType, "value").set,
+});
+
+// const test = ref(123);
+// test.v = 456;
+// console.log(test.v); // 456
+
 
