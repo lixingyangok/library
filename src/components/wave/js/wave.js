@@ -18,6 +18,7 @@ export default function(){
         fPerSecPx: 0,
 		iHeight: 0.3,
         iScrollLeft: 0,
+        drawing: false,
     });
     const oInstance = getCurrentInstance();
     const oCurLine = computed(()=>{
@@ -137,7 +138,7 @@ export default function(){
 			const { currentTime: cTime } = oDom.oAudio;
 			const {end} = oCurLine.value;
 			if (cTime < end && oData.playing) {
-				return style.left = `${cTime * oData.fPerSecPx-1}px`;
+				return style.left = `${~~(cTime * oData.fPerSecPx)}px`;
 			}
 			oDom.oAudio.pause();
 			clearInterval(oData.playing);
@@ -145,6 +146,63 @@ export default function(){
 		}, ~~(1000 / 70)); //每秒执行次数70
 		oData.playing = playing;
 	}
+    function saveBlob(){
+		// type: "application/zip"
+		const text = JSON.stringify(oData.oBuffer);
+		const blob = new Blob([text], {type: "application/json"});
+		const downLink = Object.assign(document.createElement('a'), {
+			download: 'fileName.blob',
+			href: URL.createObjectURL(blob),
+		});
+		// document.body.appendChild(downLink); // 链接插入到页面
+		downLink.click();
+		// document.body.removeChild(downLink); // 移除下载链接
+	}
+    function zoomWave(ev){
+		if (oData.drawing) return; //防抖
+		const {iPerSecPx: perSecPxOld, oBuffer} = oData;
+		const {deltaY, clientX = window.innerWidth / 2} = ev;
+		const [min, max, iStep] = [35, 250, 20]; //每秒最小/大宽度（px），缩放步幅
+		// ▼说明：小到头了就不要再缩小了，大到头了也就要放大了
+		if (deltaY > 0 ? perSecPxOld <= min : perSecPxOld >= max){
+			oData.drawing = false;
+			return;
+		}
+		console.log('开始缩放');
+		const {parentElement:{offsetLeft}, children:[markBar]} = oDom.oViewport;
+		const iPerSecPx = (() => { //新-每秒宽度
+			const result = perSecPxOld + iStep * (deltaY <= 0 ? 1 : -1);
+			if (result < min) return min;
+			else if (result > max) return max;
+			return result;
+		})();
+		const fPerSecPx = (()=>{ // 新-每秒宽度（精确）
+			const sampleSize = ~~(oBuffer.sampleRate / iPerSecPx); // 每一份的点数 = 每秒采样率 / 每秒像素
+			return oBuffer.length / sampleSize / oBuffer.duration; 
+		})();
+		markBar.style.width = fPerSecPx * oBuffer.duration + 'px';
+		const iNewLeftPx = getPointSec({clientX}) * fPerSecPx - (clientX - offsetLeft);
+		oPointer.value.style.left = `${oAudio.value.currentTime * fPerSecPx}px`;
+		oData.iPerSecPx = iPerSecPx;
+		oData.drawing = true;
+		oDom.oViewport.scrollLeft = iNewLeftPx; // 在此触发了缩放
+		if (iNewLeftPx <= 0) {
+			console.log('小于0 =', iNewLeftPx);
+			waveWrapScroll();
+		}
+	}
+    // 改变波形高度
+	function changeWaveHeigh(deltaY) {
+		let { iHeight } = oData;
+		const [min, max, iStep] = [0.1, 3, 0.15];
+		if (deltaY >= 0) iHeight += iStep;
+		else iHeight -= iStep;
+		if (iHeight < min) iHeight = min;
+		if (iHeight > max) iHeight = max;
+		oData.iHeight = iHeight;
+		toDraw();
+	}
+    // =============================================================
     // ▼特殊方法和最终返回内容 ========================================
     watch(oDom, (oNew)=>{
         if (!oNew.oViewport) return;

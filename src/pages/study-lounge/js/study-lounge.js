@@ -1,11 +1,6 @@
 import {toRefs, reactive, ref, onMounted} from 'vue';
 import {fileToBuffer, SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
-// import {WaveMaker} from './wave.js';
 const ipcRenderer = require("electron").ipcRenderer;
-
-// console.log('waveDom', oData.oWaveBar);
-// const w01 = new WaveMaker({a:1});
-// window.wv = w01;
 
 const oCanvasDom = ref(null);
 const oCanvasNeighbor = ref(null); // oWaveWrap
@@ -110,7 +105,7 @@ export function f1(){
 		if (ctrlKey) {
 			zoomWave(ev);
 		} else if (altKey) {
-			changeWaveHeigh(wheelDeltaY);
+			// changeWaveHeigh(wheelDeltaY);
 		} else {
 			scrollToFn(wheelDeltaY);
 		}
@@ -158,54 +153,6 @@ export function f1(){
 		const Context = oCanvas.getContext('2d');
 		// oCanvas.width = width;
 		Context.clearRect(0, 0, 5_000, 200);
-	}
-	// ▼播放
-	async function toPlay(isFromHalf) {
-		clearInterval(oData.playing); //把之前播放的关闭再说
-		const { fPerSecPx } = oData;
-		const { start, end } = oData.aLineArr[oData.iCurLineIdx];
-		const long = end - start;
-		const Audio = oAudio.value;
-		if (!Audio) return console.log('有没音频对象');
-		const { style={} } = oPointer.value || {}; 
-		const fStartTime = start + (isFromHalf ? long * 0.4 : 0);
-		style.left = `${fStartTime * fPerSecPx}px`;
-		Audio.currentTime = fStartTime;
-		Audio.play && Audio.play();
-		const playing = setInterval(() => {
-			const { currentTime: cTime } = Audio;
-			const oCur = oData.aLineArr[oData.iCurLineIdx]; 
-			if (cTime < oCur.end && oData.playing) {
-				return style.left = `${cTime * oData.fPerSecPx}px`;
-			}
-			Audio.pause();
-			clearInterval(oData.playing);
-			oData.playing = false;
-		}, ~~(1000 / 70)); //每秒执行次数70
-		oData.playing = playing;
-	}
-	function saveBlob(){
-		// type: "application/zip"
-		const text = JSON.stringify(oData.oBuffer);
-		const blob = new Blob([text], {type: "application/json"});
-		const downLink = Object.assign(document.createElement('a'), {
-			download: 'fileName.blob',
-			href: URL.createObjectURL(blob),
-		});
-		// document.body.appendChild(downLink); // 链接插入到页面
-		downLink.click();
-		// document.body.removeChild(downLink); // 移除下载链接
-	}
-	// 改变波形高度
-	function changeWaveHeigh(deltaY) {
-		let { iHeight } = oData;
-		const [min, max, iStep] = [0.1, 3, 0.15];
-		if (deltaY >= 0) iHeight += iStep;
-		else iHeight -= iStep;
-		if (iHeight < min) iHeight = min;
-		if (iHeight > max) iHeight = max;
-		oData.iHeight = iHeight;
-		toDraw();
 	}
 	function zoomWave(ev){
 		if (oData.drawing) return; //防抖
@@ -300,8 +247,6 @@ export function f1(){
 		...{ // fn
 			wheelOnWave,
 			waveWrapScroll,
-			toPlay,
-			saveBlob,
 		},
     });
 };

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-05 21:06:54
+ * @LastEditTime: 2022-01-06 19:29:24
  * @Description: 
 -->
 <template>
@@ -72,21 +72,8 @@
                 :i-cur-line-idx="iCurLineIdx"
             />
             <article class="wave-below" >
-                <br/>
                 时长：{{oBuffer.sDuration_}}&emsp;
-                文件：{{sFilePath}}
             </article>
-            <div>
-                <button @click="()=>toPlay()">
-                    播放
-                </button>
-                <button @click="()=>toPlay(true)" >
-                    播放50%
-                </button>
-                <button @click="saveBlob" >
-                    保存saveBlob
-                </button>
-            </div>
             <!--  -->
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
                 <textarea v-model="aLineArr[iCurLineIdx].text">
