@@ -29,7 +29,7 @@ export default function(){
     // console.log('oInstance\n', oInstance);
     const oFn = {
         async audioBufferGetter(sPath){
-            const oBuffer = await fetch(sPath).then(res => {
+            const oMediaBuffer = await fetch(sPath).then(res => {
                 // 8M-1小时的《爱情与金钱》 加载文件: 145.626953125 ms
                 return res.blob();
             }).then(res=>{
@@ -38,8 +38,8 @@ export default function(){
             }).catch(res=>{
                 console.log('读取媒体buffer未成功\n', res);
             });
-            if (!oBuffer) return;
-            oData.oMediaBuffer = oBuffer;
+            if (!oMediaBuffer) return;
+            oData.oMediaBuffer = oMediaBuffer;
             setCanvasWidthAndDraw();
         },
         // ▼滚轮动了
@@ -67,6 +67,7 @@ export default function(){
             toDraw(aPeaks);
             oData.iScrollLeft = Math.max(0, scrollLeft);
             oData.fPerSecPx = fPerSecPx;
+            oData.aPeaks = aPeaks;
         },
         toPlay,
     };
@@ -160,15 +161,14 @@ export default function(){
 	}
     function zoomWave(ev){
 		if (oData.drawing) return; //防抖
-		const {iPerSecPx: perSecPxOld, oBuffer} = oData;
+		const {iPerSecPx: perSecPxOld, oMediaBuffer} = oData;
 		const {deltaY, clientX = window.innerWidth / 2} = ev;
 		const [min, max, iStep] = [35, 250, 20]; //每秒最小/大宽度（px），缩放步幅
 		// ▼说明：小到头了就不要再缩小了，大到头了也就要放大了
-		if (deltaY > 0 ? perSecPxOld <= min : perSecPxOld >= max){
+		if (deltaY > 0 ? (perSecPxOld <= min) : (perSecPxOld >= max)){
 			oData.drawing = false;
 			return;
 		}
-		console.log('开始缩放');
 		const {parentElement:{offsetLeft}, children:[markBar]} = oDom.oViewport;
 		const iPerSecPx = (() => { //新-每秒宽度
 			const result = perSecPxOld + iStep * (deltaY <= 0 ? 1 : -1);
@@ -177,19 +177,26 @@ export default function(){
 			return result;
 		})();
 		const fPerSecPx = (()=>{ // 新-每秒宽度（精确）
-			const sampleSize = ~~(oBuffer.sampleRate / iPerSecPx); // 每一份的点数 = 每秒采样率 / 每秒像素
-			return oBuffer.length / sampleSize / oBuffer.duration; 
+			const sampleSize = ~~(oMediaBuffer.sampleRate / iPerSecPx); // 每一份的点数 = 每秒采样率 / 每秒像素
+			return oMediaBuffer.length / sampleSize / oMediaBuffer.duration; 
 		})();
-		markBar.style.width = fPerSecPx * oBuffer.duration + 'px';
-		const iNewLeftPx = getPointSec({clientX}) * fPerSecPx - (clientX - offsetLeft);
-		oPointer.value.style.left = `${oAudio.value.currentTime * fPerSecPx}px`;
+        const iNewLeftPx = getPointSec(ev) * fPerSecPx - (clientX - offsetLeft);
+		markBar.style.width = fPerSecPx * oMediaBuffer.duration + 'px';
+		oDom.oPointer.style.left = `${oDom.oAudio.currentTime * fPerSecPx}px`;
 		oData.iPerSecPx = iPerSecPx;
 		oData.drawing = true;
 		oDom.oViewport.scrollLeft = iNewLeftPx; // 在此触发了缩放
-		if (iNewLeftPx <= 0) {
-			console.log('小于0 =', iNewLeftPx);
-			waveWrapScroll();
+		if (iNewLeftPx <= 0) { // 这里情况不明
+			// console.log('小于0 =', iNewLeftPx);
+			oFn.waveWrapScroll();
 		}
+	}
+    // ▼得到点击处的秒数，收受一个事件对象
+	function getPointSec({ clientX }) {
+		const {scrollLeft, parentElement: {offsetLeft}} = oDom.oViewport;
+		const iLeftPx = clientX - offsetLeft + scrollLeft; //鼠标距左边缘的px长度
+		const iNowSec = iLeftPx / oData.fPerSecPx; //当前指向时间（秒）
+		return iNowSec;
 	}
     // 改变波形高度
 	function changeWaveHeigh(deltaY) {
