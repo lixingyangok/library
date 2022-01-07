@@ -1,7 +1,7 @@
 <template>
     <myNav class="left-part" />
     <div class="right-right">
-        <router-view></router-view>
+        <router-view v-if="show" ></router-view>
     </div>
 </template>
 
@@ -13,6 +13,11 @@ export default {
     name: "my-app",
     components: {
         myNav,
+    },
+    data(){
+        return {
+            show: true,
+        };
     },
     created(){
         ipcRenderer.on('asynchronous-reply', (event, ...arg) => {

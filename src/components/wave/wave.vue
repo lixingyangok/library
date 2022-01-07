@@ -2,14 +2,14 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-06 21:10:37
+ * @LastEditTime: 2022-01-07 20:39:45
  * @Description: 
 -->
 <template>
+    <audio controls ref="oAudio"
+        v-show="1" :src="mediaPath"
+    ></audio>
     <article class="my-wave-bar" ref="oMyWaveBar">
-        <video controls ref="oAudio" :src="mediaPath" v-show="0">
-            <!-- <source :src="sMediaSrc"/> -->
-        </video>
         <canvas class="canvas" ref="oCanvasDom"/>
         <!-- ▲画布 -->
         <!-- ▼横长条的视口 -->
@@ -44,9 +44,7 @@
                         <i class="idx">{{cur.idx+1}}</i>
                     </li>
                 </ul>
-                <i ref="oPointer" class="pointer"
-                    :class="playing ? 'playing': ''"
-                />
+                <i ref="oPointer" class="pointer" />
             </div>
         </section>
     </article>

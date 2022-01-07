@@ -153,15 +153,12 @@
 }
 
 .pointer{
-    position: absolute;
-    top: var(--canvas-top);
     width: 1px;
     height: var(--canvas-height);
+    position: absolute;
+    top: var(--canvas-top);
     background: white;
     opacity: 0;
     transition: 0.4s opacity;
-    &[class~=playing]{
-        opacity: 1;
-    }
 }
 
