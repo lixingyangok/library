@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-05 21:15:56
+ * @LastEditTime: 2022-01-06 21:10:37
  * @Description: 
 -->
 <template>
@@ -53,6 +53,9 @@
     <br/>
     <button @click="toPlay()">
         实验
+    </button>
+    <button @click="saveBlob()">
+        保存
     </button>
 </template>
 <!--  -->

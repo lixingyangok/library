@@ -1,15 +1,25 @@
-import { createApp, ref } from 'vue';
+import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router/router.js';
 import store from './store/store.js';
-
+import store2 from 'store2';
+import { setGlobal } from './common/js/global-setting.js';
+// ▼ 样式
 import './common/style/minireset.css';
 import './common/style/global.scss';
 
-const {exec} = require('child_process'); 
+// ▼ require
+const {exec} = require('child_process');
 const sqlite3 = require('sqlite3').verbose();
+
+// ▼ 其它声明
+const isDev = process.env.IS_DEV === "true";
 const db = new sqlite3.Database('D:/myDB.db');
-const isDev = process.env.IS_DEV == "true" ? true : false;
+const stmt = db.prepare("INSERT INTO dev_history VALUES (?)");
+
+// ▼ 其它动作
+window.lg = store2; // lg = local-Storage
+setGlobal();
 
 // ▼查询 exe 位置
 // const { remote } = require('electron');
@@ -19,59 +29,22 @@ const isDev = process.env.IS_DEV == "true" ? true : false;
 // console.log('开始测试----\n', db);
 // console.log('__dirname\n', __dirname);
 
-const stmt = db.prepare("INSERT INTO dev_history VALUES (?)");
 stmt.run(new Date().toLocaleString());
 stmt.finalize();
 db.each("SELECT count(*) FROM dev_history", function(err, row) {
     console.log('开发记录数量：', row['count(*)']);
 });
-
 // ▼建表的语句
 // db.serialize(function() {
 //     db.run("CREATE TABLE dev_history (info TEXT)");
 // });
 // db.close();
 
-function toClone(source) {
-    if (!(source instanceof Object && typeof source == 'object' && source)) return source; //不处理非数组、非对象
-    let newObj = new source.constructor;
-    let iterator = source instanceof Array ? source.entries() : Object.entries(source);
-    for (let [key, val] of iterator) {
-        newObj[key] = val instanceof Object ? toClone(val) : val;
-    }
-    return newObj;
-}
-
-// ▼自定义方法
-Object.defineProperties(Object.prototype, {
-    '$dc': { // deep copy = 深拷贝
-        value: function () {
-            let val = null;
-            try {
-                val = toClone(this);
-            } catch (err) {
-                val = JSON.parse(JSON.stringify(this));
-            }
-            return val;
-        },
-    },
-    '$cpFrom': { // copy from = 将本对象的值修改为目标对象的值
-        value: function (source) {
-            for (let key of Object.keys(this)) {
-                if (key in source) this[key] = source[key];
-            }
-            return this;
-        },
-    },
-});
-
-const app = createApp(App);
-app.use(router);
-app.use(store);
-
-const sTail = isDev ? '  ★开发★' : '  发布了';
-document.title += sTail;
-app.mount('#app');
+// ▼ app
+const myApp = createApp(App);
+myApp.use(router);
+myApp.use(store);
+myApp.mount('#app');
 
 exec('wmic logicaldisk get name', function(error, stdout, stderr){
     if (error || stderr) {
@@ -80,19 +53,10 @@ exec('wmic logicaldisk get name', function(error, stdout, stderr){
     }
     const arr = stdout.match(/\S+/g).slice(1);
     document.body.disks = arr;
-    console.log('盘符', arr);
+    console.log('盘符：', arr);
 });
 
-
-// 参考并改造：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/__lookupGetter__
-const oProtoType = Object.getPrototypeOf(ref());
-Object.defineProperty(oProtoType, 'v', {
-    get: Object.getOwnPropertyDescriptor(oProtoType, "value").get,
-    set: Object.getOwnPropertyDescriptor(oProtoType, "value").set,
-});
-
-// const test = ref(123);
-// test.v = 456;
-// console.log(test.v); // 456
-
+// ▼调试
+const sTail = isDev ? '  ★开发★' : '  发布了';
+document.title += sTail;
 

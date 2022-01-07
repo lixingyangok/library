@@ -3,8 +3,6 @@
  * @LastEditors: 李星阳
  * @Description: 
  */ 
-const fs = require('fs');
-const fsPromises = require('fs').promises;
 
 // ▼ 实际上1参接收的是一个Blob对象
 export async function fileToBuffer(oFile, bGetFake=false){
@@ -43,8 +41,15 @@ export function secToStr(fSecond, forShow){
 	return sTime + iTail;
 }
 
-// ▲上方为启动项
-// ▼下方为待用项
+// ▼听写页加载时调用
+export async function getChannelDataFromBlob(oBlob){
+	const arrayBuffer = await oBlob.arrayBuffer();
+	const aInt8Array = new Int8Array(arrayBuffer);
+	return aInt8Array;
+}
+
+// ▲上方为启动项 ============================================================
+// ▼下方为待用项 ============================================================
 
 // ▼字符转字幕数据，用于显示
 export function SubtitlesStr2Arr(sSubtitles) {
@@ -63,9 +68,6 @@ export function SubtitlesStr2Arr(sSubtitles) {
 		return {start, end, text}; // fixTime({start, end, text});
 	});
 }
-
-
-
 
 // ▼时间轴的时间转秒
 export function getSeconds(text) {
@@ -94,12 +96,7 @@ export function fileToStrings(oFile) {
 	return oPromise;
 }
 
-// ▼听写页加载时调用
-export async function getChannelDataFromBlob(oBlob){
-	const arrayBuffer = await oBlob.arrayBuffer();
-	const aInt8Array = new Int8Array(arrayBuffer);
-	return aInt8Array;
-}
+
 
 
 // ▼将音频 buffer 转为假对象

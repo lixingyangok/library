@@ -1,5 +1,5 @@
 import {reactive, getCurrentInstance, watch, computed} from 'vue';
-import {fileToBuffer} from '../../../common/js/pure-fn.js';
+import {fileToBuffer, getChannelDataFromBlob} from '../../../common/js/pure-fn.js';
 
 export default function(){
     let aPeaksData = []; // 波形数据
@@ -12,7 +12,7 @@ export default function(){
         oPointer: null,
     });
     const oData = reactive({
-        oMediaBuffer: {}, // 媒体的 buffer
+        oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
         iPerSecPx: 70,
         fPerSecPx: 0,
@@ -27,8 +27,20 @@ export default function(){
         ];
     });
     // console.log('oInstance\n', oInstance);
+    const sLeft = 'tube://a/?path=';
+    const sBlobPath = sLeft + 'D:/Program Files (gree)/my-library/temp-data/fileName.blob';
+    console.time('得到本地blob');
+    fetch(sBlobPath).then(res => {
+        return res.blob();
+    }).then(res=>{
+        return getChannelDataFromBlob(res);
+    }).then(res=>{
+        console.timeEnd('得到本地blob');
+        if(0) console.log('波形数据', res);
+    });
     const oFn = {
         async audioBufferGetter(sPath){
+            console.time('加载音频');
             const oMediaBuffer = await fetch(sPath).then(res => {
                 // 8M-1小时的《爱情与金钱》 加载文件: 145.626953125 ms
                 return res.blob();
@@ -39,6 +51,7 @@ export default function(){
                 console.log('读取媒体buffer未成功\n', res);
             });
             if (!oMediaBuffer) return;
+            console.timeEnd('加载音频');
             oData.oMediaBuffer = oMediaBuffer;
             setCanvasWidthAndDraw();
         },
@@ -70,6 +83,7 @@ export default function(){
             toDraw();
         },
         toPlay,
+        saveBlob,
     };
     // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
@@ -148,8 +162,9 @@ export default function(){
 	}
     function saveBlob(){
 		// type: "application/zip"
-		const text = JSON.stringify(oData.oBuffer);
-		const blob = new Blob([text], {type: "application/json"});
+		// const text = JSON.stringify(oData.oBuffer);
+		// const blob = new Blob([text], {type: "application/json"});
+		const blob = oData.oMediaBuffer.oChannelDataBlob_;
 		const downLink = Object.assign(document.createElement('a'), {
 			download: 'fileName.blob',
 			href: URL.createObjectURL(blob),
