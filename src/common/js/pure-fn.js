@@ -5,24 +5,25 @@
  */ 
 
 // ▼ 实际上1参接收的是一个Blob对象
-export async function fileToBuffer(oFile, bGetFake=false){
+export async function fileToBuffer(oFile){
 	if (!oFile) return {};
-	const t01 = new Date();
+	const iBeginTime = new Date();
 	let resolveFn = xx => xx;
 	const promise = new Promise(resolve => resolveFn = resolve);
 	const onload = async evt => {
-		const arrayBuffer = evt.currentTarget.result;
+		const {result} = evt.currentTarget; // arrayBuffer
 		let audioContext = new window.AudioContext();
 		// 近8分钟音频耗时 1,117ms
-		let buffer = await audioContext.decodeAudioData(arrayBuffer).catch(err=>{
-			console.log('读取波形 buffer 出错\n', err);
+		const oRealBuffer = await audioContext.decodeAudioData(result).catch(err=>{
+			console.log('decodeAudioData() 出错\n', err);
 		});
-		audioContext = null; // 如果不销毁audioContext对象的话，audio标签是无法播放的
-		if (bGetFake) buffer = getFakeBuffer(buffer);
-		resolveFn(buffer);
+		audioContext = null; // 据说：如果不销毁audioContext，audio标签无法播放
+		const oBuffer = getFakeBuffer(oRealBuffer);
 		const sizeMB = (oFile.size/1024/1024).toFixed(2);
-		const spentSeconds = ((new Date() - t01) / 1000).toFixed(2);
-		console.log(`■ 加载波形信息：\n■ 体积：${sizeMB}MB / 时长：${buffer.sDuration_} / 加载耗时：${spentSeconds}秒\n`);
+		const fElapsedSec = ((new Date() - iBeginTime) / 1000).toFixed(2) * 1;
+		oBuffer.fElapsedSec = fElapsedSec;
+		resolveFn(oBuffer);
+		console.log(`■ 波形解析信息：\n■ 体积：${sizeMB}MB / 时长：${oBuffer.sDuration_} / 加载耗时：${fElapsedSec}秒\n`);
 	};
 	Object.assign(new FileReader(), {
 		onload,

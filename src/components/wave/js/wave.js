@@ -1,4 +1,4 @@
-import {reactive, getCurrentInstance, watch, computed} from 'vue';
+import {reactive, getCurrentInstance, watch, computed, onMounted} from 'vue';
 import {fileToBuffer, getChannelDataFromBlob} from '../../../common/js/pure-fn.js';
 
 export default function(){
@@ -19,6 +19,7 @@ export default function(){
 		iHeight: 0.3,
         iScrollLeft: 0,
         drawing: false,
+        sWaveBarClassName: '',
     });
     const oInstance = getCurrentInstance();
     const oCurLine = computed(()=>{
@@ -228,7 +229,7 @@ export default function(){
     // =============================================================
     // ▼特殊方法和最终返回内容 ========================================
     watch(oDom, (oNew)=>{
-        if (!oNew.oViewport) return;
+        if (!oNew.oPointer) return;
         cleanCanvas();
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
@@ -236,6 +237,11 @@ export default function(){
             if (0) console.log('大小位置', width);
         });
         myObserver.observe(oNew.oViewport);
+    });
+    onMounted(()=>{
+        setTimeout(()=>{
+            oData.sWaveBarClassName = 'waist100';
+        }, 100);
     });
     return {
         oDom,

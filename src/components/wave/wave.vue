@@ -2,14 +2,16 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-07 20:39:45
+ * @LastEditTime: 2022-01-07 21:49:28
  * @Description: 
 -->
 <template>
     <audio controls ref="oAudio"
         v-show="1" :src="mediaPath"
     ></audio>
-    <article class="my-wave-bar" ref="oMyWaveBar">
+    <article class="my-wave-bar" ref="oMyWaveBar"
+        :class="sWaveBarClassName"
+    >
         <canvas class="canvas" ref="oCanvasDom"/>
         <!-- ▲画布 -->
         <!-- ▼横长条的视口 -->
@@ -17,7 +19,7 @@
             @mousewheel="wheelOnWave"
             @scroll="waveWrapScroll"
         >
-            <div ref="oLongBar"
+            <div class="long-bar" ref="oLongBar"
                 :style="{width: `${(oMediaBuffer.duration + 1) * fPerSecPx}px`}"
             >
                 <ul class="scale-ul">
