@@ -2,17 +2,27 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 15:18:43
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-04 15:35:26
+ * @LastEditTime: 2022-01-07 19:49:56
  * @Description: 
 -->
 <template>
-    <ul class="nav-ul" >
-        <li v-for="(cur,idx) of aRoutes" :key="idx" >
-            <router-link :to="cur.path" >
-                {{cur.name_}}    
-            </router-link>
-        </li>
-    </ul>
+    <div class="outter" >
+        <ul class="nav-ul" >
+            <li v-for="(cur,idx) of aRoutes" :key="idx" >
+                <router-link :to="cur.path" >
+                    {{cur.name_}}    
+                </router-link>
+            </li>
+        </ul>
+        <br/>
+        <button @click="toF5()">
+            页面刷新
+        </button>
+        <br/>
+        <button @click="toF5(true)">
+            刷新清空
+        </button>
+    </div>
 </template>
 
 <script>
@@ -24,6 +34,18 @@ export default {
         return {
             aRoutes: routes,
         };
+    },
+    created(){
+
+    },
+    methods:{
+        async toF5(willClear){
+            if (willClear) console.clear();
+            console.log('\n刷新');
+            this.$root.show = false;
+            await this.$nextTick();
+            this.$root.show = true;
+        },
     },
 };
 </script>

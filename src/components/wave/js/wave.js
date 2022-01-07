@@ -14,7 +14,7 @@ export default function(){
     const oData = reactive({
         oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
-        iPerSecPx: 70,
+        iPerSecPx: 100,
         fPerSecPx: 0,
 		iHeight: 0.3,
         iScrollLeft: 0,
@@ -40,7 +40,7 @@ export default function(){
     });
     const oFn = {
         async audioBufferGetter(sPath){
-            console.time('加载音频');
+            console.time('■ 加载音频总计');
             const oMediaBuffer = await fetch(sPath).then(res => {
                 // 8M-1小时的《爱情与金钱》 加载文件: 145.626953125 ms
                 return res.blob();
@@ -51,7 +51,7 @@ export default function(){
                 console.log('读取媒体buffer未成功\n', res);
             });
             if (!oMediaBuffer) return;
-            console.timeEnd('加载音频');
+            console.timeEnd('■ 加载音频总计');
             oData.oMediaBuffer = oMediaBuffer;
             setCanvasWidthAndDraw();
         },
@@ -116,6 +116,7 @@ export default function(){
             const cur1 = aPeaksData[idx * 2] * iHeight | 0;
             const cur2 = aPeaksData[idx * 2 + 1] * iHeight | 0;
             if (cur1 % 1 > 0 || cur2 % 1 > 0) debugger;
+            // ▼参数依次为：x, y, with, height
             Context.fillRect(idx, (halfHeight - cur1), 1, cur1 - cur2);
             idx++;
         }
@@ -124,9 +125,9 @@ export default function(){
     }
     // ▼设宽并绘制
     function setCanvasWidthAndDraw(){
-        const canGo = oDom.oViewport && oData?.oMediaBuffer?.duration;
+        const canGo = oDom.oViewport && Object.keys(oData.oMediaBuffer).length;
         if (!canGo) return;
-        const iWidth = oDom.oViewport?.offsetWidth || 500;
+        const iWidth = oDom.oViewport.offsetWidth;
 		oDom.oCanvasDom.width = iWidth;
 		const {aPeaks, fPerSecPx} = getPeaks(oData.oMediaBuffer, oData.iPerSecPx, 0, iWidth);
 		oData.fPerSecPx = fPerSecPx;
@@ -148,9 +149,11 @@ export default function(){
 		style.left = `${fStartTime * oData.fPerSecPx}px`;
 		oDom.oAudio.currentTime = fStartTime;
 		oDom.oAudio.play();
+        style.opacity = 1;
 		const playing = setInterval(() => {
 			const { currentTime: cTime } = oDom.oAudio;
 			const {end} = oCurLine.value;
+            if (end - cTime < 0.1) style.opacity = 0;
 			if (cTime < end && oData.playing) {
 				return style.left = `${~~(cTime * oData.fPerSecPx)}px`;
 			}
@@ -161,8 +164,7 @@ export default function(){
 		oData.playing = playing;
 	}
     function saveBlob(){
-		// type: "application/zip"
-		// const text = JSON.stringify(oData.oBuffer);
+		// const text = JSON.stringify(oData.oMediaBuffer);
 		// const blob = new Blob([text], {type: "application/json"});
 		const blob = oData.oMediaBuffer.oChannelDataBlob_;
 		const downLink = Object.assign(document.createElement('a'), {
@@ -177,7 +179,7 @@ export default function(){
 		if (oData.drawing) return; //防抖
 		const {iPerSecPx: perSecPxOld, oMediaBuffer} = oData;
 		const {deltaY, clientX = window.innerWidth / 2} = ev;
-		const [min, max, iStep] = [35, 250, 20]; //每秒最小/大宽度（px），缩放步幅
+		const [min, max, iStep] = [35, 350, 20]; // 每秒最小/大宽度（px），缩放步幅
 		// ▼说明：小到头了就不要再缩小了，大到头了也就要放大了
 		if (deltaY > 0 ? (perSecPxOld <= min) : (perSecPxOld >= max)){
 			oData.drawing = false;
@@ -227,6 +229,7 @@ export default function(){
     // ▼特殊方法和最终返回内容 ========================================
     watch(oDom, (oNew)=>{
         if (!oNew.oViewport) return;
+        cleanCanvas();
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
             const {width} = entryArr[0].contentRect;
@@ -249,12 +252,12 @@ export default function(){
 // ▼ 按接收到的数据 => 计算波峰波谷（纯函数）
 function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
     const aChannel = buffer.aChannelData_ || buffer.getChannelData(0);
-    const sampleSize = ~~(buffer.sampleRate / iPerSecPx); // 每一份的点数 = 每秒采样率 / 每秒像素
+    const sampleSize = ~~(buffer.sampleRate / iPerSecPx) ; // 每一份的点数 = 每秒采样率 / 每秒像素
     const aPeaks = [];
     let idx = Math.round(left);
     const last = idx + iCanvasWidth;
     while (idx <= last) {
-        let start = idx * sampleSize;
+        let start = Math.round(idx * sampleSize);
         const end = start + sampleSize;
         let min = 0;
         let max = 0;

@@ -7,6 +7,7 @@
 // ▼ 实际上1参接收的是一个Blob对象
 export async function fileToBuffer(oFile, bGetFake=false){
 	if (!oFile) return {};
+	const t01 = new Date();
 	let resolveFn = xx => xx;
 	const promise = new Promise(resolve => resolveFn = resolve);
 	const onload = async evt => {
@@ -19,11 +20,45 @@ export async function fileToBuffer(oFile, bGetFake=false){
 		audioContext = null; // 如果不销毁audioContext对象的话，audio标签是无法播放的
 		if (bGetFake) buffer = getFakeBuffer(buffer);
 		resolveFn(buffer);
+		const sizeMB = (oFile.size/1024/1024).toFixed(2);
+		const spentSeconds = ((new Date() - t01) / 1000).toFixed(2);
+		console.log(`■ 加载波形信息：\n■ 体积：${sizeMB}MB / 时长：${buffer.sDuration_} / 加载耗时：${spentSeconds}秒\n`);
 	};
 	Object.assign(new FileReader(), {
 		onload,
 	}).readAsArrayBuffer(oFile);
 	return promise;
+}
+
+// ▼将音频 buffer 转为假对象
+export function getFakeBuffer(buffer){
+	// 结果为真 buffer.length === buffer.duration * buffer.sampleRate
+	// 结果为真 buffer.length === buffer.getChannelData(0).length
+	const iLeap = 50; // 压缩
+	const buffer_ = { // 原始数据
+		duration: buffer.duration,
+		sDuration_: secToStr(buffer.duration).split(',')[0],
+		sampleRate: Math.round(buffer.sampleRate / iLeap),
+		numberOfChannels: buffer.numberOfChannels,
+	};
+	const aChannelData_ = (() => {
+		const aResult = [];
+		const aChannel = buffer.getChannelData(0);
+		const {length} = aChannel;
+		console.log(`遍历次数 ${(length / iLeap / 10_000).toFixed(2)} 万`);
+		for (let idx = 0; idx < length; idx += iLeap) {
+			const cur = aChannel[idx];
+			aResult.push(cur * (cur > 0 ? 127 : 128));
+		}
+		return Int8Array.from(aResult);
+	})();
+	return {
+		...buffer_,
+		aChannelData_,
+		length: aChannelData_.length,
+		// ▼ 8分钟音频耗时 11ms
+		oChannelDataBlob_: new Blob([aChannelData_], {type: 'application/json'}),
+	};
 }
 
 // ▼浮点秒，转为时间轴的时间
@@ -41,15 +76,12 @@ export function secToStr(fSecond, forShow){
 	return sTime + iTail;
 }
 
-// ▼听写页加载时调用
+// ▼听写页加载时调用（解析波形的blob缓存）
 export async function getChannelDataFromBlob(oBlob){
 	const arrayBuffer = await oBlob.arrayBuffer();
 	const aInt8Array = new Int8Array(arrayBuffer);
 	return aInt8Array;
 }
-
-// ▲上方为启动项 ============================================================
-// ▼下方为待用项 ============================================================
 
 // ▼字符转字幕数据，用于显示
 export function SubtitlesStr2Arr(sSubtitles) {
@@ -96,30 +128,6 @@ export function fileToStrings(oFile) {
 	return oPromise;
 }
 
-
-
-
-// ▼将音频 buffer 转为假对象
-export function getFakeBuffer(buffer){
-	const buffer_ = { //原始数据
-		length: buffer.length, // === buffer.getChannelData(0).length
-		duration: buffer.duration,
-		sampleRate: buffer.sampleRate,
-		numberOfChannels: buffer.numberOfChannels,
-	}
-	// ▼近8分钟音频耗时 478ms
-	const aChannelData = Int8Array.from( // int8的取值范围 -128 到 127
-		buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
-	);
-	// ▼ 近8分钟音频耗时 11ms 可忽略不计,
-	const oChannelDataBlob_ = new Blob([aChannelData], {type: 'application/json'});
-	return { //补充数据
-		...buffer_,
-		sDuration_: secToStr(buffer.duration).split(',')[0],
-		aChannelData_: aChannelData,
-		oChannelDataBlob_, 
-	};
-}
 
 // ▲ 被使用的方法
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
