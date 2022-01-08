@@ -116,7 +116,7 @@
 		--border-color: red;
 		border-width: 0 2px;
 		background: none;
-		box-shadow: 0px 0px 0px var(100 * 1000px) rgba(0, 0, 0, 0.4);
+		box-shadow: 0px 0px 0px calc(100 * 1000px) rgba(0, 0, 0, 0.4);
 		border-right-color: blue;
 		.idx:before, .idx:after{
 			--border-color: blue;
@@ -163,9 +163,9 @@
 
 .pointer{
     width: 1px;
-    height: var(--canvas-height);
+    height: calc(var(--canvas-height) - 2px);
     position: absolute;
-    top: var(--canvas-top);
+    top: calc(var(--canvas-top) + 1px);
     background: white;
     opacity: 0;
     transition: 0.4s opacity;

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-07 21:49:28
+ * @LastEditTime: 2022-01-08 08:40:13
  * @Description: 
 -->
 <template>
@@ -23,21 +23,17 @@
                 :style="{width: `${(oMediaBuffer.duration + 1) * fPerSecPx}px`}"
             >
                 <ul class="scale-ul">
-                    <li v-for="(cur) of aShowingArr" :key="cur"
-                        class="one-second"
-                        :class="cur%10==0 ? 'ten-times': ''"
+                    <li v-for="(cur) of aShowingArr" :key="cur" v-show="cur"
+                        class="one-second" :class="cur % 10 == 0 ? 'ten-times' : ''"
                         :style="{left: `${cur * fPerSecPx}px`}"
                     >
                         <b className="mark"/>
-                        <span>
-                            {{~~(cur/60)}}'{{cur%60}}
-                        </span>
+                        <span>{{~~(cur/60)}}'{{cur%60}}</span>
                     </li>
                 </ul>
                 <ul class="region-ul">
                     <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
-                        class="region"
-                        :class="cur.idx === iCurLineIdx ? 'cur' : ''"
+                        class="region" :class="cur.idx === iCurLineIdx ? 'cur' : ''"
                         :style="{
                             left: `${cur.start * fPerSecPx}px`,
                             width: `${(cur.end - cur.start) * fPerSecPx}px`,
@@ -77,9 +73,10 @@ export default {
         },
     },
     setup(props){
-        console.log('波形组件接参\n', props.$dc());
+        // console.log('波形组件接参\n', props.$dc());
         const {oDom, oFn, oData} = w01();
         oFn.audioBufferGetter(props.mediaPath);
+        init();
         // ▼视口范围，起点秒&终点秒
         const aShowingRegion = computed(() => {
             const iWidth = window.innerWidth;
@@ -89,15 +86,16 @@ export default {
         });
         const aShowingArr = computed(() => {
             const arr = [];
-            const [iLeftSec, iRightSec] = aShowingRegion.value;
+            const [iLeftSec, iRightSec] = aShowingRegion.v;
             for(let idx = iLeftSec; idx < iRightSec; idx++ ) {
                 arr.push(idx);
             }
             return arr;
         });
         const aShowingGaps = computed(() => {
+            const [iLeftSec, iRightSec] = aShowingRegion.v;
+            if (!iRightSec) return [];
             const myArr = [];
-            const [iLeftSec, iRightSec] = aShowingRegion.value;
             const {length} = props.aLineArr;
             for (let idx = 0; idx < length; idx++){
                 const {end} = props.aLineArr[idx];

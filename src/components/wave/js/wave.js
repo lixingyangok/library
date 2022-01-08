@@ -1,5 +1,5 @@
 import {reactive, getCurrentInstance, watch, computed, onMounted} from 'vue';
-import {fileToBuffer, getChannelDataFromBlob} from '../../../common/js/pure-fn.js';
+import {fileToBuffer, getPeaks, getChannelArr} from '../../../common/js/pure-fn.js';
 
 export default function(){
     let aPeaksData = []; // 波形数据
@@ -14,9 +14,9 @@ export default function(){
     const oData = reactive({
         oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
-        iPerSecPx: 100,
+        iPerSecPx: 90,
         fPerSecPx: 0,
-		iHeight: 0.3,
+		iHeight: 0.4,
         iScrollLeft: 0,
         drawing: false,
         sWaveBarClassName: '',
@@ -30,29 +30,26 @@ export default function(){
     // console.log('oInstance\n', oInstance);
     const sLeft = 'tube://a/?path=';
     const sBlobPath = sLeft + 'D:/Program Files (gree)/my-library/temp-data/fileName.blob';
-    console.time('得到本地blob');
+    console.time('本地blob的arr');
     fetch(sBlobPath).then(res => {
-        return res.blob();
+        return getChannelArr(res.blob());
     }).then(res=>{
-        return getChannelDataFromBlob(res);
-    }).then(res=>{
-        console.timeEnd('得到本地blob');
-        if(0) console.log('波形数据', res);
+        console.timeEnd('本地blob的arr');
+        if(1) console.log('本地blob的arr', res);
     });
     const oFn = {
+        init(){
+            
+        },
         async audioBufferGetter(sPath){
-            console.time('■ 加载音频总计');
             const oMediaBuffer = await fetch(sPath).then(res => {
-                // 8M-1小时的《爱情与金钱》 加载文件: 145.626953125 ms
                 return res.blob();
             }).then(res=>{
-                // 8M-1小时的《爱情与金钱》 转Blob: 46.30615234375 ms
                 return fileToBuffer(res, true);
             }).catch(res=>{
                 console.log('读取媒体buffer未成功\n', res);
             });
             if (!oMediaBuffer) return;
-            console.timeEnd('■ 加载音频总计');
             oData.oMediaBuffer = oMediaBuffer;
             setCanvasWidthAndDraw();
         },
@@ -78,9 +75,9 @@ export default function(){
             const {aPeaks, fPerSecPx} = getPeaks(
                 oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth,
             );
-            oData.iScrollLeft = Math.max(0, scrollLeft);
-            oData.fPerSecPx = fPerSecPx;
             aPeaksData = aPeaks;
+            oData.fPerSecPx = fPerSecPx;
+            oData.iScrollLeft = Math.max(0, scrollLeft);
             toDraw();
         },
         toPlay,
@@ -126,13 +123,13 @@ export default function(){
     }
     // ▼设宽并绘制
     function setCanvasWidthAndDraw(){
-        const canGo = oDom.oViewport && Object.keys(oData.oMediaBuffer).length;
-        if (!canGo) return;
-        const iWidth = oDom.oViewport.offsetWidth;
+        const {length} = Object.keys(oData.oMediaBuffer);
+        const iWidth = oDom.oViewport?.offsetWidth;
+        if (!length || !iWidth) return;
 		oDom.oCanvasDom.width = iWidth;
 		const {aPeaks, fPerSecPx} = getPeaks(oData.oMediaBuffer, oData.iPerSecPx, 0, iWidth);
-		oData.fPerSecPx = fPerSecPx;
         aPeaksData = aPeaks;
+		oData.fPerSecPx = fPerSecPx;
         toDraw();
 	}
     // ▼清空画布
@@ -227,10 +224,8 @@ export default function(){
 		toDraw();
 	}
     // =============================================================
-    // ▼特殊方法和最终返回内容 ========================================
     watch(oDom, (oNew)=>{
         if (!oNew.oPointer) return;
-        cleanCanvas();
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
             const {width} = entryArr[0].contentRect;
@@ -241,7 +236,7 @@ export default function(){
     onMounted(()=>{
         setTimeout(()=>{
             oData.sWaveBarClassName = 'waist100';
-        }, 100);
+        }, 200);
     });
     return {
         oDom,
@@ -250,55 +245,4 @@ export default function(){
     };
 }
 
-
-// buffer.sampleRate  // 采样率：浮点数，单位为 sample/s
-// buffer.length  // 采样帧率：整形
-// buffer.duration  // 时长(秒)：双精度型
-// buffer.numberOfChannels  // 通道数：整形
-// ▼ 按接收到的数据 => 计算波峰波谷（纯函数）
-function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
-    const aChannel = buffer.aChannelData_ || buffer.getChannelData(0);
-    const sampleSize = ~~(buffer.sampleRate / iPerSecPx) ; // 每一份的点数 = 每秒采样率 / 每秒像素
-    const aPeaks = [];
-    let idx = Math.round(left);
-    const last = idx + iCanvasWidth;
-    while (idx <= last) {
-        let start = Math.round(idx * sampleSize);
-        const end = start + sampleSize;
-        let min = 0;
-        let max = 0;
-        while (start < end) {
-            const value = aChannel[start];
-            if (value > max) max = value;
-            else if (value < min) min = value;
-            start++;
-        }
-        aPeaks.push(max, min);
-        idx++;
-    }
-    // ▼返回浮点型的每秒宽度(px)
-    const fPerSecPx = buffer.length / sampleSize / buffer.duration;
-    return {aPeaks, fPerSecPx};
-}
-
-
-// ▼自定义指令（字母V开头）
-// const vSetVariable = (()=>{
-//     const iCanvasTop = 18;
-//     const iCanvasHeight = 110;
-//     const oStyle = {
-//         '--total-height': `140px`,
-//         '--canvas-top': `${iCanvasTop}px`,
-//         '--canvas-height': `${iCanvasHeight}px`,
-//         '--waist-line': `${iCanvasTop + iCanvasHeight / 2}px`,
-//     };
-//     const oResult = {
-//         mounted(el){
-//             for(const [key, val] of Object.entries(oStyle)){
-//                 el.style.setProperty(key, val);
-//             }
-//         },
-//     };
-//     return oResult;
-// })();
 
