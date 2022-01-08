@@ -53,7 +53,7 @@ exec('wmic logicaldisk get name', function(error, stdout, stderr){
     }
     const arr = stdout.match(/\S+/g).slice(1);
     document.body.disks = arr;
-    console.log('盘符：', arr);
+    console.log('盘符：', arr.join(', '));
 });
 
 // ▼调试

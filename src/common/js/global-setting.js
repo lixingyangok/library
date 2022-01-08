@@ -2,20 +2,32 @@
  * @Author: 李星阳
  * @Date: 2022-01-07 17:08:49
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-07 17:23:02
+ * @LastEditTime: 2022-01-08 08:22:03
  * @Description: 
  */
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 export function setGlobal(){
+    // const {oPromise, fnResolve, fnReject} = newPromise();
+    window.newPromise = function(){
+        let fnResolve, fnReject;
+        const oPromise = new Promise((f1, f2) => {
+            fnResolve = f1, fnReject = f2;
+        });
+        return {oPromise, fnResolve, fnReject};
+    };
     // ▼添加 .v 别名
-    const oProtoType = Object.getPrototypeOf(ref());
-    Object.defineProperty(oProtoType, 'v', {
-        get: Object.getOwnPropertyDescriptor(oProtoType, "value").get,
-        set: Object.getOwnPropertyDescriptor(oProtoType, "value").set,
+    [
+        Object.getPrototypeOf(ref()),
+        Object.getPrototypeOf(computed(() => [])),
+    ].forEach(cur=>{
+        Object.defineProperty(cur, 'v', {
+            get: Object.getOwnPropertyDescriptor(cur, "value").get,
+            set: Object.getOwnPropertyDescriptor(cur, "value").set,
+        });
     });
-    
+
     // ▼自定义方法
     Object.defineProperties(Object.prototype, {
         '$dc': { // deep copy = 深拷贝
@@ -39,6 +51,8 @@ export function setGlobal(){
         },
     });
 }
+
+
 
 function toClone(source) {
     if (!(source instanceof Object && typeof source == 'object' && source)) return source; //不处理非数组、非对象

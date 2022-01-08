@@ -9,11 +9,10 @@ export async function fileToBuffer(oFile){
 	if (!oFile) return {};
 	const iBeginTime = new Date();
 	let resolveFn = xx => xx;
-	const promise = new Promise(resolve => resolveFn = resolve);
+	const promise = new Promise(f1 => resolveFn = f1);
 	const onload = async evt => {
 		const {result} = evt.currentTarget; // arrayBuffer
 		let audioContext = new window.AudioContext();
-		// 近8分钟音频耗时 1,117ms
 		const oRealBuffer = await audioContext.decodeAudioData(result).catch(err=>{
 			console.log('decodeAudioData() 出错\n', err);
 		});
@@ -36,6 +35,7 @@ export function getFakeBuffer(buffer){
 	// 结果为真 buffer.length === buffer.duration * buffer.sampleRate
 	// 结果为真 buffer.length === buffer.getChannelData(0).length
 	const iLeap = 50; // 压缩
+	console.log('buffer.sampleRate-', buffer.sampleRate, buffer.sampleRate/iLeap);
 	const buffer_ = { // 原始数据
 		duration: buffer.duration,
 		sDuration_: secToStr(buffer.duration).split(',')[0],
@@ -78,7 +78,8 @@ export function secToStr(fSecond, forShow){
 }
 
 // ▼听写页加载时调用（解析波形的blob缓存）
-export async function getChannelDataFromBlob(oBlob){
+export async function getChannelArr(oPromise){
+	const oBlob = await oPromise;
 	const arrayBuffer = await oBlob.arrayBuffer();
 	const aInt8Array = new Int8Array(arrayBuffer);
 	return aInt8Array;
@@ -119,14 +120,36 @@ export function fixTime(oTarget){
 	return oTarget;
 }
 
-// ▼【文件】转字符（旧版的）
-export function fileToStrings(oFile) {
-	let resolveFn = xx => xx;
-	const oPromise = new Promise(fn => resolveFn = fn);
-	Object.assign(new FileReader(), {
-		onload: event => resolveFn(event.target.result), // event.target.result就是文件文本内容,
-	}).readAsText(oFile);
-	return oPromise;
+
+// buffer.sampleRate  // 采样率：浮点数，单位为 sample/s
+// buffer.length  // 采样帧率：整形
+// buffer.duration  // 时长(秒)：双精度型
+// buffer.numberOfChannels  // 通道数：整形
+// ▼ 按接收到的数据 => 计算波峰波谷（纯函数）
+export function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
+    const aChannel = buffer.aChannelData_ || buffer.getChannelData(0);
+    const sampleSize = (buffer.sampleRate / iPerSecPx) ; // 每一份的点数 = 每秒采样率 / 每秒像素
+    const aPeaks = [];
+    let idx = Math.round(left);
+    const last = idx + iCanvasWidth;
+    while (idx <= last) {
+        let start = Math.round(idx * sampleSize);
+        const end = start + sampleSize;
+        let min = 0;
+        let max = 0;
+        while (start < end) {
+            const value = aChannel[start];
+            if (value > max) max = value;
+            else if (value < min) min = value;
+            start++;
+        }
+        aPeaks.push(max, min);
+        idx++;
+    }
+    // ▼返回浮点型的每秒宽度(px)
+    const fPerSecPx = (buffer.length / sampleSize / buffer.duration);
+    console.log('fPerSecPx\n', fPerSecPx);
+    return {aPeaks, fPerSecPx};
 }
 
 
@@ -136,6 +159,15 @@ export function fileToStrings(oFile) {
 // ▼ 没有被使用的方法
 // ▼有后台功能之后的新方法---------------------------
 
+// ▼【文件】转字符（旧版的）
+export function fileToStrings(oFile) {
+	let resolveFn = xx => xx;
+	const oPromise = new Promise(fn => resolveFn = fn);
+	Object.assign(new FileReader(), {
+		onload: event => resolveFn(event.target.result), // event.target.result就是文件文本内容,
+	}).readAsText(oFile);
+	return oPromise;
+}
 
 // ▼数组转 Blob，用于上传字幕
 export function arrToblob(arr){
@@ -194,21 +226,3 @@ export function downloadString(aStr, fileName='文本文件', suffix='txt'){
 	}).click();
 }
 
-
-// ▼
-// export function getFakeBuffer(buffer){
-// 	const buffer_ = { // ★原始数据
-// 		duration: buffer.duration,
-// 		length: buffer.length, // === buffer.getChannelData(0).length
-// 		sampleRate: buffer.sampleRate,
-// 		numberOfChannels: buffer.numberOfChannels,
-// 	}
-// 	return { // ★补充数据
-// 		...buffer_,
-// 		aChannelData_: Int8Array.from( // int8的取值范围 -128 到 127
-// 			buffer.getChannelData(0).map(xx => xx * (xx > 0 ? 127 : 128)),
-// 		),
-// 		sDuration_: secToStr(buffer.duration).split(',')[0],
-// 		oChannelDataBlob_: null,
-// 	};
-// }
