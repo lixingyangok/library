@@ -28,13 +28,10 @@ export default function(){
             props.iCurLineIdx
         ];
     });
-    console.log('oInstance\n', oInstance);
     // console.log('oInstance\n', oInstance);
     const sLeft = 'tube://a/?path=';
     const sStorePath = 'D:/Program Files (gree)/my-library/temp-data/';
-
     const oFn = {
-
         // ▼滚轮动了
         wheelOnWave(ev) {
             ev.preventDefault();
@@ -65,8 +62,8 @@ export default function(){
         toPlay,
         saveBlob,
     };
-    // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-    // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     async function initFn(sPath){
         const oTemp = (ls('aTemp') || []).find(cur=>{
             return cur.mediaPath == sPath;
@@ -179,6 +176,7 @@ export default function(){
 		}, ~~(1000 / 70)); //每秒执行次数70
 		oData.playing = playing;
 	}
+    // ▼保存blob
     function saveBlob(){
         const {oMediaBuffer} = oData;
         const {mediaPath} = oInstance.props;
@@ -217,6 +215,7 @@ export default function(){
         }
         ls('aTemp', aTemp);
     }
+    // ▼横向缩放波形
     function zoomWave(ev){
 		if (oData.drawing) return; //防抖
 		const {iPerSecPx: perSecPxOld, oMediaBuffer} = oData;
@@ -249,7 +248,7 @@ export default function(){
 			oFn.waveWrapScroll();
 		}
 	}
-    // ▼得到点击处的秒数，收受一个事件对象
+    // ▼得到鼠标位置的的秒数，收受一个事件对象
 	function getPointSec({ clientX }) {
 		const {scrollLeft, parentElement: {offsetLeft}} = oDom.oViewport;
 		const iLeftPx = clientX - offsetLeft + scrollLeft; //鼠标距左边缘的px长度
@@ -280,21 +279,8 @@ export default function(){
 			return startPx - restPx / 2;
 		})();
 		goThere(oDom.oViewport, 'Left', iLeft);
-		// ▲波形定位
-		// ▼字幕定位
-        if (1) return;
-		const oSententList = this.oSententList.current;
-		const {scrollTop: sTop, offsetHeight: oHeight} = oSententList;
-		const abloveCurLine = iAimLine * iLineHeight; // 当前行以上高度
-		oSententList.scrollTop = (()=>{
-			if (abloveCurLine < sTop + iLineHeight) return abloveCurLine - iLineHeight;
-			// ▲上方超出可视区，▼下方超出可视区（以下代码没能深刻理解）
-			if (abloveCurLine > sTop + oHeight - iLineHeight * 2) {
-				return abloveCurLine - oHeight + iLineHeight * 2;
-			}
-			return sTop;
-		})();
 	}
+    // ▼定位滚动条
     function goThere(oDomObj, sDirection, iNewVal){
 		// clearInterval(this.state.scrollTimer);
 		const sType = `scroll${sDirection}`;
@@ -322,7 +308,7 @@ export default function(){
 		}, iTimes);
 		this.setState({scrollTimer});
 	}
-    // =============================================================
+    // =================================================================================================================
     watch(()=>oDom.oViewport, (oNew)=>{
         if (!oNew) return;
         const myObserver = new ResizeObserver(entryArr => {
@@ -337,13 +323,11 @@ export default function(){
         setLinePosition(oCurLine.v, props.iCurLineIdx);
     });
     watch(() => props.mediaPath, (sNew, sOld)=>{
-        console.log('mediaPath\n', sNew, sOld);
         if (sNew == sOld) return;
         initFn(sNew);
     }, {immediate: true});
     watch(() => props.aLineArr, async (aNew, aOld)=>{
-        // console.log('aLineArr\n', aNew, aOld);
-        if (aNew && !aOld) {
+        if (aNew?.length && !aOld) {
             console.log('oDom.oLongBar -', oDom?.oLongBar?.offsetWidth);
             await nextTick();
             console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);

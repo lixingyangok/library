@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-01 09:31:35
+ * @LastEditTime: 2022-01-08 19:08:33
  * @Description: 
  */
 // electron/electron.js
@@ -58,10 +58,14 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     // event.reply('asynchronous-reply', sReturn);
 });
 
+// ▼设定一个通道用于接收窗口的来信
 ipcMain.on('getSubtitlesArr', function(event, sPath) {
     fs.readFile(sPath, "utf8", (err, data)=>{
-        if (err) return toLog("读取失败\n", err);
-        event.sender.send('getSubtitlesArrReply', data);
+        const keyWords = 'Error: ENOENT: no such file or directory, open';
+        if (err && err.message.startsWith(keyWords)){
+            data = null; // null 有特殊含义，表示文件不存在
+        }
+        event.sender.send('getSubtitlesArrReply', data, err);
     });
 });
 

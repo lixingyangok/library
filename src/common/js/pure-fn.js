@@ -29,7 +29,7 @@ export function getFakeBuffer(buffer){
 	// 结果为真 buffer.length === buffer.duration * buffer.sampleRate
 	// 结果为真 buffer.length === buffer.getChannelData(0).length
 	const iLeap = 50; // 压缩
-	console.log('buffer.sampleRate-', buffer.sampleRate, buffer.sampleRate/iLeap);
+	// console.log('buffer.sampleRate-', buffer.sampleRate, buffer.sampleRate/iLeap);
 	const buffer_ = { // 原始数据
 		duration: buffer.duration,
 		sDuration_: secToStr(buffer.duration).split(',')[0],
@@ -40,7 +40,7 @@ export function getFakeBuffer(buffer){
 		const aResult = [];
 		const aChannel = buffer.getChannelData(0);
 		const {length} = aChannel;
-		console.log(`遍历次数 ${(length / iLeap / 10_000).toFixed(2)} 万`);
+		// console.log(`遍历次数 ${(length / iLeap / 10_000).toFixed(2)} 万`);
 		for (let idx = 0; idx < length; idx += iLeap) {
 			const cur = aChannel[idx];
 			aResult.push(cur * (cur > 0 ? 127 : 128));
@@ -81,6 +81,7 @@ export async function getChannelArr(oPromise){
 
 // ▼字符转字幕数据，用于显示
 export function SubtitlesStr2Arr(sSubtitles) {
+	if (!sSubtitles) return;
 	const aLine = [];
 	let strArr = sSubtitles.split('\n');
 	strArr = strArr.filter((cur, idx) => {
