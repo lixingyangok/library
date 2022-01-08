@@ -93,7 +93,7 @@ export function SubtitlesStr2Arr(sSubtitles) {
 		const [aa, bb] = cur.split(' --> ');
 		const [start, end] = [getSeconds(aa), getSeconds(bb)];
 		const text = aLine[idx].trim() || '';
-		return {start, end, text}; // fixTime({start, end, text});
+		return fixTime({start, end, text}); // fixTime({start, end, text});
 	});
 }
 

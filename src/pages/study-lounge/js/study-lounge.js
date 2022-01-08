@@ -1,14 +1,18 @@
-import {toRefs, reactive} from 'vue';
+import {toRefs, reactive, computed} from 'vue';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 const ipcRenderer = require("electron").ipcRenderer;
 
-// ▲ dom
+
 const oData = reactive({
 	sFilePath: '',
 	sMediaSrc: '',
 	sSubtitleSrc: '',
 	aLineArr: [],
 	iCurLineIdx: 0,
+});
+
+const oCurLine = computed(()=>{
+	return oData.aLineArr[ oData.iCurLineIdx ];
 });
 
 // ▲数据
@@ -35,35 +39,32 @@ export function f1(){
 	}
 	// ▼跳至某行
 	async function goLine(iAimLine, oNewLine, doNotSave) {
-		const {aLineArr, iCurLineIdx, sCurLineTxt=''} = this.state;
-		const oNewState = {aLineArr, iCurLineIdx};
 		if (typeof iAimLine === 'number') { // 观察：能不能进来？
-			oNewState.iCurLineIdx = iAimLine;
+			oData.iCurLineIdx = iAimLine;
 		}else{
-			iAimLine = iCurLineIdx;
+			iAimLine = oData.iCurLineIdx;
 		}
-		const isDifferent = aLineArr[iCurLineIdx].text !== sCurLineTxt;
-		if (isDifferent){
-			aLineArr[iCurLineIdx].text = sCurLineTxt.trim(); // 旧的值，存起来
-		}
-		if (iAimLine % 2 && (!aLineArr[iAimLine] || isDifferent)) {
-			this.toSaveInDb();
-		}
-		if (oNewLine) {
-			oNewState.aLineArr.push(oNewLine);
-			oNewState.sCurLineTxt = oNewLine.text;
-		}else{
-			oNewState.sCurLineTxt = aLineArr[iAimLine].text;
-		}
-		if (!doNotSave) this.saveHistory(oNewState); // 有报错补上 dc_
-		this.setState(oNewState);
-		this.setLinePosition(oNewLine || aLineArr[iAimLine], iAimLine);
+		// if (iAimLine % 2 && (!aLineArr[iAimLine] || isDifferent)) {
+		// 	this.toSaveInDb();
+		// }
+		// if (oNewLine) {
+		// 	oNewState.aLineArr.push(oNewLine);
+		// 	oNewState.sCurLineTxt = oNewLine.text;
+		// }else{
+		// 	oNewState.sCurLineTxt = aLineArr[iAimLine].text;
+		// }
+		// if (!doNotSave) this.saveHistory(oNewState); // 有报错补上 dc_
+		// this.setState(oNewState);
 	}
+
 	// ============================================================================
 	ipcRenderer.send("getSubtitlesArr", oData.sSubtitleSrc);
 	ipcRenderer._events.getSubtitlesArrReply = readSrtFile;
     return reactive({
         ...toRefs(oData),
+		...{
+			goLine,
+		},
     });
 };
 

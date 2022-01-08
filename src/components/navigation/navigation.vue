@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 15:18:43
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-07 19:49:56
+ * @LastEditTime: 2022-01-08 15:11:08
  * @Description: 
 -->
 <template>
@@ -41,7 +41,7 @@ export default {
     methods:{
         async toF5(willClear){
             if (willClear) console.clear();
-            console.log('\n刷新');
+            else console.log('\n刷新========================');
             this.$root.show = false;
             await this.$nextTick();
             this.$root.show = true;

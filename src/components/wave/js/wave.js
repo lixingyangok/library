@@ -1,4 +1,4 @@
-import {reactive, getCurrentInstance, watch, computed, onMounted} from 'vue';
+import {reactive, getCurrentInstance, watch, computed, onMounted, nextTick} from 'vue';
 import {fileToBuffer, getPeaks, getChannelArr, copyString} from '../../../common/js/pure-fn.js';
 
 export default function(){
@@ -22,26 +22,19 @@ export default function(){
         sWaveBarClassName: '',
     });
     const oInstance = getCurrentInstance();
+    const {props} = oInstance;
     const oCurLine = computed(()=>{
-        return oInstance.props.aLineArr[
-            oInstance.props.iCurLineIdx
+        return props.aLineArr[
+            props.iCurLineIdx
         ];
     });
+    console.log('oInstance\n', oInstance);
     // console.log('oInstance\n', oInstance);
     const sLeft = 'tube://a/?path=';
     const sStorePath = 'D:/Program Files (gree)/my-library/temp-data/';
 
     const oFn = {
-        init(sPath){
-            const oTemp = (ls('aTemp') || []).find(cur=>{
-                return cur.mediaPath == sPath;
-            });
-            console.log('缓存=\n', oTemp);
-            if (oTemp) {
-                return loadTempData(oTemp);
-            }
-            audioBufferGetter(sPath);
-        },
+
         // ▼滚轮动了
         wheelOnWave(ev) {
             ev.preventDefault();
@@ -74,6 +67,16 @@ export default function(){
     };
     // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    async function initFn(sPath){
+        const oTemp = (ls('aTemp') || []).find(cur=>{
+            return cur.mediaPath == sPath;
+        });
+        console.log('有缓存 =', !!oTemp);
+        if (oTemp) {
+            return loadTempData(oTemp);
+        }
+        audioBufferGetter(sPath);
+    }
     async function loadTempData(oTemp){
         console.log('开始取缓存');
         const {sSaveTo} = oTemp;
@@ -84,7 +87,7 @@ export default function(){
             ...oTemp,
             aChannelData_,
         };
-        setCanvasWidthAndDraw();
+        setCanvasWidthAndDraw(true);
     }
     async function audioBufferGetter(sPath){
         const oMediaBuffer = await fetch(sPath).then(res => {
@@ -97,7 +100,7 @@ export default function(){
         if (!oMediaBuffer) return;
         console.log('解析耗时：', oMediaBuffer.fElapsedSec);
         oData.oMediaBuffer = oMediaBuffer;
-        setCanvasWidthAndDraw();
+        setCanvasWidthAndDraw(true);
     }
 
     // ▼使Dom滚动条横向滚动
@@ -264,16 +267,92 @@ export default function(){
 		oData.iHeight = iHeight;
 		toDraw();
 	}
+    // ▼跳行后定位
+	function setLinePosition(oLine, iAimLine){
+        console.log("计算目标位置");
+		const {offsetWidth} = oDom.oViewport;
+		const {fPerSecPx} = oData;
+		const {start, long} = oLine;
+		const iLeft = (() => { // 计算波形框定位的位置
+			const startPx = fPerSecPx * start;
+			const restPx = offsetWidth - long * fPerSecPx;
+			if (restPx <= 0) return startPx - 100; //100表示起点距离左边100
+			return startPx - restPx / 2;
+		})();
+		goThere(oDom.oViewport, 'Left', iLeft);
+		// ▲波形定位
+		// ▼字幕定位
+        if (1) return;
+		const oSententList = this.oSententList.current;
+		const {scrollTop: sTop, offsetHeight: oHeight} = oSententList;
+		const abloveCurLine = iAimLine * iLineHeight; // 当前行以上高度
+		oSententList.scrollTop = (()=>{
+			if (abloveCurLine < sTop + iLineHeight) return abloveCurLine - iLineHeight;
+			// ▲上方超出可视区，▼下方超出可视区（以下代码没能深刻理解）
+			if (abloveCurLine > sTop + oHeight - iLineHeight * 2) {
+				return abloveCurLine - oHeight + iLineHeight * 2;
+			}
+			return sTop;
+		})();
+	}
+    function goThere(oDomObj, sDirection, iNewVal){
+		// clearInterval(this.state.scrollTimer);
+		const sType = `scroll${sDirection}`;
+		const iOldVal = oDomObj[sType];
+		if (~~iOldVal === ~~iNewVal) return;
+		if ('不要动画效果') return (oDomObj[sType] = iNewVal);
+		const [iTakeTime, iTimes] = [350, 40]; //走完全程耗时, x毫秒走一步
+		const iOneStep = ~~((iNewVal - iOldVal) / (iTakeTime / iTimes));
+		const scrollTimer = setInterval(()=>{
+			let iAimTo = oDomObj[sType] + iOneStep;
+			if (iNewVal > iOldVal ? iAimTo >= iNewVal : iAimTo <= iNewVal){
+				iAimTo = iNewVal;
+				// clearInterval(scrollTimer);
+				// {
+				// 	// ▼后补
+				// 	let {buffer, iPerSecPx} = this.state;
+				// 	let {offsetWidth, scrollLeft} = this.oWaveWrap.current;
+				// 	const {aPeaks, fPerSecPx} = this.getPeaks(
+				// 		buffer, iPerSecPx, scrollLeft, offsetWidth,
+				// 	);
+				// 	this.setState({aPeaks, fPerSecPx});
+				// }
+			}
+			oDomObj[sType] = iAimTo;
+		}, iTimes);
+		this.setState({scrollTimer});
+	}
     // =============================================================
-    watch(oDom, (oNew)=>{
-        if (!oNew.oPointer) return;
+    watch(()=>oDom.oViewport, (oNew)=>{
+        if (!oNew) return;
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
             const {width} = entryArr[0].contentRect;
             if (0) console.log('大小位置', width);
         });
-        myObserver.observe(oNew.oViewport);
+        myObserver.observe(oNew);
     });
+    watch(() => props.iCurLineIdx, (iNew, iOld)=>{
+        if (iNew == iOld) return;
+        setLinePosition(oCurLine.v, props.iCurLineIdx);
+    });
+    watch(() => props.mediaPath, (sNew, sOld)=>{
+        console.log('mediaPath\n', sNew, sOld);
+        if (sNew == sOld) return;
+        initFn(sNew);
+    }, {immediate: true});
+    watch(() => props.aLineArr, async (aNew, aOld)=>{
+        // console.log('aLineArr\n', aNew, aOld);
+        if (aNew && !aOld) {
+            console.log('oDom.oLongBar -', oDom?.oLongBar?.offsetWidth);
+            await nextTick();
+            console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
+            setTimeout(()=>{
+                console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
+                setLinePosition(oCurLine.v, 0);
+            }, 300);
+        }
+    }, {immediate: true});
     onMounted(()=>{
         setTimeout(()=>{
             oData.sWaveBarClassName = 'waist100';

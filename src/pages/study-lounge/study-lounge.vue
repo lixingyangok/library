@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-06 20:35:37
+ * @LastEditTime: 2022-01-08 18:11:35
  * @Description: 
 -->
 <template>
@@ -13,8 +13,7 @@
         <!-- 左右分界 -->
         <section class="right">
             <br/><br/>
-            <MyWave v-if="sMediaSrc"
-                :media-path="sMediaSrc"
+            <MyWave :media-path="sMediaSrc"
                 :a-line-arr="aLineArr"
                 :i-cur-line-idx="iCurLineIdx"
             />
@@ -33,7 +32,7 @@
                     <li v-for="(cur,idx) of aLineArr" :key="idx"
                         class="one-line"
                         :style="{'--width': `${String(aLineArr.length || 0).length}em`}"
-                        @click="iCurLineIdx = idx"
+                        @click="goLine(idx)"
                     >
                         <i className="idx">{{idx + 1}}</i>
                         <span className="time">
@@ -50,7 +49,7 @@
 </template>
 
 <script>
-import {computed, toRefs} from 'vue';
+import {toRefs} from 'vue';
 import {f1} from './js/study-lounge.js';
 import MyWave from '../../components/wave/wave.vue';
 
@@ -60,9 +59,9 @@ export default {
         MyWave,
     },
     setup(){
-        const oData = toRefs(f1());
+        const oData = f1();
         return {
-            ...oData,
+            ...toRefs(oData),
         };
     },
 };
