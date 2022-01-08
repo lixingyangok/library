@@ -1,12 +1,6 @@
-/*
- * @Author: 李星阳
- * @LastEditors: 李星阳
- * @Description: 
- */ 
 
 // ▼ 实际上1参接收的是一个Blob对象
 export async function fileToBuffer(oFile){
-	if (!oFile) return {};
 	const iBeginTime = new Date();
 	let resolveFn = xx => xx;
 	const promise = new Promise(f1 => resolveFn = f1);
@@ -55,8 +49,8 @@ export function getFakeBuffer(buffer){
 	})();
 	return {
 		...buffer_,
-		aChannelData_,
 		length: aChannelData_.length,
+		aChannelData_,
 		// ▼ 8分钟音频耗时 11ms
 		oChannelDataBlob_: new Blob([aChannelData_], {type: 'application/json'}),
 	};
@@ -124,11 +118,10 @@ export function fixTime(oTarget){
 // buffer.sampleRate  // 采样率：浮点数，单位为 sample/s
 // buffer.length  // 采样帧率：整形
 // buffer.duration  // 时长(秒)：双精度型
-// buffer.numberOfChannels  // 通道数：整形
 // ▼ 按接收到的数据 => 计算波峰波谷（纯函数）
 export function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
-    const aChannel = buffer.aChannelData_ || buffer.getChannelData(0);
-    const sampleSize = (buffer.sampleRate / iPerSecPx) ; // 每一份的点数 = 每秒采样率 / 每秒像素
+	const {aChannelData_, length, sampleRate, duration} = buffer;
+    const sampleSize = sampleRate / iPerSecPx ; // 每一份的点数 = 每秒采样率 / 每秒像素
     const aPeaks = [];
     let idx = Math.round(left);
     const last = idx + iCanvasWidth;
@@ -138,7 +131,7 @@ export function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
         let min = 0;
         let max = 0;
         while (start < end) {
-            const value = aChannel[start];
+            const value = aChannelData_[start];
             if (value > max) max = value;
             else if (value < min) min = value;
             start++;
@@ -147,10 +140,26 @@ export function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
         idx++;
     }
     // ▼返回浮点型的每秒宽度(px)
-    const fPerSecPx = (buffer.length / sampleSize / buffer.duration);
-    console.log('fPerSecPx\n', fPerSecPx);
+    const fPerSecPx = length / sampleSize / duration;
     return {aPeaks, fPerSecPx};
 }
+
+
+// ▼复制文字到剪贴板、参数是需要复制的文字
+export function copyString(sString){
+	const {body} = document;
+	const oInput = Object.assign(document.createElement('input'), {
+		value: sString, // 把文字放进 input 中，供复制
+	});
+	body.appendChild(oInput);
+	oInput.select();  // 选中创建的input
+	// ▼执行复制方法，该方法返回布尔值，表示复制的成功性
+	const isCopyOk = document.execCommand('copy');
+	if (isCopyOk) console.log('已复制到粘贴板');
+	else console.log('复制失败');
+	body.removeChild(oInput); // 操作中完成后 从Dom中删除创建的input
+}
+
 
 
 // ▲ 被使用的方法

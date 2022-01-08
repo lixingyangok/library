@@ -18,7 +18,7 @@ const db = new sqlite3.Database('D:/myDB.db');
 const stmt = db.prepare("INSERT INTO dev_history VALUES (?)");
 
 // ▼ 其它动作
-window.lg = store2; // lg = local-Storage
+window.ls = store2; // lg = local-Storage
 setGlobal();
 
 // ▼查询 exe 位置

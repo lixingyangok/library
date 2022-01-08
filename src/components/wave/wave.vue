@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-08 08:40:13
+ * @LastEditTime: 2022-01-08 10:18:34
  * @Description: 
 -->
 <template>
@@ -75,8 +75,7 @@ export default {
     setup(props){
         // console.log('波形组件接参\n', props.$dc());
         const {oDom, oFn, oData} = w01();
-        oFn.audioBufferGetter(props.mediaPath);
-        init();
+        oFn.init(props.mediaPath);
         // ▼视口范围，起点秒&终点秒
         const aShowingRegion = computed(() => {
             const iWidth = window.innerWidth;

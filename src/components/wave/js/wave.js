@@ -1,5 +1,5 @@
 import {reactive, getCurrentInstance, watch, computed, onMounted} from 'vue';
-import {fileToBuffer, getPeaks, getChannelArr} from '../../../common/js/pure-fn.js';
+import {fileToBuffer, getPeaks, getChannelArr, copyString} from '../../../common/js/pure-fn.js';
 
 export default function(){
     let aPeaksData = []; // 波形数据
@@ -29,29 +29,18 @@ export default function(){
     });
     // console.log('oInstance\n', oInstance);
     const sLeft = 'tube://a/?path=';
-    const sBlobPath = sLeft + 'D:/Program Files (gree)/my-library/temp-data/fileName.blob';
-    console.time('本地blob的arr');
-    fetch(sBlobPath).then(res => {
-        return getChannelArr(res.blob());
-    }).then(res=>{
-        console.timeEnd('本地blob的arr');
-        if(1) console.log('本地blob的arr', res);
-    });
+    const sStorePath = 'D:/Program Files (gree)/my-library/temp-data/';
+
     const oFn = {
-        init(){
-            
-        },
-        async audioBufferGetter(sPath){
-            const oMediaBuffer = await fetch(sPath).then(res => {
-                return res.blob();
-            }).then(res=>{
-                return fileToBuffer(res, true);
-            }).catch(res=>{
-                console.log('读取媒体buffer未成功\n', res);
+        init(sPath){
+            const oTemp = (ls('aTemp') || []).find(cur=>{
+                return cur.mediaPath == sPath;
             });
-            if (!oMediaBuffer) return;
-            oData.oMediaBuffer = oMediaBuffer;
-            setCanvasWidthAndDraw();
+            console.log('缓存=\n', oTemp);
+            if (oTemp) {
+                return loadTempData(oTemp);
+            }
+            audioBufferGetter(sPath);
         },
         // ▼滚轮动了
         wheelOnWave(ev) {
@@ -85,6 +74,32 @@ export default function(){
     };
     // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    async function loadTempData(oTemp){
+        console.log('开始取缓存');
+        const {sSaveTo} = oTemp;
+        const aChannelData_ = await fetch(sLeft+sSaveTo).then(res => {
+            return getChannelArr(res.blob());
+        });
+        oData.oMediaBuffer = {
+            ...oTemp,
+            aChannelData_,
+        };
+        setCanvasWidthAndDraw();
+    }
+    async function audioBufferGetter(sPath){
+        const oMediaBuffer = await fetch(sPath).then(res => {
+            return res.blob();
+        }).then(res=>{
+            return fileToBuffer(res, true);
+        }).catch(res=>{
+            console.log('读取媒体buffer未成功\n', res);
+        });
+        if (!oMediaBuffer) return;
+        console.log('解析耗时：', oMediaBuffer.fElapsedSec);
+        oData.oMediaBuffer = oMediaBuffer;
+        setCanvasWidthAndDraw();
+    }
+
     // ▼使Dom滚动条横向滚动
 	function scrollToFn(deltaY) {
 		const iOneStepLong = 350; // 步长
@@ -162,17 +177,43 @@ export default function(){
 		oData.playing = playing;
 	}
     function saveBlob(){
-		// const text = JSON.stringify(oData.oMediaBuffer);
-		// const blob = new Blob([text], {type: "application/json"});
-		const blob = oData.oMediaBuffer.oChannelDataBlob_;
+        const {oMediaBuffer} = oData;
+        const {mediaPath} = oInstance.props;
+        const oDate = new Date();
+        const sDate = [oDate.getFullYear(), (oDate.getMonth()+1+'').padStart(2,0), (oDate.getDate()+'').padStart(2,0)].join('-');
+        const sOnlyName = mediaPath.split('/').pop();
+        const blobName = sOnlyName + `●${sDate}.blob`;
+        const oThisOne = {
+            ...oMediaBuffer,
+            aChannelData_: [],
+            oChannelDataBlob_: {},
+            blobName,
+            mediaPath,
+            sSaveTo: sStorePath + blobName,
+        };
+        toUpdateStore(oThisOne);
+        copyString(sStorePath);
+		const blob = oMediaBuffer.oChannelDataBlob_;
 		const downLink = Object.assign(document.createElement('a'), {
-			download: 'fileName.blob',
+			download: blobName,
 			href: URL.createObjectURL(blob),
 		});
-		// document.body.appendChild(downLink); // 链接插入到页面
-		downLink.click();
-		// document.body.removeChild(downLink); // 移除下载链接
+        downLink.click();
 	}
+    // ▼更新 localStorage
+    function toUpdateStore(oNewOne){
+        const aTemp = ls('aTemp') || [];
+        const iTarget = aTemp.findIndex((cur, idx)=>{
+            const bExist = cur.mediaPath == oNewOne.mediaPath;
+            if (bExist) aTemp[idx] = oNewOne; // 更新
+            return bExist;
+        });
+        if (iTarget==-1){
+            aTemp.push(oNewOne);
+            (aTemp.length > 100) && aTemp.shift();
+        }
+        ls('aTemp', aTemp);
+    }
     function zoomWave(ev){
 		if (oData.drawing) return; //防抖
 		const {iPerSecPx: perSecPxOld, oMediaBuffer} = oData;
