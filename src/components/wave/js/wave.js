@@ -4,7 +4,7 @@ import {fileToBuffer, getPeaks, getChannelArr, copyString} from '../../../common
 export default function(){
     let aPeaksData = []; // 波形数据
     const oDom = reactive({ // 从上到下，从外到内
-        // oMyWaveBar: null, // 最外层
+        oMyWaveBar: null, // 最外层
         oCanvasDom: null, // canvas画布
         oViewport: null, // 视口
         oLongBar: null, // 视口内的横长条
@@ -14,7 +14,7 @@ export default function(){
     const oData = reactive({
         oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
-        iPerSecPx: 90,
+        iPerSecPx: 100,
         fPerSecPx: 0,
 		iHeight: 0.4,
         iScrollLeft: 0,
@@ -75,7 +75,6 @@ export default function(){
         audioBufferGetter(sPath);
     }
     async function loadTempData(oTemp){
-        console.log('开始取缓存');
         const {sSaveTo} = oTemp;
         const aChannelData_ = await fetch(sLeft+sSaveTo).then(res => {
             return getChannelArr(res.blob());
@@ -209,7 +208,7 @@ export default function(){
             if (bExist) aTemp[idx] = oNewOne; // 更新
             return bExist;
         });
-        if (iTarget==-1){
+        if (iTarget === -1){
             aTemp.push(oNewOne);
             (aTemp.length > 100) && aTemp.shift();
         }
@@ -217,31 +216,32 @@ export default function(){
     }
     // ▼横向缩放波形
     function zoomWave(ev){
-		if (oData.drawing) return; //防抖
+        if (oData.drawing) { // 防抖（很重要）!!!!
+            return console.log('有效防抖'); 
+        }
+        if (!ev.clientX) alert('没有ev.clientX');
 		const {iPerSecPx: perSecPxOld, oMediaBuffer} = oData;
 		const {deltaY, clientX = window.innerWidth / 2} = ev;
-		const [min, max, iStep] = [35, 350, 20]; // 每秒最小/大宽度（px），缩放步幅
+		const [min, max, iStep] = [45, 260, 20]; // 每秒最小/大宽度（px），缩放步幅
 		// ▼说明：小到头了就不要再缩小了，大到头了也就要放大了
 		if (deltaY > 0 ? (perSecPxOld <= min) : (perSecPxOld >= max)){
-			oData.drawing = false;
-			return;
+			return oData.drawing = false;
 		}
-		const {parentElement:{offsetLeft}, children:[markBar]} = oDom.oViewport;
-		const iPerSecPx = (() => { //新-每秒宽度
+		const iPerSecPx = (() => { //新★每秒宽度
 			const result = perSecPxOld + iStep * (deltaY <= 0 ? 1 : -1);
 			if (result < min) return min;
 			else if (result > max) return max;
 			return result;
 		})();
-		const fPerSecPx = (()=>{ // 新-每秒宽度（精确）
-			const sampleSize = ~~(oMediaBuffer.sampleRate / iPerSecPx); // 每一份的点数 = 每秒采样率 / 每秒像素
+		const fPerSecPx = (()=>{ // 新★每秒宽度（精确）
+			const sampleSize = (oMediaBuffer.sampleRate / iPerSecPx); // 每一份的点数 = 每秒采样率 / 每秒像素
 			return oMediaBuffer.length / sampleSize / oMediaBuffer.duration; 
 		})();
+		const {offsetLeft} = oDom.oViewport.parentElement;
         const iNewLeftPx = getPointSec(ev) * fPerSecPx - (clientX - offsetLeft);
-		markBar.style.width = fPerSecPx * oMediaBuffer.duration + 'px';
+        oData.drawing = true;
+        oData.iPerSecPx = iPerSecPx;
 		oDom.oPointer.style.left = `${oDom.oAudio.currentTime * fPerSecPx}px`;
-		oData.iPerSecPx = iPerSecPx;
-		oData.drawing = true;
 		oDom.oViewport.scrollLeft = iNewLeftPx; // 在此触发了缩放
 		if (iNewLeftPx <= 0) { // 这里情况不明
 			// console.log('小于0 =', iNewLeftPx);
@@ -268,7 +268,6 @@ export default function(){
 	}
     // ▼跳行后定位
 	function setLinePosition(oLine, iAimLine){
-        console.log("计算目标位置");
 		const {offsetWidth} = oDom.oViewport;
 		const {fPerSecPx} = oData;
 		const {start, long} = oLine;
@@ -309,7 +308,13 @@ export default function(){
 		this.setState({scrollTimer});
 	}
     // =================================================================================================================
-    watch(()=>oDom.oViewport, (oNew)=>{
+    watch(() => oDom.oMyWaveBar, (oNew)=>{
+        if (!oNew) return;
+        setTimeout(()=>{
+            oData.sWaveBarClassName = 'waist100';
+        }, 200);
+    });
+    watch(() => oDom.oViewport, (oNew)=>{
         if (!oNew) return;
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
@@ -327,20 +332,15 @@ export default function(){
         initFn(sNew);
     }, {immediate: true});
     watch(() => props.aLineArr, async (aNew, aOld)=>{
-        if (aNew?.length && !aOld) {
-            console.log('oDom.oLongBar -', oDom?.oLongBar?.offsetWidth);
-            await nextTick();
-            console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
-            setTimeout(()=>{
-                console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
-                setLinePosition(oCurLine.v, 0);
-            }, 300);
-        }
+        const condition = aNew?.length && !aOld?.length;
+        if (!condition) return;
+        setTimeout(()=>{
+            // console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
+            setLinePosition(oCurLine.v, 0);
+        }, 300);
     }, {immediate: true});
     onMounted(()=>{
-        setTimeout(()=>{
-            oData.sWaveBarClassName = 'waist100';
-        }, 200);
+        console.log('Mounted--------------');
     });
     return {
         oDom,
