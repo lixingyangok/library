@@ -1,4 +1,4 @@
-import {reactive, getCurrentInstance, watch, computed, onMounted, nextTick} from 'vue';
+import {reactive, getCurrentInstance, watch, computed, onMounted} from 'vue';
 import {fileToBuffer, getPeaks, getChannelArr, copyString} from '../../../common/js/pure-fn.js';
 
 export default function(){
@@ -127,7 +127,7 @@ export default function(){
         while (idx < fCanvasWidth) {
             const cur1 = aPeaksData[idx * 2] * iHeight | 0;
             const cur2 = aPeaksData[idx * 2 + 1] * iHeight | 0;
-            if (cur1 % 1 > 0 || cur2 % 1 > 0) debugger;
+            // if (cur1 % 1 > 0 || cur2 % 1 > 0) debugger;
             // ▼参数依次为：x, y, with, height
             Context.fillRect(idx, (halfHeight - cur1), 1, cur1 - cur2);
             idx++;

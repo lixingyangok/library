@@ -2,12 +2,12 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-08 15:04:36
+ * @LastEditTime: 2022-01-08 21:26:46
  * @Description: 
 -->
 <template>
     <audio controls ref="oAudio"
-        v-show="1" :src="mediaPath"
+        v-show="0" :src="mediaPath"
     ></audio>
     <article class="my-wave-bar" ref="oMyWaveBar"
         :class="sWaveBarClassName"
@@ -46,13 +46,17 @@
             </div>
         </section>
     </article>
-    <br/>
-    <button @click="toPlay()">
-        实验
-    </button>
-    <button @click="saveBlob()">
-        保存
-    </button>
+    <!-- ▼信息条 -->
+    <div>
+        <br/>
+        时长：{{oMediaBuffer.sDuration_}}&emsp;
+        <button @click="toPlay()">
+            实验
+        </button>
+        <button @click="saveBlob()">
+            保存
+        </button>
+    </div>
 </template>
 <!--  -->
 <script>

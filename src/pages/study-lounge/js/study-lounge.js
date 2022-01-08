@@ -9,6 +9,7 @@ const oData = reactive({
 	sSubtitleSrc: '',
 	aLineArr: [],
 	iCurLineIdx: 0,
+	testNumber: 123,
 });
 
 const oCurLine = computed(()=>{

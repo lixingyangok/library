@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-08 18:11:35
+ * @LastEditTime: 2022-01-08 21:27:13
  * @Description: 
 -->
 <template>
@@ -18,9 +18,12 @@
                 :i-cur-line-idx="iCurLineIdx"
             />
             <article class="wave-below" >
-                时长：{{'oBuffer'.sDuration_}}&emsp;
+                
             </article>
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
+                <p>
+                    <input v-model="testNumber" >
+                </p>
                 <textarea v-model="aLineArr[iCurLineIdx].text">
                     
                 </textarea>
@@ -36,7 +39,7 @@
                     >
                         <i className="idx">{{idx + 1}}</i>
                         <span className="time">
-                            <em>{{cur.start}}</em><i>-</i><em>{{cur.end}}</em>
+                            <em>{{cur.start_}}</em><i>-</i><em>{{cur.end_}}</em>
                         </span>
                         <p>
                             {{cur.text}}
@@ -51,6 +54,7 @@
 <script>
 import {toRefs} from 'vue';
 import {f1} from './js/study-lounge.js';
+import {dealKeydown} from './js/key-down-fn.js';
 import MyWave from '../../components/wave/wave.vue';
 
 export default {
@@ -60,6 +64,7 @@ export default {
     },
     setup(){
         const oData = f1();
+        dealKeydown();
         return {
             ...toRefs(oData),
         };
@@ -68,7 +73,6 @@ export default {
 </script>
 
 <style scoped src="./style/study-lounge.scss"></style>
-<style scoped src="./style/wave.scss"></style>
 <style scoped src="./style/type-box.scss"></style>
 <style scoped src="./style/line-list.scss"></style>
 

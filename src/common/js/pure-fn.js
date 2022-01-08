@@ -128,7 +128,7 @@ export function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
     const last = idx + iCanvasWidth;
     while (idx <= last) {
         let start = Math.round(idx * sampleSize);
-        const end = start + sampleSize;
+        const end = Math.round(start + sampleSize);
         let min = 0;
         let max = 0;
         while (start < end) {
@@ -161,7 +161,10 @@ export function copyString(sString){
 	body.removeChild(oInput); // 操作中完成后 从Dom中删除创建的input
 }
 
-
+// ▼得到字母表 a,b,c.....
+export const aAlphabet = [...Array(26).keys()].map(cur=>{
+	return String.fromCharCode(97 + cur);
+});
 
 // ▲ 被使用的方法
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
