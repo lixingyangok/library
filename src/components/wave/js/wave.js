@@ -299,6 +299,7 @@ export default function(){
 			oViewport['scrollLeft'] = iAimTo;
 		}, iTimes);
 	}
+    
     // =================================================================================================================
     watch(() => oDom.oMyWaveBar, (oNew)=>{
         if (!oNew) return;
@@ -332,7 +333,7 @@ export default function(){
             goOneLine(oCurLine.v);
         }, 300);
     }, {immediate: true});
-    onMounted(()=>{
+    onMounted(() => {
         // console.log('Mounted--------------');
     });
     return {

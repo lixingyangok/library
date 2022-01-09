@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 17:12:28
+ * @LastEditTime: 2022-01-09 17:24:38
  * @Description: 
  */
 import { getCurrentInstance, onBeforeUnmount } from 'vue';
@@ -97,10 +97,44 @@ export function fnAllKeydownFn(){
 			return sTop;
 		})();
 	}
+    // ▼微调区域（1参可能是 start、end。2参是调整步幅
+    function fixRegion(sKey, iDirection) {
+        console.log('fixRegion');
+        const {aLineArr, iCurLineIdx} = oAllData;
+        const oOld = aLineArr[iCurLineIdx];
+        const previous = aLineArr[iCurLineIdx - 1];
+        const next = aLineArr[iCurLineIdx + 1];
+        let fNewVal = oOld[sKey] + iDirection;
+        if (fNewVal < 0) fNewVal = 0;
+        if (previous && fNewVal < previous.end) {
+            fNewVal = previous.end;
+        }
+        if (next && fNewVal > next.start) {
+            fNewVal = next.start;
+        }
+        setTime(sKey, fNewVal);
+    }
+    // ▼设定时间。1参是类型，2参是秒数
+    function setTime(sKey, fVal) {
+		const {oCurLine} = oAllData;
+		const {start, end} = oCurLine;
+		if (sKey === 'start' && fVal > end) { //起点在终点右侧
+			oCurLine.start = end;
+			oCurLine.end = fVal;
+		} else if (sKey === 'end' && fVal < start) { // 终点在起点左侧
+			oCurLine.start = fVal;
+			oCurLine.end = start;
+		} else {
+			oCurLine[sKey] = fVal;
+		}
+		// fixTime(oCurLine);
+        oAllData.aLineArr[oAllData.iCurLineIdx] = fixTime(oCurLine);
+	}
     // ▼最终返回
     return {
         previousAndNext,
         goLine,
+        fixRegion,
     };
 }
 
@@ -135,10 +169,10 @@ function getFnArr(oInstance){
     const withAlt = [
         // 修改选区
         {key: 'alt + ]', name: '扩选', fn: `this.chooseMore.bind(this)`}, 
-        {key: 'alt + u', name: '起点向左', fn: `this.fixRegion.bind(this, 'start', -0.07)`}, 
-        {key: 'alt + i', name: '起点向右', fn: `this.fixRegion.bind(this, 'start', 0.07)`}, 
-        {key: 'alt + n', name: '终点向左', fn: `this.fixRegion.bind(this, 'end', -0.07)`}, 
-        {key: 'alt + m', name: '终点向右', fn: `this.fixRegion.bind(this, 'end', 0.07)`}, 
+        {key: 'alt + u', name: '起点左移', fn: ()=>This.fixRegion('start', -0.07)}, 
+        {key: 'alt + i', name: '起点右移', fn: ()=>This.fixRegion('start', 0.07)}, 
+        {key: 'alt + n', name: '终点左移', fn: ()=>This.fixRegion('end', -0.07)}, 
+        {key: 'alt + m', name: '终点右移', fn: ()=>This.fixRegion('end', 0.07)}, 
         // 选词
         {key: 'alt + a', name: '', fn: `this.toInset.bind(this, 0)`},
         {key: 'alt + s', name: '', fn: `this.toInset.bind(this, 1)`},
@@ -286,22 +320,7 @@ export class part02 {
             this.message.success('保存成功');
         }
     }
-    // ▼微调区域（1参可能是 start、end。2参是调整步幅
-    fixRegion(sKey, iDirection) {
-        const {aLineArr, iCurLineIdx} = this.state;
-        const oOld = aLineArr[iCurLineIdx];
-        const previous = aLineArr[iCurLineIdx - 1];
-        const next = aLineArr[iCurLineIdx + 1];
-        let fNewVal = oOld[sKey] + iDirection;
-        if (fNewVal < 0) fNewVal = 0;
-        if (previous && fNewVal < previous.end) {
-            fNewVal = previous.end;
-        }
-        if (next && fNewVal > next.start) {
-            fNewVal = next.start;
-        }
-        this.setTime(sKey, fNewVal);
-    }
+
     // ▼重新定位起点，终点
     cutHere(sKey) {
         const oAudio = this.oAudio.current;

@@ -62,6 +62,7 @@ export function f1(){
     return reactive({
         ...toRefs(oDom),
         ...toRefs(oData),
+		oCurLine,
 		...{
 			listener,
 		},
