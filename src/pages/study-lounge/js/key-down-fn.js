@@ -2,10 +2,10 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 17:24:38
+ * @LastEditTime: 2022-01-09 18:51:35
  * @Description: 
  */
-import { getCurrentInstance, onBeforeUnmount } from 'vue';
+import { getCurrentInstance } from 'vue';
 import {keyMap} from '../../../common/js/key-map.js';
 import {fixTime } from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
@@ -14,50 +14,16 @@ import {figureOut} from './figure-out-region.js';
 // import {aAlphabet} from 'assets/js/common.js';
 // const {media: mediaTB} = trainingDB;
 
-// ▼注册按键监听
-export function registerKeydownFn(){
-    const oInstance = getCurrentInstance();
-    const {proxy: oAllData} = oInstance;
-    const oFnList = getFnArr(oInstance).reduce((oResult, cur)=>{
-        oResult[cur.key] = cur.fn;
-        return oResult;
-    }, {});
-    if (0) console.log('oInstance', oAllData);
-    if (0) console.log('oFnList\n', oFnList);
-    // ▼收集用户按键
-    function keyDowned(ev) {
-        const ctrl = ev.ctrlKey ? 'ctrl + ' : '';
-        const alt = ev.altKey ? 'alt + ' : '';
-        const shift = ev.shiftKey ? 'shift + ' : '';
-        const keyName = keyMap[ev.keyCode] || '';
-        const keyStr = ctrl + alt + shift + keyName;
-        const theFn = oFnList[keyStr];
-        if (!theFn) return;
-        ev.preventDefault();
-        ev.stopPropagation();
-        if (typeof theFn != 'string') theFn();
-        console.log('用户操作 ●', keyStr);
-    }
-    // console.log('onMounted 开始收集按键');
-    document.addEventListener('keydown', keyDowned);
-    onBeforeUnmount(()=>{
-        console.log('卸载-取消按键监听');
-        document.removeEventListener('keydown', keyDowned);
-    });
-}
 
 // ▼按键后的方法列表
 export function fnAllKeydownFn(){
     const oInstance = getCurrentInstance();
-    // const This = oInstance; // 别名
-    const {proxy: oAllData} = oInstance;
-    const {oMediaBuffer} = oAllData;
-    
+    const This = oInstance.proxy;
     // ▼切换当前句子（上一句，下一句）
     function previousAndNext(iDirection) {
-        const { oMediaBuffer, aLineArr, iCurLineIdx } = oAllData; // iCurStep
+        const { oMediaBuffer, aLineArr, iCurLineIdx } = This; // iCurStep
         const iCurLineNew = Math.max(0, iCurLineIdx + iDirection);
-        oInstance.proxy.iCurLineIdx = iCurLineNew;
+        This.iCurLineIdx = iCurLineNew;
         const oNewLine = (() => {
             if (aLineArr[iCurLineNew]) return false; //有数据，不新增
             if ((oMediaBuffer.duration - aLineArr[iCurLineIdx].end) < 0.1) {
@@ -72,17 +38,17 @@ export function fnAllKeydownFn(){
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine) {
         if (typeof iAimLine === 'number') { // 观察：能不能进来？
-            oAllData.iCurLineIdx = iAimLine;
+            This.iCurLineIdx = iAimLine;
         }else{
-            iAimLine = oAllData.iCurLineIdx;
+            iAimLine = This.iCurLineIdx;
         }
         setLinePosition(iAimLine);
         if (!oNewLine) return;
-        oAllData.aLineArr.push(oNewLine);
+        This.aLineArr.push(oNewLine);
     }
     // ▼跳行后定位
 	function setLinePosition(iAimLine){
-		const {oSententList} = oAllData;
+		const {oSententList} = This;
 		const {scrollTop: sTop, offsetHeight: oHeight} = oSententList;
         const iLineHeight = 35; // 行高
 		const abloveCurLine = iAimLine * iLineHeight; // 当前行以上高度
@@ -100,7 +66,7 @@ export function fnAllKeydownFn(){
     // ▼微调区域（1参可能是 start、end。2参是调整步幅
     function fixRegion(sKey, iDirection) {
         console.log('fixRegion');
-        const {aLineArr, iCurLineIdx} = oAllData;
+        const {aLineArr, iCurLineIdx} = This;
         const oOld = aLineArr[iCurLineIdx];
         const previous = aLineArr[iCurLineIdx - 1];
         const next = aLineArr[iCurLineIdx + 1];
@@ -116,7 +82,7 @@ export function fnAllKeydownFn(){
     }
     // ▼设定时间。1参是类型，2参是秒数
     function setTime(sKey, fVal) {
-		const {oCurLine} = oAllData;
+		const {oCurLine} = This;
 		const {start, end} = oCurLine;
 		if (sKey === 'start' && fVal > end) { //起点在终点右侧
 			oCurLine.start = end;
@@ -128,7 +94,7 @@ export function fnAllKeydownFn(){
 			oCurLine[sKey] = fVal;
 		}
 		// fixTime(oCurLine);
-        oAllData.aLineArr[oAllData.iCurLineIdx] = fixTime(oCurLine);
+        This.aLineArr[This.iCurLineIdx] = fixTime(oCurLine);
 	}
     // ▼最终返回
     return {
@@ -138,18 +104,15 @@ export function fnAllKeydownFn(){
     };
 }
 
-
-function getFnArr(oInstance){
-    const {proxy} = oInstance;
-    const This = proxy; // 别名
-    const {oMyWave} = proxy;
+export function getKeyDownFnMap(This, sType){
+    const {oMyWave} = This;
     const withNothing = [
         {key: '`' , name: '播放后半句', fn: ()=>oMyWave.toPlay(true)},
         {key: 'Tab', name: '播放当前句', fn: ()=>oMyWave.toPlay()},
         {key: 'Prior', name: '上一句', fn: ()=>This.previousAndNext(-1)},
         {key: 'Next', name: '下一句', fn: ()=>This.previousAndNext(1)},
         {key: 'F1', name: '设定起点', fn: `this.cutHere.bind(this, 'start')`},
-        {key: 'F2', name: '设定起点', fn: `this.cutHere.bind(this, 'end')`},
+        {key: 'F2', name: '设定终点', fn: `this.cutHere.bind(this, 'end')`},
         {key: 'F3', name: '删除当前句', fn: `this.giveUpThisOne.bind(this)`},
         {key: 'F4', name: '查询选中单词', fn: `this.searchWord.bind(this, true)`},
         {key: 'Escape', name: '取消播放', fn: `this.toStop.bind(this)`}, // 停止播放
@@ -182,11 +145,7 @@ function getFnArr(oInstance){
         {key: 'alt + j', name: '', fn: ()=>This.previousAndNext(-1)},
         {key: 'alt + k', name: '', fn: ()=>This.previousAndNext(1)},
         {key: 'alt + l', name: '跳到最后一句', fn: `this.goLastLine.bind(this)`},
-        {key: 'alt + ,', name: '波形横向缩放', fn: `this.zoomWave.bind(this, {deltaY: 1})`},
-        {key: 'alt + .', name: '波形横向缩放', fn: `this.zoomWave.bind(this, {deltaY: -1})`},
         // alt + shift
-        {key: 'alt + shift + ,', name: '波形高低', fn: `this.changeWaveHeigh.bind(this, -1)`},
-        {key: 'alt + shift + .', name: '波形高低', fn: `this.changeWaveHeigh.bind(this, 1)`},
         {key: 'alt + shift + j', name: '向【左】插入一句', fn: `this.toInsert.bind(this, -1)` },
         {key: 'alt + shift + k', name: '向【右】插入一句', fn: `this.toInsert.bind(this, 1)` },
         {key: 'alt + shift + d', name: '保存单词到云', fn: `this.saveWord.bind(this)`},
@@ -194,9 +153,15 @@ function getFnArr(oInstance){
     ];
     // ▼将来用于前端显示给用户
     // if(0) return [withNothing, withCtrl, withAlt];
-    return [...withNothing, ...withCtrl, ...withAlt];
+    const aFullFn = [...withNothing, ...withCtrl, ...withAlt];
+    if (sType==='obj') {
+        return aFullFn.reduce((oResult, cur)=>{
+            oResult[cur.key] = cur.fn;
+            return oResult;
+        }, {});
+    }
+    return aFullFn;
 }
-
 
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■

@@ -1,4 +1,10 @@
-import {reactive, getCurrentInstance, watch, computed, onMounted} from 'vue';
+import {
+    reactive,
+    getCurrentInstance,
+    watch,
+    computed,
+    onMounted,
+} from 'vue';
 import {fileToBuffer, getPeaks, getChannelArr, copyString} from '../../../common/js/pure-fn.js';
 
 export default function(){
@@ -31,37 +37,33 @@ export default function(){
     });
     const sLeft = 'tube://a/?path=';
     const sStorePath = 'D:/Program Files (gree)/my-library/temp-data/';
-    const oFn = {
-        // ▼滚轮动了
-        wheelOnWave(ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            ev.returnValue = false;
-            const {altKey, ctrlKey, shiftKey, wheelDeltaY, deltaY} = ev;
-            if (0) console.log(shiftKey, deltaY);
-            if (ctrlKey) {
-                zoomWave(ev);
-            } else if (altKey) {
-                changeWaveHeigh(wheelDeltaY);
-            } else {
-                scrollToFn(wheelDeltaY);
-            }
-        },
-        // ▼滚动条动后调用
-        waveWrapScroll() {
-            const {oMediaBuffer, iPerSecPx} = oData;
-            const {offsetWidth, scrollLeft} = oDom.oViewport;
-            const {aPeaks, fPerSecPx} = getPeaks(
-                oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth
-            );
-            aPeaksData = aPeaks;
-            oData.fPerSecPx = fPerSecPx;
-            oData.iScrollLeft = Math.max(0, scrollLeft); // 把新位置记下来
-            toDraw();
-        },
-        toPlay,
-        saveBlob,
-    };
+    // ▼滚轮动了
+    function wheelOnWave(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        ev.returnValue = false;
+        const {altKey, ctrlKey, shiftKey, wheelDeltaY, deltaY} = ev;
+        if (0) console.log(shiftKey, deltaY);
+        if (ctrlKey) {
+            zoomWave(ev);
+        } else if (altKey) {
+            changeWaveHeigh(wheelDeltaY);
+        } else {
+            scrollToFn(wheelDeltaY);
+        }
+    }
+    // ▼滚动条动后调用
+    function waveWrapScroll() {
+        const {oMediaBuffer, iPerSecPx} = oData;
+        const {offsetWidth, scrollLeft} = oDom.oViewport;
+        const {aPeaks, fPerSecPx} = getPeaks(
+            oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth
+        );
+        aPeaksData = aPeaks;
+        oData.fPerSecPx = fPerSecPx;
+        oData.iScrollLeft = Math.max(0, scrollLeft); // 把新位置记下来
+        toDraw();
+    }
     // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     async function initFn(sPath){
@@ -216,14 +218,13 @@ export default function(){
     }
     // ▼横向缩放波形
     function zoomWave(ev){
-        if (oData.drawing) { // 防抖（很重要）!!!!
+        if (oData.drawing) { // 防抖（很重要）
             return console.log('有效防抖'); 
         }
-        if (!ev.clientX) alert('没有ev.clientX');
 		const {iPerSecPx: perSecPxOld, oMediaBuffer} = oData;
-		const {deltaY, clientX = window.innerWidth / 2} = ev;
-		const [min, max, iStep] = [45, 260, 20]; // 每秒最小/大宽度（px），缩放步幅
-		// ▼说明：小到头了就不要再缩小了，大到头了也就要放大了
+		let {deltaY, clientX = window.innerWidth / 2} = ev; //. clientX 确实需要替补值
+		const [min, max, iStep] = [45, 260, 25]; // 每秒最小/大宽度（px），缩放步幅
+        // ▼小到头了就不要再缩小了，大到头了也就要放大了
 		if (deltaY > 0 ? (perSecPxOld <= min) : (perSecPxOld >= max)){
 			return oData.drawing = false;
 		}
@@ -238,18 +239,18 @@ export default function(){
 			return oMediaBuffer.length / sampleSize / oMediaBuffer.duration; 
 		})();
 		const {offsetLeft} = oDom.oViewport.parentElement;
-        const iNewLeftPx = getPointSec(ev) * fPerSecPx - (clientX - offsetLeft);
+        const iNewLeftPx = getPointSec(clientX) * fPerSecPx - (clientX - offsetLeft);
         oData.drawing = true;
         oData.iPerSecPx = iPerSecPx;
 		oDom.oPointer.style.left = `${oDom.oAudio.currentTime * fPerSecPx}px`;
 		oDom.oViewport.scrollLeft = iNewLeftPx; // 在此触发了缩放
 		if (iNewLeftPx <= 0) { // 这里情况不明
 			// console.log('小于0 =', iNewLeftPx);
-			oFn.waveWrapScroll();
+			waveWrapScroll();
 		}
 	}
     // ▼得到鼠标位置的的秒数，收受一个事件对象
-	function getPointSec({ clientX }) {
+	function getPointSec(clientX) {
 		const {scrollLeft, parentElement: {offsetLeft}} = oDom.oViewport;
 		const iLeftPx = clientX - offsetLeft + scrollLeft; //鼠标距左边缘的px长度
 		const iNowSec = iLeftPx / oData.fPerSecPx; //当前指向时间（秒）
@@ -286,8 +287,8 @@ export default function(){
         const {oViewport} = oDom;
 		const iOldVal = oViewport['scrollLeft'];
 		if (~~iOldVal === ~~iNewLeft) return;
-		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
-		const [iTakeTime, iTimes] = [300, 50]; // 走完全程耗时, x毫秒走一步
+		if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
+		const [iTakeTime, iTimes] = [200, 50]; // 走完全程耗时, x毫秒走一步
 		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes));
 		oData.scrollTimer = setInterval(()=>{
 			let iAimTo = oViewport['scrollLeft'] + iOneStep;
@@ -333,14 +334,37 @@ export default function(){
             goOneLine(oCurLine.v);
         }, 300);
     }, {immediate: true});
+    // ▼生命周期 ==================================================================
     onMounted(() => {
-        // console.log('Mounted--------------');
+        if(0) console.log('波形加载了');
     });
-    return {
-        oDom,
-        oData,
-        oFn,
+    const oFn = {
+        wheelOnWave,
+        waveWrapScroll,
+        toPlay,
+        saveBlob,
+        zoomWave,
+        changeWaveHeigh,
     };
+    return { oDom, oData, oFn };
+}
+
+export function getKeyDownFnMap(This, sType){
+    const aFullFn = [
+        {key: 'alt + ,', name: '波形横向缩放', fn: ()=>This.zoomWave({deltaY: 1})},
+        {key: 'alt + .', name: '波形横向缩放', fn: ()=>This.zoomWave({deltaY: -1})},
+        {key: 'alt + shift + ,', name: '波形纵向缩放', fn: ()=>This.changeWaveHeigh(-1)},
+        {key: 'alt + shift + .', name: '波形纵向缩放', fn: ()=>This.changeWaveHeigh(1)},
+    ];
+    // ▼将来用于前端显示给用户
+    // if(0) return [withNothing, withCtrl, withAlt];
+    if (sType==='obj') {
+        return aFullFn.reduce((oResult, cur)=>{
+            oResult[cur.key] = cur.fn;
+            return oResult;
+        }, {});
+    }
+    return aFullFn;
 }
 
 

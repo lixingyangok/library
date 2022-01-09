@@ -1,5 +1,5 @@
 import {toRefs, reactive, computed, onMounted} from 'vue';
-import {SubtitlesStr2Arr, fixTime} from '../../../common/js/pure-fn.js';
+import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 const ipcRenderer = require("electron").ipcRenderer;
 

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 14:55:23
+ * @LastEditTime: 2022-01-09 18:17:05
  * @Description: 
 -->
 <template>
@@ -61,7 +61,8 @@
 <!--  -->
 <script>
 import { toRefs, computed } from 'vue';
-import w01, {} from './js/wave.js';
+import w01, {getKeyDownFnMap} from './js/wave.js';
+import {registerKeydownFn} from '../../common/js/common-fn.js'
 
 export default {
     name: 'my-wave-bar',
@@ -119,6 +120,12 @@ export default {
             aGapMarks,
         };
     },
+    mounted(){
+        // 此处 this === getCurrentInstance()
+        const oFnList = getKeyDownFnMap(this, 'obj');
+        registerKeydownFn(oFnList);
+    },
 };
 </script>
+
 <style scoped src="./style/wave.scss"></style>
