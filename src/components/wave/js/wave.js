@@ -20,7 +20,7 @@ export default function(){
         iScrollLeft: 0,
         drawing: false,
         sWaveBarClassName: '',
-        // scrollTimer: null, // 滚动条
+        scrollTimer: null, // 滚动条
     });
     const oInstance = getCurrentInstance();
     const {props} = oInstance;
@@ -267,8 +267,8 @@ export default function(){
 		toDraw();
 	}
     // ▼跳行后定位波形位置
-	function setLinePosition(oLine){
-        if (!oDom.oViewport) return;
+	function goOneLine(oLine){
+        if (!oDom.oViewport || !oLine) return;
 		const {offsetWidth} = oDom.oViewport;
 		const {fPerSecPx} = oData;
 		const {start, long} = oLine;
@@ -278,35 +278,26 @@ export default function(){
 			if (restPx <= 0) return startPx - 100; //100表示起点距离左边100
 			return startPx - restPx / 2;
 		})();
-		goThere(oDom.oViewport, 'Left', iLeft);
+		rollTheWave(iLeft);
 	}
     // ▼定位滚动条
-    function goThere(oDomObj, sDirection, iNewVal){
-		// clearInterval(oData.scrollTimer);
-		const sType = `scroll${sDirection}`;
-		const iOldVal = oDomObj[sType];
-		if (~~iOldVal === ~~iNewVal) return;
-		if ('不要动画') return (oDomObj[sType] = iNewVal);
-		const [iTakeTime, iTimes] = [350, 40]; //走完全程耗时, x毫秒走一步
-		const iOneStep = ~~((iNewVal - iOldVal) / (iTakeTime / iTimes));
-		const scrollTimer = setInterval(()=>{
-			let iAimTo = oDomObj[sType] + iOneStep;
-			if (iNewVal > iOldVal ? iAimTo >= iNewVal : iAimTo <= iNewVal){
-				iAimTo = iNewVal;
-				// clearInterval(scrollTimer);
-				// {
-				// 	// ▼后补
-				// 	let {buffer, iPerSecPx} = this.state;
-				// 	let {offsetWidth, scrollLeft} = this.oWaveWrap.current;
-				// 	const {aPeaks, fPerSecPx} = this.getPeaks(
-				// 		buffer, iPerSecPx, scrollLeft, offsetWidth,
-				// 	);
-				// 	this.setState({aPeaks, fPerSecPx});
-				// }
+    function rollTheWave(iNewLeft){
+		clearInterval(oData.scrollTimer);
+        const {oViewport} = oDom;
+		const iOldVal = oViewport['scrollLeft'];
+		if (~~iOldVal === ~~iNewLeft) return;
+		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
+		const [iTakeTime, iTimes] = [300, 50]; // 走完全程耗时, x毫秒走一步
+		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes));
+		oData.scrollTimer = setInterval(()=>{
+			let iAimTo = oViewport['scrollLeft'] + iOneStep;
+            const needStop = iNewLeft > iOldVal ? (iAimTo >= iNewLeft) : (iAimTo <= iNewLeft);
+			if (needStop){
+				clearInterval(oData.scrollTimer);
+				iAimTo = iNewLeft;
 			}
-			oDomObj[sType] = iAimTo;
+			oViewport['scrollLeft'] = iAimTo;
 		}, iTimes);
-        oData.scrollTimer = scrollTimer;
 	}
     // =================================================================================================================
     watch(() => oDom.oMyWaveBar, (oNew)=>{
@@ -326,7 +317,8 @@ export default function(){
     });
     watch(() => props.iCurLineIdx, (iNew, iOld)=>{
         if (iNew == iOld) return;
-        setLinePosition(oCurLine.v, props.iCurLineIdx);
+        if (!props.aLineArr?.length) return;
+        goOneLine(oCurLine.v);
     });
     watch(() => props.mediaPath, (sNew, sOld)=>{
         if (sNew == sOld) return;
@@ -337,7 +329,7 @@ export default function(){
         if (!condition) return;
         setTimeout(()=>{
             // console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
-            setLinePosition(oCurLine.v, 0);
+            goOneLine(oCurLine.v);
         }, 300);
     }, {immediate: true});
     onMounted(()=>{
@@ -349,5 +341,6 @@ export default function(){
         oFn,
     };
 }
+
 
 
