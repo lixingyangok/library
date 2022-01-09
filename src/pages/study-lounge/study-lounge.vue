@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 16:04:16
+ * @LastEditTime: 2022-01-09 17:10:54
  * @Description: 
 -->
 <template>
@@ -23,13 +23,9 @@
                 
             </article>
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
-                <p>
-                    <input v-model="testNumber" >
-                </p>
-                <textarea v-model="aLineArr[iCurLineIdx].text">
-                    
-                </textarea>
-                <textarea v-if="0"></textarea>
+                <textarea v-model="aLineArr[iCurLineIdx].text"
+                    @keydown.enter.prevent="()=>previousAndNext(1)"
+                ></textarea>
             </div>
             <article>
                 <ul class="sentence-wrap" ref="oSententList" >

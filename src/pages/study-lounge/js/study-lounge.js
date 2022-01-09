@@ -15,7 +15,6 @@ export function f1(){
 		aLineArr: [],
 		iCurLineIdx: 0,
 		oMediaBuffer: {},
-		testNumber: 123,
 		iSubtitle: 0, // -1=查不到字幕，1=有字幕
 	});
 	const oCurLine = computed(()=>{

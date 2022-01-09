@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 16:23:14
+ * @LastEditTime: 2022-01-09 17:12:28
  * @Description: 
  */
 import { getCurrentInstance, onBeforeUnmount } from 'vue';
@@ -54,7 +54,7 @@ export function fnAllKeydownFn(){
     const {oMediaBuffer} = oAllData;
     
     // ▼切换当前句子（上一句，下一句）
-    function previousAndNext(iDirection, isWantSave) {
+    function previousAndNext(iDirection) {
         const { oMediaBuffer, aLineArr, iCurLineIdx } = oAllData; // iCurStep
         const iCurLineNew = Math.max(0, iCurLineIdx + iDirection);
         oInstance.proxy.iCurLineIdx = iCurLineNew;
@@ -169,7 +169,7 @@ function getFnArr(oInstance){
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-
+// 以下是旧网站的方法
 
 class keyDownFn {
     // ▼ 输入框文字改变
@@ -242,10 +242,8 @@ class keyDownFn {
     }
 }
 
-
 // ▲处理按键
 // ▼其它
-
 
 export class part02 {
 
