@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-08 21:27:13
+ * @LastEditTime: 2022-01-09 11:01:58
  * @Description: 
 -->
 <template>
@@ -33,7 +33,7 @@
                 <br/><br/>
                 <ul class="sentence-wrap" >
                     <li v-for="(cur,idx) of aLineArr" :key="idx"
-                        class="one-line"
+                        class="one-line" :class="iCurLineIdx == idx ? 'cur' : ''"
                         :style="{'--width': `${String(aLineArr.length || 0).length}em`}"
                         @click="goLine(idx)"
                     >
@@ -54,7 +54,7 @@
 <script>
 import {toRefs} from 'vue';
 import {f1} from './js/study-lounge.js';
-import {dealKeydown} from './js/key-down-fn.js';
+import {registerKeydownFn, fnAllKeydownFn} from './js/key-down-fn.js';
 import MyWave from '../../components/wave/wave.vue';
 
 export default {
@@ -64,10 +64,14 @@ export default {
     },
     setup(){
         const oData = f1();
-        dealKeydown();
-        return {
+        const oResult = {
             ...toRefs(oData),
+            ...fnAllKeydownFn(),
         };
+        return oResult;
+    },
+    mounted(){
+        registerKeydownFn();
     },
 };
 </script>
