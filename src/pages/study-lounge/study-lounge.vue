@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 11:01:58
+ * @LastEditTime: 2022-01-09 12:47:11
  * @Description: 
 -->
 <template>
@@ -13,9 +13,11 @@
         <!-- 左右分界 -->
         <section class="right">
             <br/><br/>
-            <MyWave :media-path="sMediaSrc"
+            <MyWave ref="oMyWave"
+                :media-path="sMediaSrc"
                 :a-line-arr="aLineArr"
                 :i-cur-line-idx="iCurLineIdx"
+                @pipe="listener"
             />
             <article class="wave-below" >
                 

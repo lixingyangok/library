@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 10:59:03
+ * @LastEditTime: 2022-01-09 13:11:06
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -52,21 +52,19 @@ export function fnAllKeydownFn(){
     const oInstance = getCurrentInstance();
     const This = oInstance; // 别名
     const {proxy: oAllData} = oInstance;
-    console.log('oInstance', oAllData);
     const oList01 = {
         // ▼切换当前句子（上一句，下一句）
         previousAndNext(iDirection, isWantSave) {
-            const { buffer, aLineArr, iCurLineIdx } = oAllData; // iCurStep
-            if (iCurLineIdx === 0 && iDirection === -1) return; //不可退
-            const iCurLineNew = iCurLineIdx + iDirection;
+            const { oMediaBuffer: buffer, aLineArr, iCurLineIdx } = oAllData; // iCurStep
+            const iCurLineNew = Math.max(0, iCurLineIdx + iDirection);
 			oAllData.iCurLineIdx = iCurLineNew;
 			return;
             const newLine = (() => {
                 if (aLineArr[iCurLineNew]) return false; //有数据，不新增
                 if ((buffer.duration - aLineArr[iCurLineIdx].end) < 0.1) return null; //临近终点，不新增
-                return this.figureOut(aLineArr.last_.end); // 要新增一行，返回下行数据
+                return figureOut(aLineArr.last_.end); // 要新增一行，返回下行数据
             })();
-            if (newLine === null) return this.message.error(`已经到头了`);
+            if (newLine === null) return console.log(`已经到头了`);
             This.goLine(iCurLineNew, newLine);
             // ▲跳转
             // ▼处理保存相关事宜
@@ -93,12 +91,12 @@ export function fnAllKeydownFn(){
 function getFnArr(oInstance, getAll){
     const {proxy} = oInstance;
     const This = proxy; // 别名
-    console.log('previousAndNext', This);
+    const {oMyWave} = proxy;
     const withNothing = [
-        {key: '`' , name: '播放后半句', fn: `this.toPlay.bind(this, true)`},
-        {key: 'Tab', name: '播放当前句', fn: `this.toPlay.bind(this)`},
-        {key: 'Prior', name: '上一句', fn: `this.previousAndNext.bind(this, -1)`},
-        {key: 'Next', name: '下一句', fn: `this.previousAndNext.bind(this, 1)`},
+        {key: '`' , name: '播放后半句', fn: ()=>oMyWave.toPlay(true)},
+        {key: 'Tab', name: '播放当前句', fn: ()=>oMyWave.toPlay()},
+        {key: 'Prior', name: '上一句', fn: ()=>This.previousAndNext(-1)},
+        {key: 'Next', name: '下一句', fn: ()=>This.previousAndNext(1)},
         {key: 'F1', name: '设定起点', fn: `this.cutHere.bind(this, 'start')`},
         {key: 'F2', name: '设定起点', fn: `this.cutHere.bind(this, 'end')`},
         {key: 'F3', name: '删除当前句', fn: `this.giveUpThisOne.bind(this)`},
@@ -130,8 +128,8 @@ function getFnArr(oInstance, getAll){
         {key: 'alt + d', name: '', fn: `this.toInset.bind(this, 2)`},
         {key: 'alt + f', name: '', fn: `this.toInset.bind(this, 3)`},
         // 未分类
-        {key: 'alt + j', name: '', fn: This.previousAndNext.bind(This, -1)},
-        {key: 'alt + k', name: '', fn: This.previousAndNext.bind(This, 1)},
+        {key: 'alt + j', name: '', fn: ()=>This.previousAndNext(-1)},
+        {key: 'alt + k', name: '', fn: ()=>This.previousAndNext(1)},
         {key: 'alt + l', name: '跳到最后一句', fn: `this.goLastLine.bind(this)`},
         {key: 'alt + ,', name: '波形横向缩放', fn: `this.zoomWave.bind(this, {deltaY: 1})`},
         {key: 'alt + .', name: '波形横向缩放', fn: `this.zoomWave.bind(this, {deltaY: -1})`},

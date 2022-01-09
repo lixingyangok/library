@@ -1,7 +1,10 @@
-import {toRefs, reactive, computed} from 'vue';
-import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
+import {toRefs, reactive, computed, onMounted} from 'vue';
+import {SubtitlesStr2Arr, fixTime} from '../../../common/js/pure-fn.js';
 const ipcRenderer = require("electron").ipcRenderer;
 
+const oDom = {
+	oMyWave: null,
+};
 
 const oData = reactive({
 	sFilePath: '',
@@ -9,6 +12,7 @@ const oData = reactive({
 	sSubtitleSrc: '',
 	aLineArr: [],
 	iCurLineIdx: 0,
+	oMediaBuffer: {},
 	testNumber: 123,
 });
 
@@ -31,7 +35,7 @@ export function f1(){
 	oData.aLineArr.splice(0, Infinity);
 	// ▼取得字幕数据
 	function readSrtFile(event, sSubtitles, err){
-		if (err && sSubtitles === null) {
+		if (err) {
 			makeLineArr();
 			return console.log('字幕文件不存在\n');
 		}
@@ -42,8 +46,11 @@ export function f1(){
 		});
 		oData.aLineArr = arr; //.splice(0, Infinity, ...arr);
 	}
+	// ▼插入一个空行
 	function makeLineArr(){
-		
+		oData.aLineArr = [
+			fixTime({start: 1, end: 5, text: '默认字幕'}),
+		];
 	}
 	// ▼跳至某行
 	async function goLine(iAimLine, oNewLine, doNotSave) {
@@ -52,9 +59,6 @@ export function f1(){
 		}else{
 			iAimLine = oData.iCurLineIdx;
 		}
-		// if (iAimLine % 2 && (!aLineArr[iAimLine] || isDifferent)) {
-		// 	this.toSaveInDb();
-		// }
 		// if (oNewLine) {
 		// 	oNewState.aLineArr.push(oNewLine);
 		// 	oNewState.sCurLineTxt = oNewLine.text;
@@ -64,7 +68,8 @@ export function f1(){
 		// if (!doNotSave) this.saveHistory(oNewState); // 有报错补上 dc_
 		// this.setState(oNewState);
 	}
-    // ▼跳行后定位
+	// doNext
+    // ▼跳行后定位字幕ul的滚动条位置
 	function setLinePosition(oLine, iAimLine){
         console.log("计算目标位置");
 		const oSententList = this.oSententList.current;
@@ -79,13 +84,22 @@ export function f1(){
 			return sTop;
 		})();
 	}
+	function listener(o1){
+		// console.log('o1\n', o1);
+		oData.oMediaBuffer = o1;
+	}
 	// ============================================================================
-	ipcRenderer.send("getSubtitlesArr", oData.sSubtitleSrc);
 	ipcRenderer._events.getSubtitlesArrReply = readSrtFile;
+	ipcRenderer.send("getSubtitlesArr", oData.sSubtitleSrc);
+	onMounted(()=>{
+		// console.log('oDom', oDom.oMyWave);
+	});
     return reactive({
+        ...toRefs(oDom),
         ...toRefs(oData),
 		...{
 			goLine,
+			listener,
 		},
     });
 };

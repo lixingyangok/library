@@ -20,6 +20,7 @@ export default function(){
         iScrollLeft: 0,
         drawing: false,
         sWaveBarClassName: '',
+        // scrollTimer: null, // 滚动条
     });
     const oInstance = getCurrentInstance();
     const {props} = oInstance;
@@ -28,7 +29,6 @@ export default function(){
             props.iCurLineIdx
         ];
     });
-    // console.log('oInstance\n', oInstance);
     const sLeft = 'tube://a/?path=';
     const sStorePath = 'D:/Program Files (gree)/my-library/temp-data/';
     const oFn = {
@@ -52,11 +52,11 @@ export default function(){
             const {oMediaBuffer, iPerSecPx} = oData;
             const {offsetWidth, scrollLeft} = oDom.oViewport;
             const {aPeaks, fPerSecPx} = getPeaks(
-                oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth,
+                oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth
             );
             aPeaksData = aPeaks;
             oData.fPerSecPx = fPerSecPx;
-            oData.iScrollLeft = Math.max(0, scrollLeft);
+            oData.iScrollLeft = Math.max(0, scrollLeft); // 把新位置记下来
             toDraw();
         },
         toPlay,
@@ -69,23 +69,26 @@ export default function(){
             return cur.mediaPath == sPath;
         });
         console.log('有缓存 =', !!oTemp);
+        let oMediaBuffer;
         if (oTemp) {
-            return loadTempData(oTemp);
+            oMediaBuffer = await getTempData(oTemp);
+        }else{
+            oMediaBuffer = await getAudioData(sPath);
         }
-        audioBufferGetter(sPath);
+        oData.oMediaBuffer = oMediaBuffer;
+        setCanvasWidthAndDraw();
+        oInstance.emit('pipe', oData.oMediaBuffer); // 向上报告
     }
-    async function loadTempData(oTemp){
+    // ▼加载【缓存】数据
+    async function getTempData(oTemp){
         const {sSaveTo} = oTemp;
         const aChannelData_ = await fetch(sLeft+sSaveTo).then(res => {
             return getChannelArr(res.blob());
         });
-        oData.oMediaBuffer = {
-            ...oTemp,
-            aChannelData_,
-        };
-        setCanvasWidthAndDraw(true);
+        return { ...oTemp, aChannelData_ };
     }
-    async function audioBufferGetter(sPath){
+    // ▼加载【媒体】数据
+    async function getAudioData(sPath){
         const oMediaBuffer = await fetch(sPath).then(res => {
             return res.blob();
         }).then(res=>{
@@ -94,9 +97,8 @@ export default function(){
             console.log('读取媒体buffer未成功\n', res);
         });
         if (!oMediaBuffer) return;
-        console.log('解析耗时：', oMediaBuffer.fElapsedSec);
-        oData.oMediaBuffer = oMediaBuffer;
-        setCanvasWidthAndDraw(true);
+        // console.log('解析耗时：', oMediaBuffer.fElapsedSec);
+        return oMediaBuffer;
     }
 
     // ▼使Dom滚动条横向滚动
@@ -125,15 +127,13 @@ export default function(){
         let idx = 0;
         Context.fillStyle = '#55c655';
         while (idx < fCanvasWidth) {
-            const cur1 = aPeaksData[idx * 2] * iHeight | 0;
+            const cur1 = aPeaksData[idx * 2] * iHeight | 0; // 下退转整形
             const cur2 = aPeaksData[idx * 2 + 1] * iHeight | 0;
-            // if (cur1 % 1 > 0 || cur2 % 1 > 0) debugger;
             // ▼参数依次为：x, y, with, height
             Context.fillRect(idx, (halfHeight - cur1), 1, cur1 - cur2);
             idx++;
         }
         oData.drawing = false;
-        return oCanvasDom;
     }
     // ▼设宽并绘制
     function setCanvasWidthAndDraw(){
@@ -266,8 +266,8 @@ export default function(){
 		oData.iHeight = iHeight;
 		toDraw();
 	}
-    // ▼跳行后定位
-	function setLinePosition(oLine, iAimLine){
+    // ▼跳行后定位波形位置
+	function setLinePosition(oLine){
 		const {offsetWidth} = oDom.oViewport;
 		const {fPerSecPx} = oData;
 		const {start, long} = oLine;
@@ -281,11 +281,11 @@ export default function(){
 	}
     // ▼定位滚动条
     function goThere(oDomObj, sDirection, iNewVal){
-		// clearInterval(this.state.scrollTimer);
+		// clearInterval(oData.scrollTimer);
 		const sType = `scroll${sDirection}`;
 		const iOldVal = oDomObj[sType];
 		if (~~iOldVal === ~~iNewVal) return;
-		if ('不要动画效果') return (oDomObj[sType] = iNewVal);
+		if ('不要动画') return (oDomObj[sType] = iNewVal);
 		const [iTakeTime, iTimes] = [350, 40]; //走完全程耗时, x毫秒走一步
 		const iOneStep = ~~((iNewVal - iOldVal) / (iTakeTime / iTimes));
 		const scrollTimer = setInterval(()=>{
@@ -305,7 +305,7 @@ export default function(){
 			}
 			oDomObj[sType] = iAimTo;
 		}, iTimes);
-		this.setState({scrollTimer});
+        oData.scrollTimer = scrollTimer;
 	}
     // =================================================================================================================
     watch(() => oDom.oMyWaveBar, (oNew)=>{
@@ -340,7 +340,7 @@ export default function(){
         }, 300);
     }, {immediate: true});
     onMounted(()=>{
-        console.log('Mounted--------------');
+        // console.log('Mounted--------------');
     });
     return {
         oDom,

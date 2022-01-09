@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-08 21:26:46
+ * @LastEditTime: 2022-01-09 13:09:19
  * @Description: 
 -->
 <template>
@@ -76,6 +76,9 @@ export default {
             default: 0,
         },
     },
+    // ▼ 与 props 类似
+    // ▼ 声明当前组件<example/>可以在行间定义的属性
+    emits: ['pipe'],
     setup(props){
         const {oDom, oFn, oData} = w01();
         // ▼视口范围，起点秒&终点秒
