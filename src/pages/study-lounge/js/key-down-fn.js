@@ -2,11 +2,10 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 16:10:23
+ * @LastEditTime: 2022-01-09 16:23:14
  * @Description: 
  */
-import { getCurrentInstance } from 'vue';
-import { onBeforeUnmount } from 'vue';
+import { getCurrentInstance, onBeforeUnmount } from 'vue';
 import {keyMap} from '../../../common/js/key-map.js';
 import {fixTime } from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 14:25:44
+ * @LastEditTime: 2022-01-09 16:24:52
  * @Description: 
  */
 import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
@@ -48,7 +48,6 @@ function getWaveArr(oMediaBuffer, iPerSecPx, fEndSec) {
     );
     const myArr = aPeaks.reduce((result, cur, idx, arr) => {
         if (idx % 2) return result; // 只处理0、2、4 不处理1、3、5
-        // doNext
         // ▼此处是否需要转整形，待考究
         const iOnePxHeight = Math.round((cur - arr[idx + 1]) * 0.5);
         result.push(iOnePxHeight);
@@ -73,7 +72,10 @@ function getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight) {
             continue;
         }
         aSection.push({ // 视为新句子，新建
-            start: idx, end: idx, long: 0, fAveHeight: iCurHeight,
+            start: idx, 
+            end: idx, 
+            long: 0, 
+            fAveHeight: iCurHeight,
         });
         if (!oLast) continue;
         oLast.iGapToNext = (idx - oLast.end) / iPerSecPx; //到下一步的距离
