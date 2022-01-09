@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 14:09:31
+ * @LastEditTime: 2022-01-09 16:10:23
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -19,7 +19,7 @@ import {figureOut} from './figure-out-region.js';
 export function registerKeydownFn(){
     const oInstance = getCurrentInstance();
     const {proxy: oAllData} = oInstance;
-    const oFnList = getFnArr(oInstance, true).reduce((oResult, cur)=>{
+    const oFnList = getFnArr(oInstance).reduce((oResult, cur)=>{
         oResult[cur.key] = cur.fn;
         return oResult;
     }, {});
@@ -59,7 +59,7 @@ export function fnAllKeydownFn(){
         const { oMediaBuffer, aLineArr, iCurLineIdx } = oAllData; // iCurStep
         const iCurLineNew = Math.max(0, iCurLineIdx + iDirection);
         oInstance.proxy.iCurLineIdx = iCurLineNew;
-        const newLine = (() => {
+        const oNewLine = (() => {
             if (aLineArr[iCurLineNew]) return false; //有数据，不新增
             if ((oMediaBuffer.duration - aLineArr[iCurLineIdx].end) < 0.1) {
                 return null; //临近终点，不新增
@@ -67,34 +67,37 @@ export function fnAllKeydownFn(){
             const {end} = aLineArr[aLineArr.length-1];
             return figureOut(oMediaBuffer, end); // 要新增一行，返回下行数据
         })();
-        if (newLine === null) return console.log(`已经到头了`);
-        goLine(iCurLineNew, newLine);
-        // ▲跳转
-        // ▼处理保存相关事宜
-        // TODO 保存相关判断最好放在 【goLine】中统一处理
-        // console.log('需要计算：', !!isWantSave);
-        // if (!(isWantSave && iCurStep > 0 && iCurLineNew % 2)) return; // 不满足保存条件 return
-        // const isNeedSave = (() => {
-        //     if (newLine) return true; // 新建行了，得保存！
-        //     const aOldlines = this.aHistory[iCurStep - 1].aLineArr; // 提取上一步的行数据
-        //     if (!aOldlines[iCurLineIdx]) debugger;
-        //     const bResult = aOldlines[iCurLineIdx].text !== aLineArr[iCurLineIdx].text;
-        //     console.log('bResult', bResult);
-        //     return bResult; // 当前行与上一行不一样，保存！
-        // })();
-        // isNeedSave && this.toSaveInDb();
+        if (oNewLine === null) return console.log(`已经到头了`);
+        goLine(iCurLineNew, oNewLine);
     }
     // ▼跳至某行
-    async function goLine(iAimLine, oNewLine, doNotSave) {
+    async function goLine(iAimLine, oNewLine) {
         if (typeof iAimLine === 'number') { // 观察：能不能进来？
             oAllData.iCurLineIdx = iAimLine;
         }else{
             iAimLine = oAllData.iCurLineIdx;
         }
+        setLinePosition(iAimLine);
         if (!oNewLine) return;
         oAllData.aLineArr.push(oNewLine);
     }
-    
+    // ▼跳行后定位
+	function setLinePosition(iAimLine){
+		const {oSententList} = oAllData;
+		const {scrollTop: sTop, offsetHeight: oHeight} = oSententList;
+        const iLineHeight = 35; // 行高
+		const abloveCurLine = iAimLine * iLineHeight; // 当前行以上高度
+		oSententList.scrollTop = (()=>{
+			if (abloveCurLine < sTop + iLineHeight) {
+                return abloveCurLine - iLineHeight;
+            }
+			// ▲上方超出可视区，▼下方超出可视区（以下代码没能深刻理解）
+			if (abloveCurLine > sTop + oHeight - iLineHeight * 2) {
+				return abloveCurLine - oHeight + iLineHeight * 2;
+			}
+			return sTop;
+		})();
+	}
     // ▼最终返回
     return {
         previousAndNext,
@@ -103,7 +106,7 @@ export function fnAllKeydownFn(){
 }
 
 
-function getFnArr(oInstance, getAll){
+function getFnArr(oInstance){
     const {proxy} = oInstance;
     const This = proxy; // 别名
     const {oMyWave} = proxy;
@@ -156,8 +159,9 @@ function getFnArr(oInstance, getAll){
         {key: 'alt + shift + d', name: '保存单词到云', fn: `this.saveWord.bind(this)`},
         {key: 'alt + shift + c', name: '查字典', fn: `this.searchWord.bind(this)`},
     ];
-    if (getAll) return [...withNothing, ...withCtrl, ...withAlt];
-    return [withNothing, withCtrl, withAlt];
+    // ▼将来用于前端显示给用户
+    // if(0) return [withNothing, withCtrl, withAlt];
+    return [...withNothing, ...withCtrl, ...withAlt];
 }
 
 

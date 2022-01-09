@@ -6,6 +6,7 @@ const ipcRenderer = require("electron").ipcRenderer;
 
 const oDom = reactive({
 	oMyWave: null,
+	oSententList: null,
 });
 const oData = reactive({
 	sFilePath: '',
@@ -50,22 +51,7 @@ export function f1(){
 		const oFirst = figureOut(oData.oMediaBuffer, 0, 30);
 		oData.aLineArr = [oFirst];
 	}
-	// doNext
-    // ▼跳行后定位字幕ul的滚动条位置
-	function setLinePosition(oLine, iAimLine){
-        console.log("计算目标位置");
-		const oSententList = this.oSententList.current;
-		const {scrollTop: sTop, offsetHeight: oHeight} = oSententList;
-		const abloveCurLine = iAimLine * iLineHeight; // 当前行以上高度
-		oSententList.scrollTop = (()=>{
-			if (abloveCurLine < sTop + iLineHeight) return abloveCurLine - iLineHeight;
-			// ▲上方超出可视区，▼下方超出可视区（以下代码没能深刻理解）
-			if (abloveCurLine > sTop + oHeight - iLineHeight * 2) {
-				return abloveCurLine - oHeight + iLineHeight * 2;
-			}
-			return sTop;
-		})();
-	}
+	
 	function listener(o1){
 		// console.log('o1\n', o1);
 		oData.oMediaBuffer = o1;

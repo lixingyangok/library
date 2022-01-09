@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 12:47:11
+ * @LastEditTime: 2022-01-09 16:04:16
  * @Description: 
 -->
 <template>
@@ -32,8 +32,7 @@
                 <textarea v-if="0"></textarea>
             </div>
             <article>
-                <br/><br/>
-                <ul class="sentence-wrap" >
+                <ul class="sentence-wrap" ref="oSententList" >
                     <li v-for="(cur,idx) of aLineArr" :key="idx"
                         class="one-line" :class="iCurLineIdx == idx ? 'cur' : ''"
                         :style="{'--width': `${String(aLineArr.length || 0).length}em`}"
