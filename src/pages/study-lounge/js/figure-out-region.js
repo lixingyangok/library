@@ -2,17 +2,19 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 13:03:22
+ * @LastEditTime: 2022-01-09 14:25:44
  * @Description: 
  */
-import { fixTime } from '../../../common/js/pure-fn.js';
+import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
+
+
 
 // ▼智能断句：1参是上一步的结尾的秒数， 2参是在取得的区间的理想的长度（秒数）
-export function figureOut(fEndSec, fLong = 2.5) {
+export function figureOut(oMediaBuffer, fEndSec, fLong = 2.5) {
     const [iPerSecPx, iWaveHeight, iAddition] = [100, 12, 20]; // 默认每秒宽度值（px），高度阈值，添加在两头的空隙，
-    const aWaveArr = getWaveArr(fEndSec, iPerSecPx); //取得波形
+    const aWaveArr = getWaveArr(oMediaBuffer, iPerSecPx, fEndSec); //取得波形
     const aSection = getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight);
-    const {duration} = this.state.buffer;
+    const {duration} = oMediaBuffer;
     let { start, end } = (() => {
         const [oFirst, oSecond] = aSection;
         if (!oFirst) return { start: 0, end: aWaveArr.length };
@@ -37,16 +39,20 @@ export function figureOut(fEndSec, fLong = 2.5) {
 }
 
 // ▼提供【波形数组】用于断句
-function getWaveArr(fEndSec, iPerSecPx) {
-    const { aPeaks } = this.getPeaks(
-        this.state.buffer, iPerSecPx, 
-        (iPerSecPx * fEndSec), iPerSecPx * 20 // 取当前位置往后x秒
+function getWaveArr(oMediaBuffer, iPerSecPx, fEndSec) {
+    const { aPeaks } = getPeaks(
+        oMediaBuffer,
+        iPerSecPx, 
+        iPerSecPx * fEndSec,
+        iPerSecPx * 20 // 取当前位置往后x秒
     );
     const myArr = aPeaks.reduce((result, cur, idx, arr) => {
-        if (idx % 2) return result; //只处理0、2、4。不处理：1、3、5
+        if (idx % 2) return result; // 只处理0、2、4 不处理1、3、5
+        // doNext
         // ▼此处是否需要转整形，待考究
-        const iOnePxHeight = Math.round((cur - arr[idx + 1]) * this.state.iHeight);
-        return result.concat(iOnePxHeight);
+        const iOnePxHeight = Math.round((cur - arr[idx + 1]) * 0.5);
+        result.push(iOnePxHeight);
+        return result;
     }, []);
     return myArr;
 }
@@ -57,7 +63,7 @@ function getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight) {
     for (let idx = 0; idx < aWaveArr.length; idx++) {
         const iCurHeight = aWaveArr[idx];
         if (iCurHeight < iWaveHeight) continue;
-        const oLast = aSection.last_;
+        const oLast = aSection[aSection.length-1];
         if (oLast && (idx - oLast.end) / iPerSecPx < 0.35) { //上一区间存在 && 距离上一区间很近(0.35秒之内)。则视为一段话，累加长度
             const { start, end, fAveHeight } = oLast;
             const pxLong = idx - start + 1;

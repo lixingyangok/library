@@ -2,14 +2,14 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 13:11:06
+ * @LastEditTime: 2022-01-09 14:09:31
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
 import { onBeforeUnmount } from 'vue';
 import {keyMap} from '../../../common/js/key-map.js';
 import {fixTime } from '../../../common/js/pure-fn.js';
-// 
+import {figureOut} from './figure-out-region.js';
 // import {trainingDB, wordsDB} from 'assets/js/common.js';
 // import {getQiniuToken} from 'assets/js/learning-api.js';
 // import {aAlphabet} from 'assets/js/common.js';
@@ -50,40 +50,55 @@ export function registerKeydownFn(){
 // ▼按键后的方法列表
 export function fnAllKeydownFn(){
     const oInstance = getCurrentInstance();
-    const This = oInstance; // 别名
+    // const This = oInstance; // 别名
     const {proxy: oAllData} = oInstance;
-    const oList01 = {
-        // ▼切换当前句子（上一句，下一句）
-        previousAndNext(iDirection, isWantSave) {
-            const { oMediaBuffer: buffer, aLineArr, iCurLineIdx } = oAllData; // iCurStep
-            const iCurLineNew = Math.max(0, iCurLineIdx + iDirection);
-			oAllData.iCurLineIdx = iCurLineNew;
-			return;
-            const newLine = (() => {
-                if (aLineArr[iCurLineNew]) return false; //有数据，不新增
-                if ((buffer.duration - aLineArr[iCurLineIdx].end) < 0.1) return null; //临近终点，不新增
-                return figureOut(aLineArr.last_.end); // 要新增一行，返回下行数据
-            })();
-            if (newLine === null) return console.log(`已经到头了`);
-            This.goLine(iCurLineNew, newLine);
-            // ▲跳转
-            // ▼处理保存相关事宜
-            // TODO 保存相关判断最好放在 【goLine】中统一处理
-            // console.log('需要计算：', !!isWantSave);
-            // if (!(isWantSave && iCurStep > 0 && iCurLineNew % 2)) return; // 不满足保存条件 return
-            // const isNeedSave = (() => {
-            //     if (newLine) return true; // 新建行了，得保存！
-            //     const aOldlines = this.aHistory[iCurStep - 1].aLineArr; // 提取上一步的行数据
-            //     if (!aOldlines[iCurLineIdx]) debugger;
-            //     const bResult = aOldlines[iCurLineIdx].text !== aLineArr[iCurLineIdx].text;
-            //     console.log('bResult', bResult);
-            //     return bResult; // 当前行与上一行不一样，保存！
-            // })();
-            // isNeedSave && this.toSaveInDb();
+    const {oMediaBuffer} = oAllData;
+    
+    // ▼切换当前句子（上一句，下一句）
+    function previousAndNext(iDirection, isWantSave) {
+        const { oMediaBuffer, aLineArr, iCurLineIdx } = oAllData; // iCurStep
+        const iCurLineNew = Math.max(0, iCurLineIdx + iDirection);
+        oInstance.proxy.iCurLineIdx = iCurLineNew;
+        const newLine = (() => {
+            if (aLineArr[iCurLineNew]) return false; //有数据，不新增
+            if ((oMediaBuffer.duration - aLineArr[iCurLineIdx].end) < 0.1) {
+                return null; //临近终点，不新增
+            }
+            const {end} = aLineArr[aLineArr.length-1];
+            return figureOut(oMediaBuffer, end); // 要新增一行，返回下行数据
+        })();
+        if (newLine === null) return console.log(`已经到头了`);
+        goLine(iCurLineNew, newLine);
+        // ▲跳转
+        // ▼处理保存相关事宜
+        // TODO 保存相关判断最好放在 【goLine】中统一处理
+        // console.log('需要计算：', !!isWantSave);
+        // if (!(isWantSave && iCurStep > 0 && iCurLineNew % 2)) return; // 不满足保存条件 return
+        // const isNeedSave = (() => {
+        //     if (newLine) return true; // 新建行了，得保存！
+        //     const aOldlines = this.aHistory[iCurStep - 1].aLineArr; // 提取上一步的行数据
+        //     if (!aOldlines[iCurLineIdx]) debugger;
+        //     const bResult = aOldlines[iCurLineIdx].text !== aLineArr[iCurLineIdx].text;
+        //     console.log('bResult', bResult);
+        //     return bResult; // 当前行与上一行不一样，保存！
+        // })();
+        // isNeedSave && this.toSaveInDb();
+    }
+    // ▼跳至某行
+    async function goLine(iAimLine, oNewLine, doNotSave) {
+        if (typeof iAimLine === 'number') { // 观察：能不能进来？
+            oAllData.iCurLineIdx = iAimLine;
+        }else{
+            iAimLine = oAllData.iCurLineIdx;
         }
-    };
+        if (!oNewLine) return;
+        oAllData.aLineArr.push(oNewLine);
+    }
+    
+    // ▼最终返回
     return {
-        ...oList01,
+        previousAndNext,
+        goLine,
     };
 }
 
@@ -388,7 +403,7 @@ export class part02 {
     }
     // ▼抛弃当前行，或处理第一行
     giveUpThisOne(start = this.getCurLine().end){
-        const oNextLine = this.figureOut(start); //返回下一行的数据
+        const oNextLine = figureOut(oMediaBuffer, start); //返回下一行的数据
         this.setCurLine(oNextLine);
     }
     // 停止播放
@@ -423,7 +438,7 @@ export class part02 {
     // ▼扩选
     chooseMore() {
         const oCurLine = this.getCurLine();
-        const newEnd = this.figureOut(oCurLine.end, 0.35).end;
+        const newEnd = figureOut(oMediaBuffer, oCurLine.end, 0.35).end;
         this.setTime('end', newEnd);
         this.goToCurLine();
     }

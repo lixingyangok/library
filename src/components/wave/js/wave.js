@@ -268,6 +268,7 @@ export default function(){
 	}
     // ▼跳行后定位波形位置
 	function setLinePosition(oLine){
+        if (!oDom.oViewport) return;
 		const {offsetWidth} = oDom.oViewport;
 		const {fPerSecPx} = oData;
 		const {start, long} = oLine;

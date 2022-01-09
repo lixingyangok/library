@@ -1,11 +1,12 @@
 import {toRefs, reactive, computed, onMounted} from 'vue';
 import {SubtitlesStr2Arr, fixTime} from '../../../common/js/pure-fn.js';
+import {figureOut} from './figure-out-region.js';
+
 const ipcRenderer = require("electron").ipcRenderer;
 
-const oDom = {
+const oDom = reactive({
 	oMyWave: null,
-};
-
+});
 const oData = reactive({
 	sFilePath: '',
 	sMediaSrc: '',
@@ -14,8 +15,8 @@ const oData = reactive({
 	iCurLineIdx: 0,
 	oMediaBuffer: {},
 	testNumber: 123,
+	iSubtitle: 0, // -1=查不到字幕，1=有字幕
 });
-
 const oCurLine = computed(()=>{
 	return oData.aLineArr[ oData.iCurLineIdx ];
 });
@@ -36,37 +37,18 @@ export function f1(){
 	// ▼取得字幕数据
 	function readSrtFile(event, sSubtitles, err){
 		if (err) {
-			makeLineArr();
+			oData.iSubtitle = -1; //
 			return console.log('字幕文件不存在\n');
 		}
 		const arr = SubtitlesStr2Arr(sSubtitles);
 		if (!arr) return console.log('文本转为数据未成功\n');
-		arr.forEach((cur, idx) => {
-			cur.idx = idx;
-		});
+		oData.iSubtitle = 1;
 		oData.aLineArr = arr; //.splice(0, Infinity, ...arr);
 	}
 	// ▼插入一个空行
-	function makeLineArr(){
-		oData.aLineArr = [
-			fixTime({start: 1, end: 5, text: '默认字幕'}),
-		];
-	}
-	// ▼跳至某行
-	async function goLine(iAimLine, oNewLine, doNotSave) {
-		if (typeof iAimLine === 'number') { // 观察：能不能进来？
-			oData.iCurLineIdx = iAimLine;
-		}else{
-			iAimLine = oData.iCurLineIdx;
-		}
-		// if (oNewLine) {
-		// 	oNewState.aLineArr.push(oNewLine);
-		// 	oNewState.sCurLineTxt = oNewLine.text;
-		// }else{
-		// 	oNewState.sCurLineTxt = aLineArr[iAimLine].text;
-		// }
-		// if (!doNotSave) this.saveHistory(oNewState); // 有报错补上 dc_
-		// this.setState(oNewState);
+	function setFirstLine(){
+		const oFirst = figureOut(oData.oMediaBuffer, 0, 30);
+		oData.aLineArr = [oFirst];
 	}
 	// doNext
     // ▼跳行后定位字幕ul的滚动条位置
@@ -87,6 +69,8 @@ export function f1(){
 	function listener(o1){
 		// console.log('o1\n', o1);
 		oData.oMediaBuffer = o1;
+		if (oData.iSubtitle >= 0) return; // 有字幕则返回
+		setFirstLine();
 	}
 	// ============================================================================
 	ipcRenderer._events.getSubtitlesArrReply = readSrtFile;
@@ -98,7 +82,6 @@ export function f1(){
         ...toRefs(oDom),
         ...toRefs(oData),
 		...{
-			goLine,
 			listener,
 		},
     });
