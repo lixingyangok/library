@@ -345,6 +345,7 @@ export default function(){
         saveBlob,
         zoomWave,
         changeWaveHeigh,
+        goOneLine,
     };
     return { oDom, oData, oFn };
 }

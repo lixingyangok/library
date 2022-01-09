@@ -2,11 +2,10 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 16:24:52
- * @Description: 
+ * @LastEditTime: 2022-01-09 21:57:15
+ * @Description: 这是智能断句的模块
  */
 import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
-
 
 
 // ▼智能断句：1参是上一步的结尾的秒数， 2参是在取得的区间的理想的长度（秒数）

@@ -121,16 +121,17 @@ export function fixTime(oTarget){
 // buffer.duration  // 时长(秒)：双精度型
 // ▼ 按接收到的数据 => 计算波峰波谷（纯函数）
 export function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
+	// console.time('getPeaks');
 	const {aChannelData_, length, sampleRate, duration} = buffer;
     const sampleSize = sampleRate / iPerSecPx ; // 每一份的点数 = 每秒采样率 / 每秒像素
     const aPeaks = [];
     let idx = Math.round(left);
     const last = idx + iCanvasWidth;
     while (idx <= last) {
-        let start = Math.round(idx * sampleSize);
-        const end = Math.round(start + sampleSize);
         let min = 0;
         let max = 0;
+        let start = Math.round(idx * sampleSize);
+        const end = Math.round(start + sampleSize);
         while (start < end) {
             const value = aChannelData_[start];
             if (value > max) max = value;
@@ -142,6 +143,7 @@ export function getPeaks(buffer, iPerSecPx, left=0, iCanvasWidth=500) {
     }
     // ▼返回浮点型的每秒宽度(px)
     const fPerSecPx = length / sampleSize / duration;
+	// console.timeEnd('getPeaks'); // getPeaks: 0.108154296875 ms
     return {aPeaks, fPerSecPx};
 }
 

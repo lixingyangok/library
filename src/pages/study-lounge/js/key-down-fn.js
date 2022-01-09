@@ -2,11 +2,10 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 18:51:35
+ * @LastEditTime: 2022-01-09 21:57:58
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
-import {keyMap} from '../../../common/js/key-map.js';
 import {fixTime } from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 // import {trainingDB, wordsDB} from 'assets/js/common.js';
@@ -96,11 +95,44 @@ export function fnAllKeydownFn(){
 		// fixTime(oCurLine);
         This.aLineArr[This.iCurLineIdx] = fixTime(oCurLine);
 	}
+    // ▼插入一句。 参数说明：-1=向左，1=向右
+    function toInsert(iDirection) {
+        const isToLeft = iDirection === -1;
+        let {iCurLineIdx, aLineArr, oMediaBuffer:{duration}} = This;
+        const { start, end } = aLineArr[iCurLineIdx]; //当前行
+        if (start === 0) return; //0开头，不可向前插入
+        const oAim = aLineArr[iCurLineIdx + iDirection] || {};
+        const newIdx = isToLeft ? iCurLineIdx : iCurLineIdx + 1;
+        const oNewLine = fixTime({
+            start: isToLeft ? (oAim.end || 0) : end,
+            end: (
+                isToLeft
+                ? start 
+                : Math.min(oAim.start || end + 10, duration + 0.5)
+            ),
+        });
+        if (oNewLine.start === oNewLine.end) return;
+        aLineArr.splice(newIdx, 0, oNewLine);
+        iCurLineIdx += isToLeft ? 0 : 1;
+        This.iCurLineIdx = iCurLineIdx;
+    }
+    // ▼删除某行（当前行）
+    function toDel() {
+        let { iCurLineIdx, aLineArr } = This;
+        if (aLineArr.length <= 1) return;
+        aLineArr.splice(iCurLineIdx, 1);
+        const iMax = aLineArr.length - 1;
+        This.iCurLineIdx = Math.min(iMax, iCurLineIdx);
+        goLine(This.iCurLineIdx);
+        This.oMyWave.goOneLine(aLineArr[This.iCurLineIdx]);
+    }
     // ▼最终返回
     return {
         previousAndNext,
         goLine,
         fixRegion,
+        toInsert,
+        toDel,
     };
 }
 
@@ -113,18 +145,18 @@ export function getKeyDownFnMap(This, sType){
         {key: 'Next', name: '下一句', fn: ()=>This.previousAndNext(1)},
         {key: 'F1', name: '设定起点', fn: `this.cutHere.bind(this, 'start')`},
         {key: 'F2', name: '设定终点', fn: `this.cutHere.bind(this, 'end')`},
-        {key: 'F3', name: '删除当前句', fn: `this.giveUpThisOne.bind(this)`},
+        {key: 'F3', name: '删除当前句', fn: `this.giveUpThisOne.bind(this)`}, // 抛弃当前句，向下断句
         {key: 'F4', name: '查询选中单词', fn: `this.searchWord.bind(this, true)`},
         {key: 'Escape', name: '取消播放', fn: `this.toStop.bind(this)`}, // 停止播放
     ];
     const withCtrl = [
-        {key: 'ctrl + d', name: '删除一行',  fn: `this.toDel.bind(this)`},
+        {key: 'ctrl + d', name: '删除一行',  fn: () => This.toDel()},
         {key: 'ctrl + z', name: '撤销',  fn: `this.setHistory.bind(this, -1)`},
         {key: 'ctrl + s', name: '保存到云（字幕）',  fn: `this.uploadToCloudBefore.bind(this)`}, 
         {key: 'ctrl + j', name: '合并上一句',  fn: `this.putTogether.bind(this, 'prior')`}, 
         {key: 'ctrl + k', name: '合并下一句',  fn: `this.putTogether.bind(this, 'next')`}, 
-        {key: 'ctrl + Enter', name: '播放',  fn: `this.toPlay.bind(this)`},
-        {key: 'ctrl + shift + Enter', name: '播放',  fn: `this.toPlay.bind(this, true)`},
+        {key: 'ctrl + Enter', name: '播放',  fn: ()=>oMyWave.toPlay()},
+        {key: 'ctrl + shift + Enter', name: '播放',  fn: ()=>oMyWave.toPlay(true)},
         {key: 'ctrl + shift + z', name: '恢复',  fn: `this.setHistory.bind(this, 1)`},
         {key: 'ctrl + shift + c', name: '分割',  fn: `this.split.bind(this)`},
         {key: 'ctrl + shift + s', name: '保存到本地',  fn: `this.toSaveInDb.bind(this)`}, 
@@ -146,8 +178,8 @@ export function getKeyDownFnMap(This, sType){
         {key: 'alt + k', name: '', fn: ()=>This.previousAndNext(1)},
         {key: 'alt + l', name: '跳到最后一句', fn: `this.goLastLine.bind(this)`},
         // alt + shift
-        {key: 'alt + shift + j', name: '向【左】插入一句', fn: `this.toInsert.bind(this, -1)` },
-        {key: 'alt + shift + k', name: '向【右】插入一句', fn: `this.toInsert.bind(this, 1)` },
+        {key: 'alt + shift + j', name: '向【左】插入一句', fn: ()=>This.toInsert(-1) },
+        {key: 'alt + shift + k', name: '向【右】插入一句', fn: ()=>This.toInsert(1) },
         {key: 'alt + shift + d', name: '保存单词到云', fn: `this.saveWord.bind(this)`},
         {key: 'alt + shift + c', name: '查字典', fn: `this.searchWord.bind(this)`},
     ];
@@ -246,22 +278,6 @@ class keyDownFn {
 
 export class part02 {
 
-    // ▼删除某行
-    toDel() {
-        let { iCurLineIdx } = this.state;
-        const aLineArr = this.state.aLineArr.dc_;
-        if (aLineArr.length <= 1) return;
-        aLineArr.splice(iCurLineIdx, 1);
-        const iMax = aLineArr.length - 1;
-        if (iCurLineIdx >= iMax) iCurLineIdx = iMax;
-        const oNewState = {aLineArr, iCurLineIdx};
-        this.saveHistory(oNewState);
-        this.setState({
-            ...oNewState,
-            sCurLineTxt: aLineArr[iCurLineIdx].text,
-        });
-        this.goLine(iCurLineIdx, false, true);
-    }
     // ▼保存字幕到浏览器
     async toSaveInDb(bForUpload) {
         if (bForUpload){
@@ -362,30 +378,7 @@ export class part02 {
         });
         this.goLine(iCurLineIdx, false, true);
     }
-    // ▼插入一句。 参数说明：-1=向左，1=向右
-    toInsert(iDirection) {
-        const isToLeft = iDirection === -1;
-        let {iCurLineIdx} = this.state;
-        let aLineArr = this.state.aLineArr.dc_;
-        const { start, end } = aLineArr[iCurLineIdx]; //当前行
-        if (start === 0) return; //0开头，不可向前插入
-        const oAim = aLineArr[iCurLineIdx + iDirection] || {};
-        const newIdx = isToLeft ? iCurLineIdx : iCurLineIdx + 1;
-        const oNewLine = fixTime({
-            start: isToLeft ? (oAim.end || 0) : end,
-            end: (
-                isToLeft
-                ? start 
-                : Math.min(oAim.start || end + 10, this.state.buffer.duration + 0.5)
-            ),
-        });
-        if (oNewLine.start === oNewLine.end) return;
-        aLineArr.splice(newIdx, 0, oNewLine);
-        iCurLineIdx += isToLeft ? 0 : 1;
-        const oNewState = {aLineArr, iCurLineIdx};
-        this.saveHistory(oNewState);
-        this.setState(oNewState);
-    }
+
     // ▼抛弃当前行，或处理第一行
     giveUpThisOne(start = this.getCurLine().end){
         const oNextLine = figureOut(oMediaBuffer, start); //返回下一行的数据
