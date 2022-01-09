@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 13:09:19
+ * @LastEditTime: 2022-01-09 14:55:23
  * @Description: 
 -->
 <template>
@@ -23,7 +23,7 @@
                 :style="{width: `${(oMediaBuffer.duration + 1) * fPerSecPx}px`}"
             >
                 <ul class="scale-ul">
-                    <li v-for="(cur) of aShowingArr" :key="cur" v-show="cur"
+                    <li v-for="(cur) of aGapMarks" :key="cur" v-show="cur"
                         class="one-second" :class="cur % 10 == 0 ? 'ten-times' : ''"
                         :style="{left: `${cur * fPerSecPx}px`}"
                     >
@@ -32,7 +32,7 @@
                     </li>
                 </ul>
                 <ul class="region-ul">
-                    <li v-for="(cur, idx) of aShowingGaps" :key="idx" 
+                    <li v-for="(cur, idx) of aGapRegions" :key="idx" 
                         class="region" :class="cur.idx === iCurLineIdx ? 'cur' : ''"
                         :style="{
                             left: `${cur.start * fPerSecPx}px`,
@@ -81,23 +81,23 @@ export default {
     emits: ['pipe'],
     setup(props){
         const {oDom, oFn, oData} = w01();
-        // ▼视口范围，起点秒&终点秒
-        const aShowingRegion = computed(() => {
+        // ▼视口范围 [起点秒，终点秒]
+        const aGapSeconds = computed(() => {
             const iWidth = window.innerWidth;
-            const start = ~~(oData.iScrollLeft / oData.fPerSecPx) - 1;
+            const start = ~~(oData.iScrollLeft / oData.fPerSecPx);
             const end = ~~((oData.iScrollLeft + iWidth) / oData.fPerSecPx);
             return [Math.max(start, 0), end];
         });
-        const aShowingArr = computed(() => {
+        const aGapMarks = computed(() => {
+            const [iLeftSec, iRightSec] = aGapSeconds.v;
             const arr = [];
-            const [iLeftSec, iRightSec] = aShowingRegion.v;
             for(let idx = iLeftSec; idx < iRightSec; idx++ ) {
                 arr.push(idx);
             }
             return arr;
         });
-        const aShowingGaps = computed(() => {
-            const [iLeftSec, iRightSec] = aShowingRegion.v;
+        const aGapRegions = computed(() => {
+            const [iLeftSec, iRightSec] = aGapSeconds.v;
             if (!iRightSec) return [];
             const myArr = [];
             const {length} = props.aLineArr;
@@ -105,6 +105,7 @@ export default {
                 const {end} = props.aLineArr[idx];
                 const IsShow = end > iLeftSec || end > iRightSec; // 此处正确无误
                 if (!IsShow) continue;
+                props.aLineArr[idx].idx = idx;
                 myArr.push(props.aLineArr[idx]);
                 if (end > iRightSec) break;
             }
@@ -114,8 +115,8 @@ export default {
             ...toRefs(oDom),
             ...toRefs(oData),
             ...oFn,
-            aShowingGaps,
-            aShowingArr,
+            aGapRegions,
+            aGapMarks,
         };
     },
 };
