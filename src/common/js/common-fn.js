@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 18:43:00
+ * @LastEditTime: 2022-01-09 21:59:59
  * @Description: 
  */
 
@@ -11,7 +11,6 @@ import { onBeforeUnmount } from 'vue';
 
 // ▼注册按键监听
 export function registerKeydownFn(oFnList){
-    // ▼收集用户按键
     function keyDownFnCaller(ev) {
         const ctrl = ev.ctrlKey ? 'ctrl + ' : '';
         const alt = ev.altKey ? 'alt + ' : '';

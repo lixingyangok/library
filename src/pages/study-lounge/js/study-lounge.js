@@ -1,7 +1,7 @@
-import {toRefs, reactive, computed, onMounted} from 'vue';
+import {toRefs, reactive, computed, onMounted, onBeforeUnmount} from 'vue';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
-const ipcRenderer = require("electron").ipcRenderer;
+const {ipcRenderer} = require("electron");
 
 export function f1(){
 	const oDom = reactive({
@@ -54,8 +54,11 @@ export function f1(){
 		setFirstLine();
 	}
 	// ============================================================================
-	ipcRenderer._events.getSubtitlesArrReply = readSrtFile;
-	ipcRenderer.send("getSubtitlesArr", oData.sSubtitleSrc);
+	ipcRenderer.send("textReader", oData.sSubtitleSrc);
+	ipcRenderer.on("textReaderReply", readSrtFile);
+	onBeforeUnmount(()=>{
+		ipcRenderer.removeListener('textReaderReply', readSrtFile);
+	});
 	onMounted(()=>{
 		// console.log('oDom', oDom.oMyWave);
 	});
@@ -68,6 +71,7 @@ export function f1(){
 		},
     });
 };
+
 
 // const AC = new window.AudioContext();
 // AC.decodeAudioData(uint8Buffer.buffer).then(audioBuf => {

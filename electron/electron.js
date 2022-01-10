@@ -2,27 +2,26 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-08 19:08:33
+ * @LastEditTime: 2022-01-10 20:36:52
  * @Description: 
  */
-// electron/electron.js
-const fs = require('fs');
+
+// ▼库导入
 const path = require('path');
-const urlib = require("url");
+const { app, BrowserWindow } = require('electron');
 const { default: installExtension, VUEJS3_DEVTOOLS } = require('electron-devtools-installer');
-const {
-    app, BrowserWindow, protocol, ipcMain,
-} = require('electron');
-
-
-const exePath = path.dirname(app.getPath('exe'));
+// ▼自定义导入
+const {makeChannels} = require('./others/communication.js');
+const {protocolRegister, protocolFnSetter} = require('./others/protocol-maker.js');
+// ▼其它声明
 const isDev = process.env.IS_DEV == "true" ? true : false;
-
-
-
-console.log('■■■■■■■■■■■■■■■■\nexe位置 =', exePath);
-app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+const exePath = path.dirname(app.getPath('exe'));
 let toLog = ()=>{};
+
+
+// ▼其它
+if (!exePath) console.log('exe位置 =', exePath);
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 function createWindow() {
     // Create the browser window.
@@ -37,7 +36,7 @@ function createWindow() {
         },
     });
     toLog = (...rest) => {
-        mainWindow.webContents.send('asynchronous-reply', ...rest);
+        mainWindow.webContents.send('logInBrower', ...rest);
     };
     // and load the index.html of the app.
     // win.loadFile("index.html");
@@ -51,53 +50,17 @@ function createWindow() {
     mainWindow.webContents.openDevTools(); // Open the DevTools.
 }
 
-ipcMain.on('asynchronous-message', (event, arg) => {
-    toLog('主进程收信了：\n', arg);
-    // const sReturn = arg + '★返回';
-    // toLog('■■■■■■■■■■■■■■■■■■■■■\n这个内容是主进程收信后返回的');
-    // event.reply('asynchronous-reply', sReturn);
-});
-
-// ▼设定一个通道用于接收窗口的来信
-ipcMain.on('getSubtitlesArr', function(event, sPath) {
-    fs.readFile(sPath, "utf8", (err, data)=>{
-        const keyWords = 'Error: ENOENT: no such file or directory, open';
-        if (err && err.message.startsWith(keyWords)){
-            data = null; // null 有特殊含义，表示文件不存在
-        }
-        event.sender.send('getSubtitlesArrReply', data, err);
-    });
-});
-
 // ▼要放在 app.whenReady 之前执行，只能执行一次
-const privileges = { standard: true, secure: true, bypassCSP: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true };
-protocol.registerSchemesAsPrivileged([
-    { scheme: 'tube', privileges },
-    { scheme: 'pipe', privileges },
-]);
+protocolRegister();
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-    protocol.registerFileProtocol('tube', function (req, callback){
-        var myobj = urlib.parse(req.url, true);
-        var pathVal = myobj.query.path;
-        // toLog('触发 registerFileProtocol 请求路径 ■■\n' + pathVal);
-        callback({ path: pathVal });
-    });
-    protocol.interceptBufferProtocol('pipe', (request, callback) => {
-        toLog('触发 interceptBufferProtocol');
-        const filePath = 'D:/天翼云盘同步盘/English dictation/NCEE/2019年高考(上海II卷)英语听力真题 短对话.mp3';
-        fs.readFile(filePath, (err, data) => {
-            if (err) return callback();
-            // mimeType 值可以这样取得：getMimeType(filePath),
-            callback({ data, mimeType: 'audio/mpeg' });
-        });
-    });
-    
     // ▼创建窗口
     createWindow();
+    makeChannels(toLog);
+    protocolFnSetter(toLog);
     app.on('activate', function () {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
