@@ -5,7 +5,13 @@ import {
     computed,
     onMounted,
 } from 'vue';
-import {fileToBuffer, getPeaks, getChannelArr, copyString} from '../../../common/js/pure-fn.js';
+import {
+    fileToBuffer,
+    getPeaks,
+    getChannelArr,
+} from '../../../common/js/pure-fn.js';
+import {ipcRenderer, listenFromMainProcess} from '../../../common/js/common-fn.js';
+
 
 export default function(){
     let aPeaksData = []; // 波形数据
@@ -37,6 +43,7 @@ export default function(){
     });
     const sLeft = 'tube://a/?path=';
     const sStorePath = 'D:/Program Files (gree)/my-library/temp-data/';
+    let oNewTempInfo = {};
     // ▼滚轮动了
     function wheelOnWave(ev) {
         ev.preventDefault();
@@ -102,7 +109,6 @@ export default function(){
         // console.log('解析耗时：', oMediaBuffer.fElapsedSec);
         return oMediaBuffer;
     }
-
     // ▼使Dom滚动条横向滚动
 	function scrollToFn(deltaY) {
 		const iOneStepLong = 350; // 步长
@@ -178,13 +184,12 @@ export default function(){
 		oData.playing = playing;
 	}
     // ▼保存blob
-    function saveBlob(){
+    function toSaveTemp(){
         const {oMediaBuffer} = oData;
         const {mediaPath} = oInstance.props;
         const oDate = new Date();
         const sDate = [oDate.getFullYear(), (oDate.getMonth()+1+'').padStart(2,0), (oDate.getDate()+'').padStart(2,0)].join('-');
-        const sOnlyName = mediaPath.split('/').pop();
-        const blobName = sOnlyName + `●${sDate}.blob`;
+        const blobName = `${mediaPath.split('/').pop()}●${sDate}.blob`;
         const oThisOne = {
             ...oMediaBuffer,
             aChannelData_: [],
@@ -193,17 +198,16 @@ export default function(){
             mediaPath,
             sSaveTo: sStorePath + blobName,
         };
-        toUpdateStore(oThisOne);
-        copyString(sStorePath);
-		const blob = oMediaBuffer.oChannelDataBlob_;
-		const downLink = Object.assign(document.createElement('a'), {
-			download: blobName,
-			href: URL.createObjectURL(blob),
-		});
-        downLink.click();
+        ipcRenderer.send("fileSaver", {
+            ...oThisOne, 
+            aChannelData_: oMediaBuffer.aChannelData_,
+        });
+        oNewTempInfo = oThisOne; // 先存上，回头用
 	}
     // ▼更新 localStorage
-    function toUpdateStore(oNewOne){
+    function toUpdateTempInfo(){
+        const oNewOne = oNewTempInfo;
+        console.log('oNewOne', oNewOne.$dc());
         const aTemp = ls('aTemp') || [];
         const iTarget = aTemp.findIndex((cur, idx)=>{
             const bExist = cur.mediaPath == oNewOne.mediaPath;
@@ -300,8 +304,11 @@ export default function(){
 			oViewport['scrollLeft'] = iAimTo;
 		}, iTimes);
 	}
-    
     // =================================================================================================================
+	listenFromMainProcess("fileSaverReply", function(err){
+        if (err) return;
+        toUpdateTempInfo();
+    });
     watch(() => oDom.oMyWaveBar, (oNew)=>{
         if (!oNew) return;
         setTimeout(()=>{
@@ -342,7 +349,7 @@ export default function(){
         wheelOnWave,
         waveWrapScroll,
         toPlay,
-        saveBlob,
+        toSaveTemp,
         zoomWave,
         changeWaveHeigh,
         goOneLine,

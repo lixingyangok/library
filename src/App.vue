@@ -22,7 +22,10 @@ export default {
     created(){
         // ▼注册一个方法，用于接收主进程的消息
         ipcRenderer.on('logInBrower', (event, ...arg) => {
-            console.log('主进程来信：\n', arg);
+            let content;
+            if (arg.length == 1) content = arg[0];
+            else content = arg;
+            console.log('▼ 主进程来信：\n', content);
         });
     },
 };

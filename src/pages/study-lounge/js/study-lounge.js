@@ -1,7 +1,9 @@
 import {toRefs, reactive, computed, onMounted, onBeforeUnmount} from 'vue';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
+import {listenFromMainProcess} from '../../../common/js/common-fn.js';
 const {ipcRenderer} = require("electron");
+
 
 export function f1(){
 	const oDom = reactive({
@@ -55,10 +57,7 @@ export function f1(){
 	}
 	// ============================================================================
 	ipcRenderer.send("textReader", oData.sSubtitleSrc);
-	ipcRenderer.on("textReaderReply", readSrtFile);
-	onBeforeUnmount(()=>{
-		ipcRenderer.removeListener('textReaderReply', readSrtFile);
-	});
+	listenFromMainProcess("textReaderReply", readSrtFile);
 	onMounted(()=>{
 		// console.log('oDom', oDom.oMyWave);
 	});
