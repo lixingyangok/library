@@ -305,7 +305,7 @@ export default function(){
 		}, iTimes);
 	}
     // =================================================================================================================
-	listenFromMainProcess("fileSaverReply", function(err){
+	listenFromMainProcess("fileSaverReply", function(event, err){
         if (err) return;
         toUpdateTempInfo();
     });

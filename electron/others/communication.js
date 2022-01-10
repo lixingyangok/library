@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-10 21:35:15
+ * @LastEditTime: 2022-01-10 21:47:00
  * @Description: 
  */
 const fs = require('fs');
@@ -34,10 +34,10 @@ module.exports.makeChannels = function(toLog){
 
     // ▼文本文件阅读器
     ipcMain.on('fileSaver', function(event, oData) {
-        toLog('开始保存了');
+        // toLog('开始保存了');
         const {sSaveTo, aChannelData_} = oData;
         fs.writeFile(sSaveTo, aChannelData_, function(err) {
-            toLog('文件保存成功？', !err);
+            // toLog('文件保存成功？', !err);
             event.reply('fileSaverReply', err);
         });
     });
