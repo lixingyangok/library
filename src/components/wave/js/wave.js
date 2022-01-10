@@ -193,7 +193,6 @@ export default function(){
         const oThisOne = {
             ...oMediaBuffer,
             aChannelData_: [],
-            oChannelDataBlob_: {},
             blobName,
             mediaPath,
             sSaveTo: sStorePath + blobName,

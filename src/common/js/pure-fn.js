@@ -51,8 +51,6 @@ export function getFakeBuffer(buffer){
 		...buffer_,
 		length: aChannelData_.length,
 		aChannelData_,
-		// ▼ 8分钟音频耗时 11ms
-		oChannelDataBlob_: new Blob([aChannelData_], {type: 'application/json'}),
 	};
 }
 

@@ -47,7 +47,8 @@ const oAboutTree = {
             return;
         }
         const isMedia = window.oConfig.aMedia.some(cur => {
-            return oAim.sItem.endsWith(cur);
+            const sItem = oAim.sItem.toLowerCase();
+            return sItem.endsWith(cur.toLowerCase());
         });
         if (!isMedia) return;
         const sFilePath = `${this.aPath.join('/')}/${oAim.sItem}`;
