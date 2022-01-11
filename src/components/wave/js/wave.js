@@ -10,7 +10,7 @@ import {
     getPeaks,
     getChannelArr,
 } from '../../../common/js/pure-fn.js';
-import {ipcRenderer, listenFromMainProcess} from '../../../common/js/common-fn.js';
+import {ipcRenderer, listenFromMainProcess, getTubePath} from '../../../common/js/common-fn.js';
 
 
 export default function(){
@@ -27,7 +27,7 @@ export default function(){
         oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
         iPerSecPx: 100,
-        fPerSecPx: 0,
+        fPerSecPx: 100,
 		iHeight: 0.4,
         iScrollLeft: 0,
         drawing: false,
@@ -41,7 +41,6 @@ export default function(){
             props.iCurLineIdx
         ];
     });
-    const sLeft = 'tube://a/?path=';
     const sStorePath = 'D:/Program Files (gree)/my-library/temp-data/';
     let oNewTempInfo = {};
     // ▼滚轮动了
@@ -86,12 +85,13 @@ export default function(){
         }
         oData.oMediaBuffer = oMediaBuffer;
         setCanvasWidthAndDraw();
-        oInstance.emit('pipe', oData.oMediaBuffer); // 向上报告
+        moveToFirstLine();
+        oInstance.emit('pipe', oData.oMediaBuffer); // 向上传递数据
     }
     // ▼加载【缓存】数据
     async function getTempData(oTemp){
-        const {sSaveTo} = oTemp;
-        const aChannelData_ = await fetch(sLeft+sSaveTo).then(res => {
+        const {sTempPath} = oTemp;
+        const aChannelData_ = await fetch(sTempPath).then(res => {
             return getChannelArr(res.blob());
         });
         return { ...oTemp, aChannelData_ };
@@ -189,16 +189,16 @@ export default function(){
         const {mediaPath} = oInstance.props;
         const oDate = new Date();
         const sDate = [oDate.getFullYear(), (oDate.getMonth()+1+'').padStart(2,0), (oDate.getDate()+'').padStart(2,0)].join('-');
-        const blobName = `${mediaPath.split('/').pop()}●${sDate}.blob`;
+        const sTempName = `${mediaPath.split('/').pop()}●${sDate}.blob`;
+        const sSaveTo = oConfig.sStorePath + sTempName;
         const oThisOne = {
-            ...oMediaBuffer,
-            aChannelData_: [],
-            blobName,
-            mediaPath,
-            sSaveTo: sStorePath + blobName,
+            ...{...oMediaBuffer, aChannelData_: []},
+            mediaPath, // 配对的依据（将来改为 xxhash)
+            sTempName,
+            sTempPath: getTubePath(sSaveTo),
         };
         ipcRenderer.send("fileSaver", {
-            ...oThisOne, 
+            sSaveTo, 
             aChannelData_: oMediaBuffer.aChannelData_,
         });
         oNewTempInfo = oThisOne; // 先存上，回头用
@@ -303,6 +303,14 @@ export default function(){
 			oViewport['scrollLeft'] = iAimTo;
 		}, iTimes);
 	}
+    function moveToFirstLine(){
+        const canGo = oData.oMediaBuffer.duration && props.aLineArr.length;
+        if (!canGo) return;
+        setTimeout(()=>{
+            console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
+            goOneLine(oCurLine.v);
+        }, 300);
+    }
     // =================================================================================================================
 	listenFromMainProcess("fileSaverReply", function(event, err){
         if (err) return;
@@ -335,10 +343,8 @@ export default function(){
     watch(() => props.aLineArr, async (aNew, aOld)=>{
         const condition = aNew?.length && !aOld?.length;
         if (!condition) return;
-        setTimeout(()=>{
-            // console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
-            goOneLine(oCurLine.v);
-        }, 300);
+        // console.log('aNew?.length', aNew?.length);
+        moveToFirstLine();
     }, {immediate: true});
     // ▼生命周期 ==================================================================
     onMounted(() => {

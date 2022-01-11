@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 14:52:15
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-06 16:45:44
+ * @LastEditTime: 2022-01-11 20:44:09
  * @Description: 
  */
 
@@ -13,12 +13,13 @@ window.oConfig = (function(){
     ];
     const aOthers = ['.srt', '.pdf'];
     return {
+        aMedia,
+        aFileType: [...aMedia, ...aOthers],
         aRoot: [
             'D:/天翼云盘同步盘/English dictation',
             'D:/English',
         ],
-        aFileType: [...aMedia, ...aOthers],
-        aMedia,
+        sStorePath: 'D:/Program Files (gree)/my-library/temp-data/',
     };
 })();
 

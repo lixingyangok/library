@@ -1,8 +1,7 @@
 import {toRefs, reactive, computed, onMounted, onBeforeUnmount} from 'vue';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
-import {listenFromMainProcess} from '../../../common/js/common-fn.js';
-const {ipcRenderer} = require("electron");
+import {getTubePath} from '../../../common/js/common-fn.js';
 
 
 export function f1(){
@@ -11,37 +10,33 @@ export function f1(){
 		oSententList: null,
 	});
 	const oData = reactive({
-		sFilePath: '',
-		sMediaSrc: '',
-		sSubtitleSrc: '',
+		sMediaSrc: getTubePath(ls('sFilePath')),
 		aLineArr: [],
 		iCurLineIdx: 0,
 		oMediaBuffer: {},
-		iSubtitle: 0, // -1=查不到字幕，1=有字幕
+		iSubtitle: 0, // 0=默认，-1=查不到字幕，1=有字幕
 	});
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
 	});
-	const sFilePath = localStorage.getItem('sFilePath');
-	oData.sFilePath = sFilePath;
-	oData.sMediaSrc = 'tube://a/?path=' + sFilePath;
-	oData.sSubtitleSrc = (()=>{ // 字幕文件位置
-		const arr = sFilePath.split('.');
+	const sSubtitleSrc = (()=>{ // 字幕文件位置（todo 用tube管道取
+		const arr = oData.sMediaSrc.split('.');
 		arr[arr.length-1] = 'srt';
 		return arr.join('.');
 	})();
 	// ▲数据====================================================================================
 	// ▼方法====================================================================================
 	// ▼取得字幕数据
-	function readSrtFile(event, sSubtitles, err){
-		if (err) {
-			oData.iSubtitle = -1; //
-			return console.log('字幕文件不存在\n');
-		}
+	async function getSrtFile(){
+		const res01 = await fetch(sSubtitleSrc).catch(()=>{
+			oData.iSubtitle = -1; // -1 表示文件不存在
+		});
+		if (!res01) return; // 查字幕文件不成功
+		const sSubtitles = await res01.text();
 		const arr = SubtitlesStr2Arr(sSubtitles);
 		if (!arr) return console.log('文本转为数据未成功\n');
 		oData.iSubtitle = 1;
-		oData.aLineArr = arr; //.splice(0, Infinity, ...arr);
+		oData.aLineArr = arr;
 	}
 	// ▼无字幕的情况下，插入一个空行
 	function setFirstLine(){
@@ -52,12 +47,11 @@ export function f1(){
 	// ▼接收波形数据
 	function listener(oMediaBuffer){
 		oData.oMediaBuffer = oMediaBuffer;
-		if (oData.iSubtitle >= 0) return; // 有字幕则返回
+		if (oData.iSubtitle != -1) return; // 有字幕则返回
 		setFirstLine();
 	}
 	// ============================================================================
-	ipcRenderer.send("textReader", oData.sSubtitleSrc);
-	listenFromMainProcess("textReaderReply", readSrtFile);
+	getSrtFile();
 	onMounted(()=>{
 		// console.log('oDom', oDom.oMyWave);
 	});

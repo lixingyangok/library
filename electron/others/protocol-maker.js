@@ -2,14 +2,12 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:23:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-10 20:32:34
+ * @LastEditTime: 2022-01-11 19:57:06
  * @Description: 
  */
 const fs = require('fs');
 const urlib = require("url");
-const {
-    protocol,
-} = require('electron');
+const { protocol } = require('electron');
 
 
 module.exports.protocolRegister = function(){
