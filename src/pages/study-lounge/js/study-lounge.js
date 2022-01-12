@@ -8,6 +8,7 @@ export function f1(){
 	const oDom = reactive({
 		oMyWave: null,
 		oSententList: null,
+		oTextArea: null,
 	});
 	const oData = reactive({
 		sMediaSrc: getTubePath(ls('sFilePath')),
@@ -28,7 +29,7 @@ export function f1(){
 	// ▼方法====================================================================================
 	// ▼取得字幕数据
 	async function getSrtFile(){
-		const res01 = await fetch(sSubtitleSrc).catch(()=>{
+		const res01 = await fetch(sSubtitleSrc).catch((err)=>{
 			oData.iSubtitle = -1; // -1 表示文件不存在
 		});
 		if (!res01) return; // 查字幕文件不成功

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 18:04:16
+ * @LastEditTime: 2022-01-12 21:05:23
  * @Description: 
 -->
 <template>
@@ -23,7 +23,8 @@
                 
             </article>
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
-                <textarea v-model="aLineArr[iCurLineIdx].text"
+                <textarea ref="oTextArea"
+                    v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="()=>previousAndNext(1)"
                 ></textarea>
             </div>

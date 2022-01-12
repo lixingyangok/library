@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 21:57:58
+ * @LastEditTime: 2022-01-12 21:08:08
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -18,6 +18,7 @@ import {figureOut} from './figure-out-region.js';
 export function fnAllKeydownFn(){
     const oInstance = getCurrentInstance();
     const This = oInstance.proxy;
+
     // ▼切换当前句子（上一句，下一句）
     function previousAndNext(iDirection) {
         const { oMediaBuffer, aLineArr, iCurLineIdx } = This; // iCurStep
@@ -126,6 +127,73 @@ export function fnAllKeydownFn(){
         goLine(This.iCurLineIdx);
         This.oMyWave.goOneLine(aLineArr[This.iCurLineIdx]);
     }
+    // ▼到最后一行
+    function goLastLine() {
+        const { aLineArr, iCurLineIdx } = This;
+        let idx = aLineArr.findIndex(cur => cur.text.length <= 1);
+        if (idx === -1 || idx === iCurLineIdx) idx = aLineArr.length - 1;
+        goLine(idx);
+        document.querySelectorAll('textarea')[0].focus();
+    }
+    // ▼重新定位起点，终点
+    function cutHere(sKey) {
+        const {oAudio} = This.oMyWave;
+        if (!oAudio) return;
+        setTime(sKey, oAudio.currentTime);
+    }
+    // ▼扩选
+    function chooseMore() {
+        const {oMediaBuffer, oCurLine, iCurLineIdx} = This;
+        const newEnd = figureOut(oMediaBuffer, oCurLine.end, 0.35).end;
+        setTime('end', newEnd);
+        goLine(iCurLineIdx);
+    }
+    // ▼合并, -1上一句，1下一句
+    function putTogether(iType) {
+        const {iCurLineIdx, aLineArr} = This;
+        const isMergeNext = iType === 1;
+        const oTarget = ({
+            '-1': aLineArr[iCurLineIdx - 1], //合并上一条
+            '1': aLineArr[iCurLineIdx + 1], //合并下一条
+        }[iType]);
+        if (!oTarget) return; //没有邻居不再执行
+        const oCur = aLineArr[iCurLineIdx];
+        oTarget.start = Math.min(oTarget.start, oCur.start);
+        oTarget.end = Math.max(oTarget.end, oCur.end);
+        oTarget.text = (() => {
+            const aResult = [oTarget.text, oCur.text];
+            if (isMergeNext) aResult.reverse();
+            return aResult.join(' ').replace(/\s{2,}/g, ' ');
+        })();
+        fixTime(oTarget);
+        aLineArr.splice(iCurLineIdx, 1);
+        if (!isMergeNext) This.iCurLineIdx--;
+        // this.setState({...obj, sCurLineTxt: aLineArr[iCurLineIdx].text});
+    }
+    // ▼一刀两段
+    function split() {
+        goLine();
+        const { aLineArr } = This;
+        const { selectionStart } = This.oTextArea;
+        const { currentTime } = This.oMyWave.oAudio;
+        const { iCurLineIdx, oCurLine } = This;
+        const sCurLineTxt = oCurLine.v.text;
+        const aNewItems = [
+            fixTime({
+                ...oCurLine,
+                end: currentTime,
+                text: sCurLineTxt.slice(0, selectionStart).trim(),
+            }),
+            fixTime({
+                ...oCurLine,
+                start: currentTime + 0.01,
+                text: sCurLineTxt.slice(selectionStart).trim(),
+            }),
+        ];
+        aLineArr.splice(iCurLineIdx, 1, ...aNewItems);
+        this.saveHistory({ aLineArr, iCurLineIdx });
+        this.setState({aLineArr, sCurLineTxt: aNewItems[0].text});
+    }
     // ▼最终返回
     return {
         previousAndNext,
@@ -133,6 +201,11 @@ export function fnAllKeydownFn(){
         fixRegion,
         toInsert,
         toDel,
+        goLastLine,
+        cutHere,
+        chooseMore,
+        putTogether,
+        split,
     };
 }
 
@@ -143,27 +216,27 @@ export function getKeyDownFnMap(This, sType){
         {key: 'Tab', name: '播放当前句', fn: ()=>oMyWave.toPlay()},
         {key: 'Prior', name: '上一句', fn: ()=>This.previousAndNext(-1)},
         {key: 'Next', name: '下一句', fn: ()=>This.previousAndNext(1)},
-        {key: 'F1', name: '设定起点', fn: `this.cutHere.bind(this, 'start')`},
-        {key: 'F2', name: '设定终点', fn: `this.cutHere.bind(this, 'end')`},
-        {key: 'F3', name: '删除当前句', fn: `this.giveUpThisOne.bind(this)`}, // 抛弃当前句，向下断句
+        {key: 'F1', name: '设定起点', fn: ()=>This.cutHere('start')},
+        {key: 'F2', name: '设定终点', fn: ()=>This.cutHere('end')},
+        {key: 'F3', name: '抛弃当前句', fn: `this.giveUpThisOne.bind(this)`},
         {key: 'F4', name: '查询选中单词', fn: `this.searchWord.bind(this, true)`},
-        {key: 'Escape', name: '取消播放', fn: `this.toStop.bind(this)`}, // 停止播放
+        {key: 'Escape', name: '取消播放', fn: ()=>oMyWave.playing=false}, // 停止播放
     ];
     const withCtrl = [
         {key: 'ctrl + d', name: '删除一行',  fn: () => This.toDel()},
         {key: 'ctrl + z', name: '撤销',  fn: `this.setHistory.bind(this, -1)`},
         {key: 'ctrl + s', name: '保存到云（字幕）',  fn: `this.uploadToCloudBefore.bind(this)`}, 
-        {key: 'ctrl + j', name: '合并上一句',  fn: `this.putTogether.bind(this, 'prior')`}, 
-        {key: 'ctrl + k', name: '合并下一句',  fn: `this.putTogether.bind(this, 'next')`}, 
+        {key: 'ctrl + j', name: '合并上一句',  fn: ()=> This.putTogether(-1)}, 
+        {key: 'ctrl + k', name: '合并下一句',  fn: ()=> This.putTogether(1)}, 
         {key: 'ctrl + Enter', name: '播放',  fn: ()=>oMyWave.toPlay()},
         {key: 'ctrl + shift + Enter', name: '播放',  fn: ()=>oMyWave.toPlay(true)},
         {key: 'ctrl + shift + z', name: '恢复',  fn: `this.setHistory.bind(this, 1)`},
-        {key: 'ctrl + shift + c', name: '分割',  fn: `this.split.bind(this)`},
+        {key: 'ctrl + shift + c', name: '分割',  fn: () => split()},
         {key: 'ctrl + shift + s', name: '保存到本地',  fn: `this.toSaveInDb.bind(this)`}, 
     ];
     const withAlt = [
         // 修改选区
-        {key: 'alt + ]', name: '扩选', fn: `this.chooseMore.bind(this)`}, 
+        {key: 'alt + ]', name: '扩选', fn: () => This.chooseMore()}, 
         {key: 'alt + u', name: '起点左移', fn: ()=>This.fixRegion('start', -0.07)}, 
         {key: 'alt + i', name: '起点右移', fn: ()=>This.fixRegion('start', 0.07)}, 
         {key: 'alt + n', name: '终点左移', fn: ()=>This.fixRegion('end', -0.07)}, 
@@ -176,7 +249,7 @@ export function getKeyDownFnMap(This, sType){
         // 未分类
         {key: 'alt + j', name: '', fn: ()=>This.previousAndNext(-1)},
         {key: 'alt + k', name: '', fn: ()=>This.previousAndNext(1)},
-        {key: 'alt + l', name: '跳到最后一句', fn: `this.goLastLine.bind(this)`},
+        {key: 'alt + l', name: '跳到最后一句', fn: ()=>This.goLastLine()},
         // alt + shift
         {key: 'alt + shift + j', name: '向【左】插入一句', fn: ()=>This.toInsert(-1) },
         {key: 'alt + shift + k', name: '向【右】插入一句', fn: ()=>This.toInsert(1) },
@@ -277,7 +350,6 @@ class keyDownFn {
 // ▼其它
 
 export class part02 {
-
     // ▼保存字幕到浏览器
     async toSaveInDb(bForUpload) {
         if (bForUpload){
@@ -302,63 +374,7 @@ export class part02 {
         }
     }
 
-    // ▼重新定位起点，终点
-    cutHere(sKey) {
-        const oAudio = this.oAudio.current;
-        if (!oAudio) return;
-        this.setTime(sKey, oAudio.currentTime);
-    }
-    // ▼合并
-    putTogether(sType) {
-        let {iCurLineIdx, sCurLineTxt} = this.state;
-        const aLineArr = this.state.aLineArr.dc_;
-        aLineArr[iCurLineIdx].text = sCurLineTxt;
-        this.saveHistory({aLineArr: aLineArr.dc_, iCurLineIdx});
-        const isMergeNext = sType === 'next';
-        const oTarget = ({
-            prior: aLineArr[iCurLineIdx - 1], //合并上一条
-            next: aLineArr[iCurLineIdx + 1], //合并下一条
-        }[sType]);
-        if (!oTarget) return; //没有邻居不再执行
-        const oCur = aLineArr[iCurLineIdx];
-        oTarget.start = Math.min(oTarget.start, oCur.start);
-        oTarget.end = Math.max(oTarget.end, oCur.end);
-        oTarget.text = (() => {
-            const aResult = [oTarget.text, oCur.text];
-            if (isMergeNext) aResult.reverse();
-            return aResult.join(' ').replace(/\s{2,}/g, ' ');
-        })();
-        fixTime(oTarget);
-        aLineArr.splice(iCurLineIdx, 1);
-        if (!isMergeNext) iCurLineIdx--;
-        const obj = {aLineArr, iCurLineIdx};
-        this.saveHistory(obj);
-        this.setState({...obj, sCurLineTxt: aLineArr[iCurLineIdx].text});
-    }
-    // ▼一刀两段
-    split() {
-        this.goLine();
-        const { selectionStart } = this.oTextArea.current;
-        const { currentTime } = this.oAudio.current;
-        const { iCurLineIdx, sCurLineTxt } = this.state;
-        const aLineArr = this.state.aLineArr.dc_;
-        const oCurLine = aLineArr[iCurLineIdx];
-        const aNewItems = [
-            fixTime({
-                ...oCurLine,
-                end: currentTime,
-                text: sCurLineTxt.slice(0, selectionStart).trim(),
-            }),
-            fixTime({
-                ...oCurLine,
-                start: currentTime + 0.01,
-                text: sCurLineTxt.slice(selectionStart).trim(),
-            }),
-        ];
-        aLineArr.splice(iCurLineIdx, 1, ...aNewItems);
-        this.saveHistory({ aLineArr, iCurLineIdx });
-        this.setState({aLineArr, sCurLineTxt: aNewItems[0].text});
-    }
+
     // ▼撤销-恢复
     setHistory(iType) {
         const { length } = this.aHistory;
@@ -378,23 +394,10 @@ export class part02 {
         });
         this.goLine(iCurLineIdx, false, true);
     }
-
     // ▼抛弃当前行，或处理第一行
     giveUpThisOne(start = this.getCurLine().end){
         const oNextLine = figureOut(oMediaBuffer, start); //返回下一行的数据
         this.setCurLine(oNextLine);
-    }
-    // 停止播放
-    toStop() {
-        this.setState({ playing: false });
-    }
-    // ▼到最后一行
-    goLastLine() {
-        const { aLineArr, iCurLineIdx } = this.state;
-        let idx = aLineArr.findIndex(cur => cur.text.length <= 1);
-        if (idx === -1 || idx === iCurLineIdx) idx = aLineArr.length - 1;
-        this.goLine(idx);
-        document.querySelectorAll('textarea')[0].focus();
     }
     // ▼插入选中的单词
     toInset(idx) {
@@ -413,13 +416,7 @@ export class part02 {
         this.setState({ sCurLineTxt });
         myTextArea.selectionStart = myTextArea.selectionEnd = newLeft.length;
     }
-    // ▼扩选
-    chooseMore() {
-        const oCurLine = this.getCurLine();
-        const newEnd = figureOut(oMediaBuffer, oCurLine.end, 0.35).end;
-        this.setTime('end', newEnd);
-        this.goToCurLine();
-    }
+
 }
 
 // export default window.mix(

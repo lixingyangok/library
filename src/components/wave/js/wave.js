@@ -167,10 +167,16 @@ export default function(){
 		const { style } = oDom.oPointer; 
 		const fStartTime = start + long * (isFromHalf ? 0.4 : 0);
 		style.left = `${fStartTime * oData.fPerSecPx}px`;
+        if (!oDom.oAudio) {
+            console.log('没有<Audio/>');
+        }
 		oDom.oAudio.currentTime = fStartTime;
 		oDom.oAudio.play();
         style.opacity = 1;
 		const playing = setInterval(() => {
+            if (!oDom.oAudio) {
+                return clearInterval(oData.playing);
+            }
 			const { currentTime: cTime } = oDom.oAudio;
 			const {end} = oCurLine.value;
             if (end - cTime < 0.1) style.opacity = 0;

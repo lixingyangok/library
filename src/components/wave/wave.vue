@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-10 21:28:21
+ * @LastEditTime: 2022-01-12 20:13:21
  * @Description: 
 -->
 <template>
@@ -42,7 +42,7 @@
                         <i class="idx">{{cur.idx+1}}</i>
                     </li>
                 </ul>
-                <i ref="oPointer" class="pointer" />
+                <i ref="oPointer" class="pointer" v-show="playing" />
             </div>
         </section>
     </article>
