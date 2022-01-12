@@ -196,6 +196,7 @@ export default function(){
             mediaPath, // 配对的依据（将来改为 xxhash)
             sTempName,
             sTempPath: getTubePath(sSaveTo),
+            // 将来补上：当前横纵缩放的程度，当前行号
         };
         ipcRenderer.send("fileSaver", {
             sSaveTo, 
@@ -307,9 +308,9 @@ export default function(){
         const canGo = oData.oMediaBuffer.duration && props.aLineArr.length;
         if (!canGo) return;
         setTimeout(()=>{
-            console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
+            // console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
             goOneLine(oCurLine.v);
-        }, 300);
+        }, 200);
     }
     // =================================================================================================================
 	listenFromMainProcess("fileSaverReply", function(event, err){
