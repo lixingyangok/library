@@ -1,7 +1,7 @@
-import {toRefs, reactive, computed, onMounted, onBeforeUnmount} from 'vue';
+import {toRefs, reactive, computed, onMounted} from 'vue';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
-import {getTubePath} from '../../../common/js/common-fn.js';
+import {getTubePath, ipcRenderer, listenFromMainProcess} from '../../../common/js/common-fn.js';
 
 
 export function f1(){
@@ -27,6 +27,7 @@ export function f1(){
 	})();
 	// ▲数据====================================================================================
 	// ▼方法====================================================================================
+
 	// ▼取得字幕数据
 	async function getSrtFile(){
 		const res01 = await fetch(sSubtitleSrc).catch((err)=>{
@@ -52,7 +53,12 @@ export function f1(){
 		setFirstLine();
 	}
 	// ============================================================================
-	getSrtFile();
+	getSrtFile(); // 可能要换为从数据库中取字幕
+	ipcRenderer.send("getHash", ls('sFilePath'));
+	listenFromMainProcess("getHashReply", function(event, sHash){
+        if (!sHash) return;
+        console.log('sHash：', sHash);
+    });
 	onMounted(()=>{
 		// console.log('oDom', oDom.oMyWave);
 	});

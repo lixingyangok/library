@@ -41,7 +41,6 @@ export default function(){
             props.iCurLineIdx
         ];
     });
-    const sStorePath = 'D:/Program Files (gree)/my-library/temp-data/';
     let oNewTempInfo = {};
     // ▼滚轮动了
     function wheelOnWave(ev) {
@@ -196,8 +195,8 @@ export default function(){
         const oDate = new Date();
         const sDate = [oDate.getFullYear(), (oDate.getMonth()+1+'').padStart(2,0), (oDate.getDate()+'').padStart(2,0)].join('-');
         const sTempName = `${mediaPath.split('/').pop()}●${sDate}.blob`;
-        const sSaveTo = oConfig.sStorePath + sTempName;
-        const oThisOne = {
+        const sSaveTo = oConfig.sTempDir + sTempName;
+        oNewTempInfo = { // 先存上，回头用
             ...{...oMediaBuffer, aChannelData_: []},
             mediaPath, // 配对的依据（将来改为 xxhash)
             sTempName,
@@ -208,7 +207,6 @@ export default function(){
             sSaveTo, 
             aChannelData_: oMediaBuffer.aChannelData_,
         });
-        oNewTempInfo = oThisOne; // 先存上，回头用
 	}
     // ▼更新 localStorage
     function toUpdateTempInfo(){
@@ -320,7 +318,7 @@ export default function(){
     }
     // =================================================================================================================
 	listenFromMainProcess("fileSaverReply", function(event, err){
-        if (err) return;
+        if (err) return console.log('保存文件失败：\n', err);
         toUpdateTempInfo();
     });
     watch(() => oDom.oMyWaveBar, (oNew)=>{

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 14:52:15
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-11 20:44:09
+ * @LastEditTime: 2022-01-15 21:11:15
  * @Description: 
  */
 
@@ -19,7 +19,8 @@ window.oConfig = (function(){
             'D:/天翼云盘同步盘/English dictation',
             'D:/English',
         ],
-        sStorePath: 'D:/Program Files (gree)/my-library/temp-data/',
+        sTempDir: 'D:/Program Files (gree)/my-library/temp-data/',
+        equipment: 'home',
     };
 })();
 
