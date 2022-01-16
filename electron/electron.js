@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 20:07:42
+ * @LastEditTime: 2022-01-16 20:49:28
  * @Description: 
  */
 
@@ -24,7 +24,13 @@ if (!exePath) console.log('exe位置 =', exePath);
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 global.toLog = ()=>null;
 global.db = db;
-
+global.newPromise = function (){
+    let fnResolve, fnReject;
+    const oPromise = new Promise((f1, f2) => {
+        fnResolve = f1, fnReject = f2;
+    });
+    return {oPromise, fnResolve, fnReject};
+};
 
 function createWindow() {
     // Create the browser window.

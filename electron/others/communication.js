@@ -2,13 +2,16 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 20:40:11
+ * @LastEditTime: 2022-01-16 21:15:46
  * @Description: 
  */
 const fs = require('fs').promises;
 const { ipcMain } = require('electron');
 const hasher = require('hash-wasm');
-const oHistory = require('../database/history.js');
+const oDbFn = { // 所有的数据库方法
+    ...require('../database/history.js'),
+    ...require('../database/media.js'),
+};
 
 module.exports.makeChannels = function(){
     // ▼接收一个测试消息
@@ -41,15 +44,13 @@ module.exports.makeChannels = function(){
     });
     // 主进程
     ipcMain.handle("db", async (event, sFnName, oParams) => {
-        const oAllFn = {
-            ...oHistory,
-        };
-        const theFn = oAllFn[sFnName];
+        const theFn = oDbFn[sFnName];
         if (!theFn) throw 'fnName is wrong';
         const res = await theFn(oParams);
         return res; 
     });
 };
+
 
 // console.log('盘符如下：');
 // const {exec} = require('child_process');

@@ -19,6 +19,8 @@ export default {
         };
     },
     created(){
+        // ▼插入一条学习记录
+        fnInvoke('db','addDevRecord'); 
         // ▼注册一个方法，用于接收主进程的消息
         oRenderer.on('logInBrower', (event, ...arg) => {
             let content;

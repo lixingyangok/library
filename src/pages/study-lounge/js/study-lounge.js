@@ -2,7 +2,6 @@ import {toRefs, reactive, computed, onMounted} from 'vue';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
-import {getMediaInfo, saveMediaInfo} from '../../../common/database/media.js';
 
 
 export function f1(){
@@ -31,11 +30,10 @@ export function f1(){
 	// ▼方法====================================================================================
 	async function init(){
 		const sHash = await fnInvoke("getHash", ls('sFilePath'));
-		if (!sHash) return;
+		if (!sHash) throw '没有hash';
 		oData.sHash = sHash;
-		console.log('sHash', sHash);
-		// const res = await getMediaInfo(sHash);
-		// console.log('媒体\n', res);
+		const res = await fnInvoke('db', 'getMediaInfo', sHash);
+		console.log('媒体\n', res);
 	}
 	async function getLines(){
 
