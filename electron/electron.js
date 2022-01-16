@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-10 20:36:52
+ * @LastEditTime: 2022-01-16 20:07:42
  * @Description: 
  */
 
@@ -13,15 +13,18 @@ const { default: installExtension, VUEJS3_DEVTOOLS } = require('electron-devtool
 // ▼自定义导入
 const {makeChannels} = require('./others/communication.js');
 const {protocolRegister, protocolFnSetter} = require('./others/protocol-maker.js');
+const {db, initDataBase} = require('./database/init-db.js');
 // ▼其它声明
 const isDev = process.env.IS_DEV == "true" ? true : false;
 const exePath = path.dirname(app.getPath('exe'));
-let toLog = ()=>{};
 
 
 // ▼其它
 if (!exePath) console.log('exe位置 =', exePath);
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+global.toLog = ()=>null;
+global.db = db;
+
 
 function createWindow() {
     // Create the browser window.
@@ -35,17 +38,14 @@ function createWindow() {
             contextIsolation: false, // 官网似乎说是默认false，但是这里必须设置contextIsolation
         },
     });
-    toLog = (...rest) => {
+    global.toLog = (...rest) => {
         mainWindow.webContents.send('logInBrower', ...rest);
     };
     // and load the index.html of the app.
     // win.loadFile("index.html");
-    mainWindow.loadURL(
-        isDev
-            ? 'http://localhost:3000'
-            : `file://${path.join(__dirname, '../dist/index.html')}`
-    );
-    
+    let sURL = `file://${path.join(__dirname, '../dist/index.html')}`;
+    if (isDev) sURL = 'http://localhost:3000';
+    mainWindow.loadURL(sURL);
     if (!isDev) return;
     mainWindow.webContents.openDevTools(); // Open the DevTools.
 }
@@ -59,8 +59,9 @@ protocolRegister();
 app.whenReady().then(() => {
     // ▼创建窗口
     createWindow();
-    makeChannels(toLog);
-    protocolFnSetter(toLog);
+    makeChannels();
+    protocolFnSetter();
+    initDataBase();
     app.on('activate', function () {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
@@ -80,6 +81,7 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
+        db.close();
     }
 });
 

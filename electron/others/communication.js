@@ -2,16 +2,15 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 18:19:50
+ * @LastEditTime: 2022-01-16 20:40:11
  * @Description: 
  */
-const {exec} = require('child_process');
 const fs = require('fs').promises;
 const { ipcMain } = require('electron');
 const hasher = require('hash-wasm');
+const oHistory = require('../database/history.js');
 
-
-module.exports.makeChannels = function(toLog){
+module.exports.makeChannels = function(){
     // ▼接收一个测试消息
     ipcMain.on('channel01', (event, arg) => {
         toLog('收到窗口内容：\n', arg);
@@ -40,9 +39,20 @@ module.exports.makeChannels = function(toLog){
         // console.timeEnd('计算指纹');
         return sHash;
     });
+    // 主进程
+    ipcMain.handle("db", async (event, sFnName, oParams) => {
+        const oAllFn = {
+            ...oHistory,
+        };
+        const theFn = oAllFn[sFnName];
+        if (!theFn) throw 'fnName is wrong';
+        const res = await theFn(oParams);
+        return res; 
+    });
 };
 
 // console.log('盘符如下：');
+// const {exec} = require('child_process');
 // exec('wmic logicaldisk get name', function(error, stdout, stderr){
 //     if (error || stderr) {
 //         console.error(`查询盘符出错了\n: ${error || stderr}`);

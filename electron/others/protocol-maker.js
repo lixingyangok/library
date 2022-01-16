@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:23:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-11 19:57:06
+ * @LastEditTime: 2022-01-16 20:05:48
  * @Description: 
  */
 const fs = require('fs');
@@ -27,7 +27,7 @@ module.exports.protocolRegister = function(){
 };
 
 
-module.exports.protocolFnSetter = function(toLog){
+module.exports.protocolFnSetter = function(){
     protocol.registerFileProtocol('tube', function (req, callback){
         var myobj = urlib.parse(req.url, true);
         var pathVal = myobj.query.path;
