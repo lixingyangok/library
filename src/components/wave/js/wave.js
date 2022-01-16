@@ -10,7 +10,8 @@ import {
     getPeaks,
     getChannelArr,
 } from '../../../common/js/pure-fn.js';
-import {ipcRenderer, listenFromMainProcess, getTubePath} from '../../../common/js/common-fn.js';
+import {getTubePath} from '../../../common/js/common-fn.js';
+const {ipcRenderer} = require("electron");
 
 
 export default function(){
@@ -41,7 +42,6 @@ export default function(){
             props.iCurLineIdx
         ];
     });
-    let oNewTempInfo = {};
     // ▼滚轮动了
     function wheelOnWave(ev) {
         ev.preventDefault();
@@ -189,28 +189,30 @@ export default function(){
 		oData.playing = playing;
 	}
     // ▼保存blob
-    function toSaveTemp(){
+    async function toSaveTemp(){
         const {oMediaBuffer} = oData;
         const {mediaPath} = oInstance.props;
         const oDate = new Date();
         const sDate = [oDate.getFullYear(), (oDate.getMonth()+1+'').padStart(2,0), (oDate.getDate()+'').padStart(2,0)].join('-');
         const sTempName = `${mediaPath.split('/').pop()}●${sDate}.blob`;
         const sSaveTo = oConfig.sTempDir + sTempName;
-        oNewTempInfo = { // 先存上，回头用
-            ...{...oMediaBuffer, aChannelData_: []},
+        const err = await ipcRenderer.invoke("fileSaver", {
+            sSaveTo,
+            aChannelData_: oMediaBuffer.aChannelData_,
+        })
+        if (err) return console.log('保存文件失败：\n', err);
+        const oNewTempInfo = { // 先存上，回头用
+            ...oMediaBuffer,
+            aChannelData_: [],
             mediaPath, // 配对的依据（将来改为 xxhash)
             sTempName,
             sTempPath: getTubePath(sSaveTo),
             // 将来补上：当前横纵缩放的程度，当前行号
         };
-        ipcRenderer.send("fileSaver", {
-            sSaveTo, 
-            aChannelData_: oMediaBuffer.aChannelData_,
-        });
+        toUpdateTempInfo(oNewTempInfo);
 	}
     // ▼更新 localStorage
-    function toUpdateTempInfo(){
-        const oNewOne = oNewTempInfo;
+    function toUpdateTempInfo(oNewOne){
         console.log('oNewOne', oNewOne.$dc());
         const aTemp = ls('aTemp') || [];
         const iTarget = aTemp.findIndex((cur, idx)=>{
@@ -317,10 +319,7 @@ export default function(){
         }, 200);
     }
     // =================================================================================================================
-	listenFromMainProcess("fileSaverReply", function(event, err){
-        if (err) return console.log('保存文件失败：\n', err);
-        toUpdateTempInfo();
-    });
+
     watch(() => oDom.oMyWaveBar, (oNew)=>{
         if (!oNew) return;
         setTimeout(()=>{

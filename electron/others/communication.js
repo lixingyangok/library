@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-15 21:08:12
+ * @LastEditTime: 2022-01-16 09:55:29
  * @Description: 
  */
 const fs = require('fs').promises;
@@ -14,19 +14,18 @@ module.exports.makeChannels = function(toLog){
     // ▼接收一个测试消息
     ipcMain.on('channel01', (event, arg) => {
         toLog('收到窗口内容：\n', arg);
+        // event.reply('fileSaverReply', err); // 示例
     });
-
     // ▼保存文本的方法
-    ipcMain.on('fileSaver', async function(event, oData) {
+    ipcMain.handle("fileSaver", async (event, oData) => {
         const {sSaveTo, aChannelData_} = oData;
         const err = await fs.writeFile(sSaveTo, aChannelData_).catch(
             err => err,
         );
-        event.reply('fileSaverReply', err);
+        return err;
     });
-
-    // ▼计算文件指纹
-    ipcMain.on('getHash', async function(event, sPath) {
+    // 主进程
+    ipcMain.handle("getHash", async (event, sPath) => {
         const oState = await fs.stat(sPath);
         toLog('文件信息', oState);
         // console.time('读取Buffer');
@@ -38,7 +37,7 @@ module.exports.makeChannels = function(toLog){
         // console.time('计算指纹');
         const sHash = await hasher.xxhash64(oBuffer); // 56MB 一共耗时 60ms
         // console.timeEnd('计算指纹');
-        event.reply('getHashReply', sHash);
+        return sHash;
     });
 };
 

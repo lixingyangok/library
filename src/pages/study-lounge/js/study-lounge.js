@@ -1,8 +1,8 @@
 import {toRefs, reactive, computed, onMounted} from 'vue';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
-import {getTubePath, ipcRenderer, listenFromMainProcess} from '../../../common/js/common-fn.js';
-
+import {getTubePath} from '../../../common/js/common-fn.js';
+const {ipcRenderer} = require("electron");
 
 export function f1(){
 	const oDom = reactive({
@@ -54,11 +54,9 @@ export function f1(){
 	}
 	// ============================================================================
 	getSrtFile(); // 可能要换为从数据库中取字幕
-	ipcRenderer.send("getHash", ls('sFilePath'));
-	listenFromMainProcess("getHashReply", function(event, sHash){
-        if (!sHash) return;
-        console.log('sHash：', sHash);
-    });
+	ipcRenderer.invoke("getHash", ls('sFilePath')).then(res=>{
+		console.log('hash：', res);
+	});
 	onMounted(()=>{
 		// console.log('oDom', oDom.oMyWave);
 	});
