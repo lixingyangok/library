@@ -2,18 +2,18 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-09 21:57:15
+ * @LastEditTime: 2022-01-15 21:57:34
  * @Description: 这是智能断句的模块
  */
 import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
 
 
-// ▼智能断句：1参是上一步的结尾的秒数， 2参是在取得的区间的理想的长度（秒数）
+// 智能断句的方法
+// 2参是上一步的结尾的秒数，3参是在取得的区间的理想的长度（秒数）
 export function figureOut(oMediaBuffer, fEndSec, fLong = 2.5) {
-    const [iPerSecPx, iWaveHeight, iAddition] = [100, 12, 20]; // 默认每秒宽度值（px），高度阈值，添加在两头的空隙，
-    const aWaveArr = getWaveArr(oMediaBuffer, iPerSecPx, fEndSec); //取得波形
+    const [iPerSecPx, iWaveHeight, iAddition] = [100, 12, 20]; // 默认每秒宽度px值，波高度，添加在两头的空隙
+    const aWaveArr = getWaveArr(oMediaBuffer, iPerSecPx, fEndSec); // 取得波形
     const aSection = getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight);
-    const {duration} = oMediaBuffer;
     let { start, end } = (() => {
         const [oFirst, oSecond] = aSection;
         if (!oFirst) return { start: 0, end: aWaveArr.length };
@@ -22,7 +22,7 @@ export function figureOut(oMediaBuffer, fEndSec, fLong = 2.5) {
             const isFirstBetter = oFirst.long >= fLong || oFirst.iGapToNext > 1.2 || !oSecond;
             const idx = isFirstBetter ? 0 : 1;
             const [oChosen, oNextOne] = [aSection[idx], aSection[idx + 1]];
-            // ▼ 下一段存在 && 很短 && 离它右边的邻居选远 && 离我近
+            // ▼ 下一段存在 && 很短 && 离它右边的邻居远 && 离我近
             if (oNextOne && oNextOne.long < 1 && oNextOne.iGapToNext > 1 && oChosen.iGapToNext < 1) {
                 console.log(`%c尾部追加临近数据 ${oNextOne.long} 秒`, 'background: pink');
                 return oNextOne; //并入下一段
@@ -33,7 +33,10 @@ export function figureOut(oMediaBuffer, fEndSec, fLong = 2.5) {
         return { start, end };
     })();
     start = (fEndSec + start / iPerSecPx).toFixed(2) * 1;
-    end = Math.min(fEndSec + end / iPerSecPx, duration + 0.5).toFixed(2) * 1;
+    end = Math.min(
+        fEndSec + end / iPerSecPx, 
+        oMediaBuffer.duration + 0.5
+    ).toFixed(2) * 1;
     return fixTime({start, end});
 }
 
@@ -89,7 +92,7 @@ function fixTail(aWaveArr, iOldEnd, iPerSecPx, iAddition, iGapToNext) {
             const iOneStepPx = 10;
             const iSum = aWaveArr.slice(idx, idx + iOneStepPx).reduce((result, cur) => {
                 return result + cur;
-            });
+            }, 0);
             if (iSum / iOneStepPx < 1) return idx;
         }
         return false;
