@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-12 21:05:23
+ * @LastEditTime: 2022-01-16 18:04:40
  * @Description: 
 -->
 <template>
@@ -20,7 +20,12 @@
                 @pipe="listener"
             />
             <article class="wave-below" >
-                
+                <button @click="init" >
+                    查媒体
+                </button>
+                <button @click="saveMedia" >
+                    保存媒体
+                </button>
             </article>
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
                 <textarea ref="oTextArea"
@@ -63,11 +68,10 @@ export default {
     },
     setup(){
         const oData = f1();
-        const oResult = {
+        return {
             ...toRefs(oData),
             ...fnAllKeydownFn(),
         };
-        return oResult;
     },
     mounted(){
         // 此处 this === getCurrentInstance()

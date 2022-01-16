@@ -2,21 +2,22 @@
  * @Author: 李星阳
  * @Date: 2022-01-07 17:08:49
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-08 08:22:03
+ * @LastEditTime: 2022-01-16 10:27:21
  * @Description: 
  */
 
 import { ref, computed } from 'vue';
 
+// const {oPromise, fnResolve, fnReject} = newPromise();
+export function newPromise (){
+    let fnResolve, fnReject;
+    const oPromise = new Promise((f1, f2) => {
+        fnResolve = f1, fnReject = f2;
+    });
+    return {oPromise, fnResolve, fnReject};
+};
+
 export function setGlobal(){
-    // const {oPromise, fnResolve, fnReject} = newPromise();
-    window.newPromise = function(){
-        let fnResolve, fnReject;
-        const oPromise = new Promise((f1, f2) => {
-            fnResolve = f1, fnReject = f2;
-        });
-        return {oPromise, fnResolve, fnReject};
-    };
     // ▼添加 .v 别名
     [
         Object.getPrototypeOf(ref()),

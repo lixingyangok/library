@@ -2,9 +2,10 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 09:55:29
+ * @LastEditTime: 2022-01-16 18:19:50
  * @Description: 
  */
+const {exec} = require('child_process');
 const fs = require('fs').promises;
 const { ipcMain } = require('electron');
 const hasher = require('hash-wasm');
@@ -40,6 +41,18 @@ module.exports.makeChannels = function(toLog){
         return sHash;
     });
 };
+
+// console.log('盘符如下：');
+// exec('wmic logicaldisk get name', function(error, stdout, stderr){
+//     if (error || stderr) {
+//         console.error(`查询盘符出错了\n: ${error || stderr}`);
+//         return;
+//     }
+//     const arr = stdout.match(/\S+/g).slice(1);
+//     document.body.disks = arr;
+//     console.log('盘符在此：', arr.join(', '));
+// });
+
 
 // const sPath = "D:/English video/迷失02/Lost.S02EP01.BluRay.iPad.720p.AAC.X264-CHDPAD.mp4";
 // const sPath = "D:/English video/短片/Shadowing Step by Step.mp4";

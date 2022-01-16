@@ -2,6 +2,7 @@ import {toRefs, reactive, computed, onMounted} from 'vue';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
+import {getMediaInfo, saveMediaInfo} from '../../../common/database/media.js';
 const {ipcRenderer} = require("electron");
 
 export function f1(){
@@ -16,6 +17,7 @@ export function f1(){
 		iCurLineIdx: 0,
 		oMediaBuffer: {},
 		iSubtitle: 0, // 0=默认，-1=查不到字幕，1=有字幕
+		sHash: '',
 	});
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
@@ -27,8 +29,28 @@ export function f1(){
 	})();
 	// ▲数据====================================================================================
 	// ▼方法====================================================================================
+	async function init(){
+		const sHash = await ipcRenderer.invoke("getHash", ls('sFilePath'));
+		if (!sHash) return;
+		oData.sHash = sHash;
+		console.log('sHash', sHash);
+		const res = await getMediaInfo(sHash);
+		console.log('媒体\n', res);
+	}
+	async function getLines(){
 
-	// ▼取得字幕数据
+	}
+	async function saveMedia(){
+		const arr = ls('sFilePath').split('/');
+		const obj = {
+			hash: oData.sHash,
+			name: arr.slice(-1)[0],
+			dir: arr.slice(0, -1).join('/'),
+		};
+		saveMediaInfo(obj);
+		console.log('已经保存');
+	}
+	// ▼取得字幕文件的数据
 	async function getSrtFile(){
 		const res01 = await fetch(sSubtitleSrc).catch((err)=>{
 			oData.iSubtitle = -1; // -1 表示文件不存在
@@ -53,10 +75,9 @@ export function f1(){
 		setFirstLine();
 	}
 	// ============================================================================
-	getSrtFile(); // 可能要换为从数据库中取字幕
-	ipcRenderer.invoke("getHash", ls('sFilePath')).then(res=>{
-		console.log('hash：', res);
-	});
+	// getSrtFile(); // 可能要换为从数据库中取字幕
+	
+	init();
 	onMounted(()=>{
 		// console.log('oDom', oDom.oMyWave);
 	});
@@ -65,7 +86,9 @@ export function f1(){
         ...toRefs(oData),
 		oCurLine,
 		...{
+			init,
 			listener,
+			saveMedia,
 		},
     });
 };
