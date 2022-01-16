@@ -3,7 +3,7 @@ import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
 import {getMediaInfo, saveMediaInfo} from '../../../common/database/media.js';
-const {ipcRenderer} = require("electron");
+
 
 export function f1(){
 	const oDom = reactive({
@@ -30,12 +30,12 @@ export function f1(){
 	// ▲数据====================================================================================
 	// ▼方法====================================================================================
 	async function init(){
-		const sHash = await ipcRenderer.invoke("getHash", ls('sFilePath'));
+		const sHash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!sHash) return;
 		oData.sHash = sHash;
 		console.log('sHash', sHash);
-		const res = await getMediaInfo(sHash);
-		console.log('媒体\n', res);
+		// const res = await getMediaInfo(sHash);
+		// console.log('媒体\n', res);
 	}
 	async function getLines(){
 

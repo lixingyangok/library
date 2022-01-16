@@ -1,6 +1,5 @@
 
 var child_process = require("child_process");
-const { ipcRenderer } = require('electron');
 const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -8,7 +7,7 @@ const ffmpeg = createFFmpeg({ log: true });
 export default {
     // ▼给主进程送信
     logFn() {
-        ipcRenderer.send('channel01', '张三');
+        oRenderer.send('channel01', '张三');
     },
     async showFFmpeg() {
         // D:/English video/【34集全】 • 看动画学英语 Peter Pan《彼得潘》/1.Pete(Av415205386,P1).mp4

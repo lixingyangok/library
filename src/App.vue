@@ -7,7 +7,6 @@
 
 <script>
 import myNav from './components/navigation/navigation.vue';
-const { ipcRenderer } = require('electron');
 
 export default {
     name: "my-app",
@@ -21,7 +20,7 @@ export default {
     },
     created(){
         // ▼注册一个方法，用于接收主进程的消息
-        ipcRenderer.on('logInBrower', (event, ...arg) => {
+        oRenderer.on('logInBrower', (event, ...arg) => {
             let content;
             if (arg.length == 1) content = arg[0];
             else content = arg;

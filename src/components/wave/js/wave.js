@@ -11,7 +11,6 @@ import {
     getChannelArr,
 } from '../../../common/js/pure-fn.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
-const {ipcRenderer} = require("electron");
 
 
 export default function(){
@@ -196,7 +195,7 @@ export default function(){
         const sDate = [oDate.getFullYear(), (oDate.getMonth()+1+'').padStart(2,0), (oDate.getDate()+'').padStart(2,0)].join('-');
         const sTempName = `${mediaPath.split('/').pop()}●${sDate}.blob`;
         const sSaveTo = oConfig.sTempDir + sTempName;
-        const err = await ipcRenderer.invoke("fileSaver", {
+        const err = await fnInvoke("fileSaver", {
             sSaveTo,
             aChannelData_: oMediaBuffer.aChannelData_,
         })

@@ -2,14 +2,12 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-11 20:07:11
+ * @LastEditTime: 2022-01-16 20:38:52
  * @Description: 
  */
 
 import {keyMap} from './key-map.js';
 import { onBeforeUnmount } from 'vue';
-const {ipcRenderer} = require("electron");
-export {ipcRenderer};
 
 // ▼注册按键监听
 export function registerKeydownFn(oFnList){
@@ -35,9 +33,9 @@ export function registerKeydownFn(oFnList){
 
 // ▼注册主进程的监听员，
 export function listenFromMainProcess(sName, fn){
-    ipcRenderer.on(sName, fn);
+    oRenderer.on(sName, fn);
     onBeforeUnmount(()=>{
-        ipcRenderer.removeListener(sName, fn);
+        oRenderer.removeListener(sName, fn);
     });
 }
 
