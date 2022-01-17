@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 18:04:40
+ * @LastEditTime: 2022-01-16 23:33:32
  * @Description: 
 -->
 <template>
@@ -56,7 +56,7 @@
 
 <script>
 import {toRefs} from 'vue';
-import {f1} from './js/study-lounge.js';
+import {mainPart} from './js/study-lounge.js';
 import {getKeyDownFnMap, fnAllKeydownFn} from './js/key-down-fn.js';
 import MyWave from '../../components/wave/wave.vue';
 import {registerKeydownFn} from '../../common/js/common-fn.js'
@@ -67,7 +67,7 @@ export default {
         MyWave,
     },
     setup(){
-        const oData = f1();
+        const oData = mainPart();
         return {
             ...toRefs(oData),
             ...fnAllKeydownFn(),

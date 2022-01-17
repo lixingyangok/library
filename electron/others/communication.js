@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 21:15:46
+ * @LastEditTime: 2022-01-16 23:39:19
  * @Description: 
  */
 const fs = require('fs').promises;
@@ -29,8 +29,6 @@ module.exports.makeChannels = function(){
     });
     // 主进程
     ipcMain.handle("getHash", async (event, sPath) => {
-        const oState = await fs.stat(sPath);
-        toLog('文件信息', oState);
         // console.time('读取Buffer');
         const oBuffer = await fs.readFile(sPath).catch(err=>{
             toLog('读文件出错\n', err);

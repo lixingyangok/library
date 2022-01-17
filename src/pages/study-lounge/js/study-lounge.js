@@ -4,7 +4,7 @@ import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
 
 
-export function f1(){
+export function mainPart(){
 	const oDom = reactive({
 		oMyWave: null,
 		oSententList: null,
@@ -45,7 +45,8 @@ export function f1(){
 			name: arr.slice(-1)[0],
 			dir: arr.slice(0, -1).join('/'),
 		};
-		saveMediaInfo(obj);
+		const err = await fnInvoke('db', 'saveMediaInfo', obj);
+		if (err) throw '保存未成功';
 		console.log('已经保存');
 	}
 	// ▼取得字幕文件的数据
