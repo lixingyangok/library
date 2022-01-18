@@ -74,7 +74,7 @@ export function mainPart(){
 		setFirstLine();
 	}
 	// ============================================================================
-	// getSrtFile(); // 可能要换为从数据库中取字幕
+	getSrtFile(); // 可能要换为从数据库中取字幕
 	
 	init();
 	onMounted(()=>{

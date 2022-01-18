@@ -2,13 +2,13 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-17 00:03:00
+ * @LastEditTime: 2022-01-18 21:53:38
  * @Description: 
  */
 
 const fs = require('fs').promises;
 
-module.exports = {
+module.exports.oFn = {
     // ▼查询库中媒体
     async getMediaInfo(sHash){
         const {oPromise, fnResolve, fnReject} = newPromise();

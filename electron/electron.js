@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 20:49:28
+ * @LastEditTime: 2022-01-18 20:48:34
  * @Description: 
  */
 
@@ -13,9 +13,9 @@ const { default: installExtension, VUEJS3_DEVTOOLS } = require('electron-devtool
 // ▼自定义导入
 const {makeChannels} = require('./others/communication.js');
 const {protocolRegister, protocolFnSetter} = require('./others/protocol-maker.js');
-const {db, initDataBase} = require('./database/init-db.js');
+const {db, sqlize, initDataBase} = require('./database/init-db.js');
 // ▼其它声明
-const isDev = process.env.IS_DEV == "true" ? true : false;
+const isDev = process.env.IS_DEV == "true";
 const exePath = path.dirname(app.getPath('exe'));
 
 
@@ -24,6 +24,7 @@ if (!exePath) console.log('exe位置 =', exePath);
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 global.toLog = ()=>null;
 global.db = db;
+global.sqlize = sqlize;
 global.newPromise = function (){
     let fnResolve, fnReject;
     const oPromise = new Promise((f1, f2) => {
@@ -62,9 +63,9 @@ protocolRegister();
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     // ▼创建窗口
-    createWindow();
+    createWindow(); // 在此生成 toLog
     makeChannels();
     protocolFnSetter();
     initDataBase();
