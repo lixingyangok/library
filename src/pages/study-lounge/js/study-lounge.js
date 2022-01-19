@@ -45,9 +45,9 @@ export function mainPart(){
 			name: arr.slice(-1)[0],
 			dir: arr.slice(0, -1).join('/'),
 		};
-		const err = await fnInvoke('db', 'saveMediaInfo', obj);
-		if (err) throw '保存未成功';
-		console.log('已经保存');
+		const oInfo = await fnInvoke('db', 'saveMediaInfo', obj);
+		if (!oInfo) throw '保存未成功';
+		console.log('已经保存', oInfo);
 	}
 	// ▼取得字幕文件的数据
 	async function getSrtFile(){
