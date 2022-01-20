@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-18 20:13:34
+ * @LastEditTime: 2022-01-20 19:35:39
  * @Description: 
  */
 const fs = require('fs').promises;
@@ -11,7 +11,6 @@ const hasher = require('hash-wasm');
 const oDbFn = { // 所有的数据库方法
     ...require('../database/history.js').oFn,
     ...require('../database/media.js').oFn,
-    ...require('../database/init-sqlize.js').oFn,
 };
 
 module.exports.makeChannels = function(){
