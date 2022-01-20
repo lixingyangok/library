@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-06 16:37:21
+ * @LastEditTime: 2022-01-20 20:17:02
  * @Description: 
 -->
 
@@ -25,7 +25,7 @@
                 <li v-for="(cur, i2) of aColumn" :key="i2"
                     @click="ckickTree(i1, i2, cur)"
                 >
-                    {{cur.isDirectory ? '+' : ''}}{{cur.sItem}}
+                    {{cur.isDirectory ? '■ ' : ''}}{{cur.sItem}}
                 </li>
             </ul>
         </article>
@@ -46,6 +46,7 @@ export default {
         };
     },
     created(){
+        
     },
     watch: {
         aPath: {

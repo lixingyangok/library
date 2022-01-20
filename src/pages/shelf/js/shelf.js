@@ -10,7 +10,7 @@ const fn01 = {
 };
 
 const oAboutTree = {
-
+    // ▼处理用户变更目录
     getDirChildren() {
         const {setFileList} = this;
         console.log('路径变化了：加载目录');
@@ -22,6 +22,7 @@ const oAboutTree = {
             setFileList(idx, sPath, aItems);
         }
     },
+    // ▼
     setFileList(idx, sDir, aItems){
         const [a1, a2] = [[], []];
         aItems.forEach(sItem => {
@@ -76,6 +77,7 @@ export default {
 };
 
 // ▼暂时弃用 ---------------------------------------------------
+// ▼下方全是废弃的内容
 
 function getDiskList(){
     let fnResolve;

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-20 19:44:33
+ * @LastEditTime: 2022-01-20 19:58:14
  * @Description: 
  */
 
@@ -21,26 +21,28 @@ const oMedia = module.exports.media = sqlize.define('media', {
     sizeStr: DataTypes.STRING, // 体积（MB）
     duration: DataTypes.FLOAT, // 时长（秒）
     durationStr: DataTypes.STRING, // 时长（时分秒）
+    finishedAt: DataTypes.DATE, // 完成时间
 }, {
     // freezeTableName: true,
 });
 oMedia.sync({ alter: true });
 
 module.exports.oFn = {
+    // ▼保存媒体信息
+    async saveMediaInfo(obj) {
+        const oState = await fs.stat(`${obj.dir}/${obj.name}`);
+        obj.size = oState.size;
+        const res = await oMedia.create(obj);
+        return res;
+    },
     // ▼查询库中媒体
-    async getMediaInfo(sHash){
+    async getMediaInfo(sHash) {
         const res = await oMedia.findOne({
             where: {
                 hash: sHash,
             },
         });
         return res?.dataValues;
-    },
-    async saveMediaInfo(obj){
-        const oState = await fs.stat(`${obj.dir}/${obj.name}`);
-        obj.size = oState.size;
-        const res = await oMedia.create(obj);
-        return res;
     },
 };
 
