@@ -32,9 +32,10 @@
         }
     }
     .folder-mark{
-        opacity: 0.55;
+        opacity: 0.35;
         &[class~=has-media]{
-            color: red;
+            color: green;
+            opacity: 0.7;
         }
     }
     .fa-circle{
@@ -50,6 +51,9 @@
 }
 
 
-
-
-
+.tree-line{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}

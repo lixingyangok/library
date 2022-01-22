@@ -19,6 +19,7 @@ export default {
         };
     },
     created(){
+        window.vm = this;
         // ▼插入一条学习记录
         fnInvoke('db','addOneRecord'); 
         // ▼注册一个方法，用于接收主进程的消息

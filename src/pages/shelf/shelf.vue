@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-22 12:20:40
+ * @LastEditTime: 2022-01-22 19:28:52
  * @Description: 
 -->
 
@@ -14,6 +14,9 @@
                 @click="choseRoot(cur)"
             >
                 {{cur}}
+                <el-button type="text" @click="showDialog(cur)">
+                    弹出窗口
+                </el-button>
             </li>
         </ul>
         <br/>
@@ -38,25 +41,61 @@
             </ul>
         </article>
     </section>
+    <!--  -->
+    <el-dialog title="初始化" width="900px"
+        v-model="dialogVisible"
+    >
+        <el-tree node-key="id1" default-expand-all
+            :data="dataSource" :expand-on-click-node="false"
+        >
+            <template #default="{ node, data }">
+                <span class="tree-line">
+                    <span>
+                        {{ node.label }}
+                        <span v-if="data.hasMedia">
+                            （{{ data.hasMedia }}）
+                        </span>
+                    </span>
+                    <span v-if="data.hasMedia" >
+                        <el-button type="text" @click="getFolder(data)">
+                            入库
+                        </el-button>
+                    </span>
+                </span>
+            </template>
+        </el-tree>
+        <!-- ▼按钮▼ -->
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="dialogVisible = false">
+                    Cancel
+                </el-button>
+                <el-button type="primary" @click="dialogVisible = false">
+                    Confirm
+                </el-button>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script>
-import oMethods from './js/shelf.js';
+import oMethods, {dataSource} from './js/shelf.js';
 
 export default {
     name: "shelf",
     data(){
         return {
+            dataSource: [],
+            // dataSource,
             aDisks: document.body.disks,
             oConfig: window.oConfig,
             aPath: [window.oConfig.aRoot[0]],
             aTree: [],
+            dialogVisible: false,
         };
     },
     mounted(){
-        setTimeout(()=>{
-            this.test01()
-        }, 999);
+
     },
     watch: {
         aPath: {
