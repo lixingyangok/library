@@ -5,14 +5,15 @@
 
 .directory-list{
     display: flex;
-    background: #eee;
-    width: 82vw;
+    background: #f1f1f1;
+    // width: 82vw;
+    width: 100%;
     overflow-x: auto;
     ul{
         flex: auto;
         overflow-y: auto;
         min-width: 230px;
-        max-width: 260px;
+        max-width: 280px;
         height: 700px;
         padding: 15px 20px;
         border: solid 1px #999;
@@ -24,10 +25,31 @@
         +li{
             margin-top: 3px;
         }
+        &.active,
         &:hover{
             color: blue;
-            background: rgba($color: #000000, $alpha: 0.05);
+            background: rgba($color: #000000, $alpha: 0.08);
+        }
+    }
+    .folder-mark{
+        opacity: 0.55;
+        &[class~=has-media]{
+            color: red;
+        }
+    }
+    .fa-circle{
+        font-size: 8px;
+        vertical-align: 3px;
+        opacity: 0.9;
+        color: green;
+        &[class~=no-match]{
+            opacity: 0.7;
+            color: red;
         }
     }
 }
+
+
+
+
 

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-20 20:17:02
+ * @LastEditTime: 2022-01-22 12:20:40
  * @Description: 
 -->
 
@@ -17,15 +17,23 @@
             </li>
         </ul>
         <br/>
-        <h2>{{aPath.join('/')}}</h2>
+        <h2>当前浏览：{{aPath.join('/')}}</h2>
         <br/>
         <!-- ▼宝库 -->
         <article class="directory-list" >
-            <ul v-for="(aColumn, i1) of aTree" :key="i1" >
+            <ul v-for="(aColumn, i1) of aTree" :key="i1">
                 <li v-for="(cur, i2) of aColumn" :key="i2"
                     @click="ckickTree(i1, i2, cur)"
+                    :class="{active: cur.sItem == aPath[i1+1]}"
                 >
-                    {{cur.isDirectory ? '■ ' : ''}}{{cur.sItem}}
+                    <i v-if="cur.isDirectory"
+                        class="folder-mark fas fa-folder"
+                        :class="{'has-media': cur.hasMedia}"
+                    />
+                    <i v-else-if="cur.isMedia" class="fas fa-circle"
+                        :class="cur.srt ? '' : 'no-match'"
+                    />
+                    {{cur.sItem}}
                 </li>
             </ul>
         </article>
@@ -45,8 +53,10 @@ export default {
             aTree: [],
         };
     },
-    created(){
-        
+    mounted(){
+        setTimeout(()=>{
+            this.test01()
+        }, 999);
     },
     watch: {
         aPath: {

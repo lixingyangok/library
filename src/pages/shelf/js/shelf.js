@@ -1,6 +1,4 @@
-import {reactive, toRefs} from 'vue';
 const fs = require('fs');
-const {exec} = require('child_process'); 
 
 
 const fn01 = {
@@ -24,23 +22,36 @@ const oAboutTree = {
     },
     // ▼
     setFileList(idx, sDir, aItems){
-        const [a1, a2] = [[], []];
-        aItems.forEach(sItem => {
-            const sCurPath = sDir + '/' + sItem;
-            try {
-                const isDirectory = fs.statSync(sCurPath).isDirectory();
-                const obj = { sItem, isDirectory };
-                if (isDirectory) {
-                    a1.push(obj);
-                } else if (checkFile(sCurPath)) {
-                    a2.push(obj);
-                }
-            } catch (err) {
-                console.log('判断是否为文件夹出错：\n', err);
+        let [a01, a02, a03] = [[], [], []];
+        const oSrtFiles = {};
+        aItems.forEach((sItem, idx) => {
+            const sCurPath = `${sDir}/${sItem}`;
+            const isDirectory = fs.statSync(sCurPath).isDirectory();
+            const oItem = { sItem, isDirectory };
+            if (isDirectory) {
+                oItem.hasMedia = findMedia(sCurPath);
+                return a01.push(oItem);
             }
+            const isMedia = checkFile(sCurPath, oConfig.aMedia);
+            if (isMedia) {
+                oItem.isMedia = true;
+                const sSrtFile = sCurPath.split('.').slice(0, -1).join('.')+'.srt';
+                const oStat = fs.statSync(sSrtFile, {throwIfNoEntry: false});
+                if (oStat) {
+                    oItem.srt = sSrtFile;
+                    oSrtFiles[sSrtFile] = true;
+                }
+                return a02.push(oItem);
+            }
+            checkFile(sCurPath) && a03.push(oItem);
         });
-        this.aTree.splice(idx, 1, [...a1, ...a2]);
+        a03 = a03.filter(cur=>{
+            return !oSrtFiles[`${sDir}/${cur.sItem}`];
+        });
+        const arr = [...a01, ...a02, ...a03];
+        this.aTree.splice(idx, 1, arr);
     },
+    // ▼点击文件夹
     ckickTree(i1, i2){
         const oAim = this.aTree[i1][i2];
         if (oAim.isDirectory){
@@ -55,20 +66,59 @@ const oAboutTree = {
         const sFilePath = `${this.aPath.join('/')}/${oAim.sItem}`;
         this.goToLearn(sFilePath);
     },
-    // ▼跳转
+    // ▼跳转到学习页
     goToLearn(sFilePath){
         console.log(sFilePath);
         localStorage.setItem('sFilePath', sFilePath);
         this.$router.push({name: 'studyLounge'});
     },
+    // ▼
+    test01(){
+        const [sPath] = this.aPath;
+        const obj = getTree(sPath);
+        console.log('树\n', obj);
+    }
 };
 
-function checkFile(sFilePath) {
-    for (const cur of window.oConfig.aFileType) {
-        if (sFilePath.toLowerCase().endsWith(cur)) {
+function checkFile(sFilePath, aFileType) {
+    const isDirectory = fs.statSync(sFilePath).isDirectory();
+    if (isDirectory) return;
+    aFileType = aFileType || oConfig.aFileType;
+    for (const sCur of aFileType) {
+        if (sFilePath.toLowerCase().endsWith(sCur)) {
             return true;
         }
     }
+}
+
+// ▼查询目录是否为【媒体文件夹】
+function findMedia(sPath){
+    const isDirectory = fs.statSync(sPath).isDirectory();
+    if (!isDirectory) return 0;
+    const aChildren = fs.readdirSync(sPath);
+    const iResult = aChildren.reduce((iResult, sCur)=>{
+        const iVal = ~~checkFile(`${sPath}/${sCur}`, oConfig.aMedia);
+        return iResult + iVal;
+    }, 0);
+    return iResult;
+}
+
+function getTree(sPath){
+    const isDirectory = fs.statSync(sPath).isDirectory();
+    if (!isDirectory) return;
+    const aChildren = fs.readdirSync(sPath);
+    if (!aChildren.length) return;
+    const hasMedia = findMedia(sPath);
+    const children = aChildren.reduce((oResult, sCur)=>{
+        const sThisChild = `${sPath}/${sCur}`;
+        const isDirectory = fs.statSync(sThisChild).isDirectory();
+        if (!isDirectory) return oResult;
+        oResult = oResult || {};
+        oResult[sCur] = getTree(sThisChild);
+        return oResult;
+    }, undefined);
+    if (!hasMedia && !children) return;
+    return {hasMedia, children};
 }
 
 export default {
@@ -76,83 +126,3 @@ export default {
     ...oAboutTree,
 };
 
-// ▼暂时弃用 ---------------------------------------------------
-// ▼下方全是废弃的内容
-
-function getDiskList(){
-    let fnResolve;
-    let fnReject;
-    const oPromise = new Promise((f1, f2)=>{
-        fnResolve = f1;
-        fnReject = f2;
-    });
-    exec('wmic logicaldisk get name', function(error, stdout, stderr){
-        if (error || stderr) {
-            if (error) console.error(`出错了: ${error}`);
-            console.error(`系统命令出错: ${error}`);
-            return fnReject(error || stderr);
-        }
-        console.log('系统分区：', stdout.split(/\s+/g));
-        const arr = stdout.match(/\S+/g).slice(1);
-        fnResolve(arr);
-    });
-    return oPromise;
-}
-
-function shelfFn01() {
-    console.log('书架页 setup ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
-    let aDisks = reactive(document.body.disks);
-    const setDisks = async ()=>{
-        console.log('开始 setDisks');
-        const a1 = Math.random() > 0.5 ? ['成功'] : false;
-        if (a1){
-            console.log('免 await 预计【成功++】');
-        }else{
-            console.log('预计【失败】');
-        }
-        const arr = a1 || await getDiskList().catch(err=>{
-            console.log('没有盘符：', err);
-        });
-        console.log('等到盘符：', arr.$dc());
-        // aDisks.splice(0, Infinity, ...arr);
-        new Promise(f1=>{
-            setTimeout(()=>{
-                console.log('1秒之后');
-                f1();
-            }, 1000)
-        }).then(res=>{
-            aDisks.splice(0, Infinity, ...['1钞之后']);
-        });
-        // aDisks = [44,55];
-        // aDisks.splice(0, Infinity, ...arr);
-    };
-    return toRefs(reactive({
-        aDisks, 
-        setDisks,
-    }));
-}
-
-const aa = {
-    changeArr(arr){
-        console.log('旧值：', this.aRoot.$dc());
-        this.aRoot.splice(0, Infinity, ...arr);
-        // this.aRoot = arr;
-        console.log('赋值后：', this.aRoot.$dc());
-        console.log('赋值目标', this.aRoot);
-    },
-    getRoot(){
-        const this_ = this;
-        const {changeArr} = this;
-        this_.changeArr([new Date().toString(), new Date().toString()])
-        exec('wmic logicaldisk get name', function(error, stdout, stderr){
-            if (error || stderr) {
-                if (error) console.error(`出错了: ${error}`);
-                console.error(`系统命令出错: ${error}`);
-                return;
-            }
-            console.log('系统分区查询到：', stdout.split(/\s+/g));
-            const arr = stdout.match(/\S+/g).slice(1);
-            changeArr(arr);
-        });
-    },
-};

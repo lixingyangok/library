@@ -7,6 +7,7 @@ import { newPromise, setGlobal } from './common/js/global-setting.js';
 // ▼ 样式
 import './common/style/minireset.css';
 import './common/style/global.scss';
+import './common/lib/fontawesome-free-5.15.4-web/css/all.min.css';
 
 // ▼ require
 const { ipcRenderer } = require('electron');
