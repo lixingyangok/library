@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import ElementPlus from 'element-plus';
 import App from './App.vue';
 import router from './router/router.js';
 import store from './store/store.js';
@@ -8,6 +9,7 @@ import { newPromise, setGlobal } from './common/js/global-setting.js';
 import './common/style/minireset.css';
 import './common/style/global.scss';
 import './common/lib/fontawesome-free-5.15.4-web/css/all.min.css';
+import 'element-plus/dist/index.css';
 
 // ▼ require
 const { ipcRenderer } = require('electron');
@@ -33,6 +35,7 @@ setGlobal();
 const myApp = createApp(App);
 myApp.use(router);
 myApp.use(store);
+myApp.use(ElementPlus);
 myApp.mount('#app');
 
 
