@@ -6,9 +6,9 @@ import {getTubePath} from '../../../common/js/common-fn.js';
 
 export function mainPart(){
 	const oDom = reactive({
-		oMyWave: null,
-		oSententList: null,
-		oTextArea: null,
+		oMyWave: null, // 波
+		oTextArea: null, // 输入框
+		oSententList: null, // 字幕列表
 	});
 	const oData = reactive({
 		sMediaSrc: getTubePath(ls('sFilePath')),
@@ -35,16 +35,17 @@ export function mainPart(){
 		getLinesFromDB(sHash);
 		const res = await fnInvoke('db', 'getMediaInfo', sHash);
 		console.log('媒体\n', res);
+		// 如果DB中的位置信息不正确，需要弹出窗口提示更新
 	}
 	// ▼查询库中的字幕
 	async function getLinesFromDB(sHash){
 		const aRes = await fnInvoke('db', 'getLineByHash', sHash);
 		if (!aRes) return;
-		fixTime(aRes);
-		// console.log('字幕\n', aRes);
 		oData.iSubtitle = 1;
-		oData.aLineArr = aRes;
+		oData.aLineArr = fixTime(aRes);
+		// console.log('字幕\n', aRes);
 	}
+	// ▼保存1个媒体信息
 	async function saveMedia(){
 		const arr = ls('sFilePath').split('/');
 		const obj = {
@@ -56,7 +57,7 @@ export function mainPart(){
 		if (!oInfo) throw '保存未成功';
 		console.log('已经保存', oInfo);
 	}
-	// ▼取得字幕文件的数据
+	// ▼取得【字幕文件】的数据
 	async function getSrtFile(){
 		const res01 = await fetch(sSubtitleSrc).catch((err)=>{
 			oData.iSubtitle = -1; // -1 表示文件不存在
@@ -81,8 +82,6 @@ export function mainPart(){
 		setFirstLine();
 	}
 	// ============================================================================
-	// getSrtFile(); // 从文件取字幕
-	
 	init();
 	onMounted(()=>{
 		// console.log('oDom', oDom.oMyWave);
