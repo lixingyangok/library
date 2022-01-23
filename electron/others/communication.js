@@ -2,10 +2,10 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-20 19:35:39
+ * @LastEditTime: 2022-01-23 01:31:10
  * @Description: 
  */
-const fs = require('fs').promises;
+const fsp = require('fs').promises;
 const { ipcMain } = require('electron');
 const hasher = require('hash-wasm');
 const oDbFn = { // 所有的数据库方法
@@ -22,7 +22,7 @@ module.exports.makeChannels = function(){
     // ▼保存文本的方法
     ipcMain.handle("fileSaver", async (event, oData) => {
         const {sSaveTo, aChannelData_} = oData;
-        const err = await fs.writeFile(sSaveTo, aChannelData_).catch(
+        const err = await fsp.writeFile(sSaveTo, aChannelData_).catch(
             err => err,
         );
         return err;
@@ -30,7 +30,7 @@ module.exports.makeChannels = function(){
     // 主进程
     ipcMain.handle("getHash", async (event, sPath) => {
         // console.time('读取Buffer');
-        const oBuffer = await fs.readFile(sPath).catch(err=>{
+        const oBuffer = await fsp.readFile(sPath).catch(err=>{
             toLog('读文件出错\n', err);
         });
         if (!oBuffer) return;

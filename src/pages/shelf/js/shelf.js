@@ -1,22 +1,32 @@
-const fs = require('fs');
 import { getFolderKids } from '../../../common/js/fs-fn';
+const fs = require('fs');
+const fsp = require('fs').promises;
+const path = require('path');
+// console.log('●\n', path.extname('aa.Txt'));
 
-const fn01 = {
+const fnAboutDB = {
     choseRoot(sCurRoot) {
         this.aPath = [sCurRoot];
     },
+    // ▼查询所有媒体文件夹数据
+    async getMediaHomesArr(){
+        let aRes = await fnInvoke('db', 'getMediaHomes');
+        if (!aRes) return;
+        this.oMediaHomes = aRes.reduce((oResult, oCur)=>{
+            oResult[oCur.dir] = oCur.count;
+            return oResult;
+        }, {});
+    },
+    // ▼弹出1级窗口-树
     showDialog(sPath){
         this.dialogVisible = true;
         this.dataSource = [];
-        setTimeout(()=>{
-            this.setTreeList(sPath);
-        }, 500);
+        this.setTreeList(sPath);
     },
-    // ▼弹出框的树
-    setTreeList(sPath) {
-        // const [sPath] = this.aPath;
-        const obj = getTree(sPath);
-        console.log('窗口树-', obj);
+    // ▼插入1级窗口的树
+    async setTreeList(sPath) {
+        const obj = await getTree(sPath);
+        if (!obj?.children) return;
         const treeArr = [{
             label: sPath,
             sPath: obj.sPath,
@@ -25,14 +35,41 @@ const fn01 = {
         }];
         this.dataSource = treeArr;
     },
-    getFolder(oInfo){
-        console.log('oInfo', oInfo.$dc());
-        getFolderKids(oInfo.sPath);
+    // ▼打开2级窗口————查询某个目录
+    async checkFolder(oInfo){
+        this.bMediaDialog = true;
+        this.aMedia = await getFolderKids(oInfo.sPath);
+        for (const [idx, oMedia] of this.aMedia.entries()) {
+            if (idx % 3) this.getOneMediaInfoFromDB(oMedia);
+            else await this.getOneMediaInfoFromDB(oMedia);
+        }
     },
-    putOneMediaInDB(oInfo){
-        console.log('oInfo', oInfo.$dc());
+    // ▼查询【某1个媒体】在DB中的信息
+    async getOneMediaInfoFromDB(oMedia){
+        const hash = await fnInvoke('getHash', oMedia.sPath);
+        const res = await fnInvoke('db', 'getMediaInfo', hash);
+        oMedia.hash = hash;
+        oMedia.iStatus = res ? 1 : 0;
+    },
+    // ▼将某个文件夹内的媒体逐个保存媒体到DB
+    async saveOneByOne(){
+        let idx = -1;
+        while (++idx < this.aMedia.length){
+            const oMedia = this.aMedia[idx];
+            if (oMedia.iStatus) continue; // 已在DB中就跳过
+            const arr = oMedia.sPath.split('/');
+            const obj = {
+                hash: oMedia.hash,
+                name: arr.slice(-1)[0],
+                dir: arr.slice(0, -1).join('/'),
+            };
+            const oInfo = await fnInvoke('db', 'saveMediaInfo', obj);
+            if (!oInfo) throw '保存未成功';
+            oMedia.iStatus = 1;
+        }
     },
 };
+
 
 const oAboutTree = {
     // ▼处理用户变更目录
@@ -48,18 +85,19 @@ const oAboutTree = {
         }
     },
     // ▼
-    setFileList(idx, sDir, aItems) {
+    async setFileList(idx, sDir, aItems) {
         let [a01, a02, a03] = [[], [], []];
         const oSrtFiles = {};
-        aItems.forEach((sItem, idx) => {
+        const aPromises = aItems.map(async (sItem, idx) => {
             const sCurPath = `${sDir}/${sItem}`;
-            const isDirectory = fs.statSync(sCurPath).isDirectory();
+            const oStat = await fsp.stat(sCurPath);;
+            const isDirectory = oStat.isDirectory();
             const oItem = { sItem, isDirectory };
             if (isDirectory) {
-                oItem.hasMedia = findMedia(sCurPath);
+                oItem.hasMedia = await findMedia(sCurPath);
                 return a01.push(oItem);
             }
-            const isMedia = checkFile(sCurPath, oConfig.aMedia);
+            const isMedia = await checkFile(sCurPath, oConfig.oMedia);
             if (isMedia) {
                 oItem.isMedia = true;
                 const sSrtFile = sCurPath.split('.').slice(0, -1).join('.') + '.srt';
@@ -70,27 +108,34 @@ const oAboutTree = {
                 }
                 return a02.push(oItem);
             }
-            checkFile(sCurPath) && a03.push(oItem);
+            await checkFile(sCurPath) && a03.push(oItem);
         });
+        await Promise.all(aPromises);
         a03 = a03.filter(cur => {
             return !oSrtFiles[`${sDir}/${cur.sItem}`];
+        });
+        [a01, a02, a03].forEach(curArr => {
+            curArr.sort((aa, bb)=>{
+                const [a1, a2=0] = (aa?.sItem || '').match(/\d+/g) || [];
+                const [b1, b2=0] = (bb?.sItem || '').match(/\d+/g) || [];
+                if (a1 && b1) {
+                    return (a1*999 + a2*1) - (b1*999 + b2*1);
+                }
+                return aa.sItem.localeCompare(bb.sItem);
+            });
         });
         const arr = [...a01, ...a02, ...a03];
         this.aTree.splice(idx, 1, arr);
     },
     // ▼点击文件夹
-    ckickTree(i1, i2) {
-        const oAim = this.aTree[i1][i2];
-        if (oAim.isDirectory) {
-            this.aPath.splice(i1 + 1, Infinity, oAim.sItem);
-            return;
+    async ckickTree(i1, i2) {
+        const {isDirectory, sItem} = this.aTree[i1][i2];
+        if (isDirectory) {
+            return this.aPath.splice(i1 + 1, Infinity, sItem);
         }
-        const isMedia = window.oConfig.aMedia.some(cur => {
-            const sItem = oAim.sItem.toLowerCase();
-            return sItem.endsWith(cur.toLowerCase());
-        });
+        const isMedia = await checkFile(sItem, oConfig.oMedia)
         if (!isMedia) return;
-        const sFilePath = `${this.aPath.join('/')}/${oAim.sItem}`;
+        const sFilePath = `${this.aPath.join('/')}/${sItem}`;
         this.goToLearn(sFilePath);
     },
     // ▼跳转到学习页
@@ -99,47 +144,51 @@ const oAboutTree = {
         localStorage.setItem('sFilePath', sFilePath);
         this.$router.push({ name: 'studyLounge' });
     },
-
 };
 
-function checkFile(sFilePath, aFileType) {
-    const isDirectory = fs.statSync(sFilePath).isDirectory();
-    if (isDirectory) return;
-    aFileType = aFileType || oConfig.aFileType;
-    for (const sCur of aFileType) {
-        if (sFilePath.toLowerCase().endsWith(sCur)) {
-            return true;
-        }
-    }
+export default {
+    ...fnAboutDB,
+    ...oAboutTree,
+};
+
+async function checkFile(sFilePath, oFileType=oConfig.oFileType) {
+    const sTail = path.extname(sFilePath).toLowerCase();
+    if (!oFileType[sTail]) return;
+    const oStat = await fsp.stat(sFilePath);
+    return !oStat.isDirectory();
 }
 
 // ▼查询目录是否为【媒体文件夹】
-function findMedia(sPath) {
-    const isDirectory = fs.statSync(sPath).isDirectory();
-    if (!isDirectory) return 0;
-    const aChildren = fs.readdirSync(sPath);
-    const iResult = aChildren.reduce((iResult, sCur) => {
-        const iVal = ~~checkFile(`${sPath}/${sCur}`, oConfig.aMedia);
-        return iResult + iVal;
-    }, 0);
-    return iResult;
+async function findMedia(sPath, oTarget) {
+    const oStat = await fsp.stat(sPath);
+    if (!oStat.isDirectory()) return 0;
+    let iSum = 0;
+    const aDirKids = await fsp.readdir(sPath);
+    const arr = aDirKids.map(async sCur=>{
+        const isMedia = await checkFile(`${sPath}/${sCur}`, oConfig.oMedia);
+        if (isMedia) iSum++;
+    });
+    await Promise.all(arr);
+    // if (oTarget) oTarget.obj[oTarget.key] = iSum;
+    return iSum;
 }
 
-function getTree(sPath) {
-    const isDirectory = fs.statSync(sPath).isDirectory();
-    if (!isDirectory) return;
-    const aChildren = fs.readdirSync(sPath);
-    if (!aChildren.length) return;
-    const hasMedia = findMedia(sPath);
-    const children = aChildren.reduce((oResult, sCur) => {
-        const sThisChild = `${sPath}/${sCur}`;
-        const isDirectory = fs.statSync(sThisChild).isDirectory();
-        if (!isDirectory) return oResult;
-        oResult = oResult || {};
-        oResult[sCur] = getTree(sThisChild);
-        return oResult;
-    }, undefined);
-    if (!hasMedia && !children) return;
+async function getTree(sPath) {
+    const oStat = await fsp.stat(sPath);
+    if (!oStat.isDirectory()) return;
+    const aDirKids = await fsp.readdir(sPath);
+    if (!aDirKids.length) return;
+    const children = {};
+    const aPromises = [
+        findMedia(sPath),
+        ...aDirKids.map(async sCur => {
+            const obj = await getTree(`${sPath}/${sCur}`);
+            if (obj) children[sCur] = obj;
+        }),
+    ];
+    const [hasMedia] = await Promise.all(aPromises);
+    const iKeys = Object.keys(children).length;
+    if (!hasMedia && !iKeys) return;
     return { hasMedia, children, sPath };
 }
 
@@ -157,31 +206,3 @@ function treeObj2Arr(obj){
     }
     return arr;
 }
-
-export default {
-    ...fn01,
-    ...oAboutTree,
-};
-
-export const dataSource = [
-    {
-        id: 1,
-        label: 'Level one 1',
-        children: [
-            {
-                id: 4,
-                label: 'Level two 1-1',
-                children: [
-                    {
-                        id: 9,
-                        label: 'Level three 1-1-1',
-                    },
-                    {
-                        id: 10,
-                        label: 'Level three 1-1-2',
-                    },
-                ],
-            },
-        ],
-    },
-];

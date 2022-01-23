@@ -2,37 +2,39 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-22 20:40:32
+ * @LastEditTime: 2022-01-23 01:27:57
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 
 const fs = require('fs');
 const fsp = require('fs').promises;
+const path = require('path');
 
 export async function getFolderKids(sPath){
-    const oStat = await fsp.stat(sPath);//.isDirectory();
+    const oStat = await fsp.stat(sPath);
     if (!oStat.isDirectory()) return;
     const aKids = await fsp.readdir(sPath);
-    const oKids = aKids.reduce((oResult, sCur)=>{
-        oResult[sCur] = {};
-        return oResult;
-    }, {});
-    const aPromises = Object.entries(oKids).map(async (cur, idx) => {
-        const [sFile, oItem] = cur;
+    const aResultArr = [];
+    const aPromises = aKids.map(async sFile => {
+        const sTail = path.extname(sFile).toLowerCase();
+        if (!oConfig.oMedia[sTail]) return;
         const sCurFile = `${sPath}/${sFile}`;
         const oStat = await fsp.stat(sCurFile);
         if (oStat.isDirectory()) return;
-        const bMedia = oConfig.aMedia.some(sTail => {
-            return sCurFile.toLowerCase().endsWith(sTail);
-        });
-        if (!bMedia) return;
-        oItem.sPath = sCurFile;
+        const oItem = {
+            name: sFile,
+            sPath: sCurFile,
+        };
         const spouse = sFile.split('.').slice(0, -1).join('.') + '.srt';
-        if (oKids[spouse]) oItem.srt = `${sPath}/${spouse}`;
+        if (aKids.includes(spouse)) oItem.srt = `${sPath}/${spouse}`;
+        aResultArr.push(oItem);
     });
     await Promise.all(aPromises);
-    console.log('oKids\n', oKids.$dc());
+    // console.log('aResult\n', aResult.$dc());
+    return aResultArr;
 }
+
+
 
 
 

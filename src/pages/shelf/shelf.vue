@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-22 19:28:52
+ * @LastEditTime: 2022-01-23 09:50:04
  * @Description: 
 -->
 
@@ -10,10 +10,11 @@
     <section class="outer" >
         <h2>{{aDisks}}</h2>
         <ul>
-            <li v-for="(cur, idx) of oConfig.aRoot" :key="idx"
-                @click="choseRoot(cur)"
-            >
-                {{cur}}
+            <li v-for="(cur, idx) of oConfig.aRoot" :key="idx">
+                <span @click="choseRoot(cur)">
+                    {{cur}}
+                </span>
+                &nbsp;
                 <el-button type="text" @click="showDialog(cur)">
                     弹出窗口
                 </el-button>
@@ -42,7 +43,7 @@
         </article>
     </section>
     <!--  -->
-    <el-dialog title="初始化" width="900px"
+    <el-dialog title="初始化" width="850px"
         v-model="dialogVisible"
     >
         <el-tree node-key="id1" default-expand-all
@@ -50,14 +51,17 @@
         >
             <template #default="{ node, data }">
                 <span class="tree-line">
-                    <span>
+                    <span class="label" :title="node.label">
                         {{ node.label }}
-                        <span v-if="data.hasMedia">
-                            （{{ data.hasMedia }}）
-                        </span>
                     </span>
-                    <span v-if="data.hasMedia" >
-                        <el-button type="text" @click="getFolder(data)">
+                    <span v-if="data.hasMedia" class="right-info" >
+                        <el-progress class="progress-bar" :show-text="false"
+                            :percentage="((oMediaHomes[data.sPath] || 0) / data.hasMedia) * 100" 
+                        />
+                        <span class="count" >
+                            {{`${oMediaHomes[data.sPath] || 0}/${data.hasMedia}`}}
+                        </span>
+                        <el-button type="text" @click="checkFolder(data)">
                             入库
                         </el-button>
                     </span>
@@ -76,26 +80,55 @@
             </span>
         </template>
     </el-dialog>
+    <!-- ▼媒体列表 -->
+    <el-dialog title="初始化" width="600px"
+        v-model="bMediaDialog"
+    >
+        <ul>
+            <li v-for="(cur,idx) of aMedia" :key="idx">
+                {{cur.name}}
+                {{['✘', '✔'][cur.iStatus]}}
+            </li>
+        </ul>
+        <br/>
+        <el-button type="primary" @click="saveOneByOne">
+            入库
+        </el-button>
+        <!-- ▼按钮▼ -->
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="bMediaDialog = false">
+                    Cancel
+                </el-button>
+                <el-button type="primary" @click="bMediaDialog = false">
+                    Confirm
+                </el-button>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script>
-import oMethods, {dataSource} from './js/shelf.js';
+import oMethods from './js/shelf.js';
 
 export default {
     name: "shelf",
     data(){
         return {
             dataSource: [],
-            // dataSource,
+            aMedia: [],
             aDisks: document.body.disks,
             oConfig: window.oConfig,
             aPath: [window.oConfig.aRoot[0]],
             aTree: [],
             dialogVisible: false,
+            bMediaDialog: false,
+            aMediaHomes: [],
+            oMediaHomes: {},
         };
     },
     mounted(){
-
+        this.getMediaHomesArr();
     },
     watch: {
         aPath: {

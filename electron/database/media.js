@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-20 19:58:14
+ * @LastEditTime: 2022-01-23 09:52:06
  * @Description: 
  */
 
@@ -43,6 +43,22 @@ module.exports.oFn = {
             },
         });
         return res?.dataValues;
+    },
+    // ▼查询所有【媒体文件夹】
+    async getMediaHomes() {
+        const {oPromise, fnResolve, fnReject} = newPromise();
+        const sql = `
+            SELECT
+                media.dir,
+                count(*) as count
+            FROM media 
+            group by media.dir
+        `;
+        db.all(sql, (err, row) => {
+            if (err) return toLog('查询出错');
+            fnResolve(row);
+        });
+        return oPromise;
     },
 };
 
