@@ -110,10 +110,13 @@
     .status{
         padding-right: 10px;
         i{
-            width: 1em;
+            width: 1.1em;
             display: inline-block;
             &[class~=no-yet]{
                 color: red;
+            }
+            &[class~=no-srt]{
+                opacity: 0 !important;
             }
         }
     }

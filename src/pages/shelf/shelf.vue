@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 16:57:47
+ * @LastEditTime: 2022-01-23 20:29:04
  * @Description: 
 -->
 
@@ -85,7 +85,7 @@
         v-model="bMediaDialog"
     >
         <ul class="media-list-in-dialog" >
-            <li v-for="(cur,idx) of aFolderMedia" :key="idx"
+            <li v-for="(cur,idx) of aMediaForShow" :key="idx"
                 class="one-media"
             >
                 <span class="name" :title="cur.name">
@@ -96,7 +96,7 @@
                     <i :class="{'no-yet': cur.iStatus!=1}" >
                         {{['✘', '✔'][cur.iStatus]}}
                     </i>
-                    <i :class="{'no-yet': !oLineMap[cur.hash]}">
+                    <i :class="{'no-yet': !oLineMap[cur.hash], 'no-srt': !cur.srt}">
                         {{ oLineMap[cur.hash] ? '✔' : '✘' }}
                     </i>
                 </span>
@@ -140,6 +140,11 @@ export default {
             oMediaHomes: {},
             oLineMap: {},
         };
+    },
+    computed:{
+        aMediaForShow(){
+            return this.aFolderMedia;
+        }, 
     },
     mounted(){
         this.getMediaHomesArr();

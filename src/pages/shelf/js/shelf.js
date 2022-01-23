@@ -1,7 +1,6 @@
 import { getFolderKids } from '../../../common/js/fs-fn';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
-import {getTubePath} from '../../../common/js/common-fn.js';
-
+import {mySort} from '../../../common/js/common-fn.js';
 
 const fs = require('fs');
 const fsp = require('fs').promises;
@@ -51,7 +50,9 @@ const fnAboutDB = {
     // ▼打开2级窗口————查询某个目录
     async checkFolder(oInfo){
         this.bMediaDialog = true;
-        this.aFolderMedia = await getFolderKids(oInfo.sPath);
+        const aFolderMedia = await getFolderKids(oInfo.sPath);
+        mySort(aFolderMedia, 'name');
+        this.aFolderMedia = aFolderMedia;
         for (const [idx, oMedia] of this.aFolderMedia.entries()) {
             if (idx % 3) this.getOneMediaInfoFromDB(oMedia);
             else await this.getOneMediaInfoFromDB(oMedia);
@@ -77,27 +78,31 @@ const fnAboutDB = {
             if (!this.oLineMap[oMedia.hash]) {
                 this.saveLines(oMedia);
             }
-            if (oMedia.iStatus==1) return; // 不再重试保存
+            if (oMedia.iStatus==1) continue; // 不再重试保存
             const arr = oMedia.sPath.split('/');
             const oInfo = await fnInvoke('db', 'saveMediaInfo', {
                 hash: oMedia.hash,
                 name: arr.slice(-1)[0],
                 dir: arr.slice(0, -1).join('/'),
             });
-            if (!oInfo) throw '保存未成功';
-            oMedia.iStatus = 1;
+            if (oInfo) {
+                oMedia.iStatus = 1;
+            }else{
+                console.log('保存媒体信息未成功');
+            }
         }
         await this.getMediaHomesArr();
         this.setTreeList(this.aFolders[0].sPath);
     },
     async saveLines(oMedia){
         const {hash, srt} = oMedia;
-        const res01 = await fetch(getTubePath(srt)).catch((err)=>{
-            console.log('字幕不存在\n', err);
+        if (!srt || !hash) return;
+        // const res01 = await fetch(getTubePath(srt)).catch((err)=>{ });
+        const res01 = await fsp.readFile(srt, 'utf8').catch(err=>{
+            console.log('读取字幕未成功\n', srt);
         });
-        if (!res01) return; // 查字幕文件不成功
-        const sSubtitles = await res01.text();
-        const srtArr = SubtitlesStr2Arr(sSubtitles);
+        if (!res01) return;
+        const srtArr = SubtitlesStr2Arr(res01);
         if (!srtArr) return console.log('文本转为数据未成功\n');
         srtArr.forEach(cur => cur.hash = hash);
         const res = await fnInvoke('db', 'saveLine', srtArr);
@@ -150,14 +155,7 @@ const oAboutTree = {
             return !oSrtFiles[`${sDir}/${cur.sItem}`];
         });
         [a01, a02, a03].forEach(curArr => {
-            curArr.sort((aa, bb)=>{
-                const [a1, a2=0] = (aa?.sItem || '').match(/\d+/g) || [];
-                const [b1, b2=0] = (bb?.sItem || '').match(/\d+/g) || [];
-                if (a1 && b1) {
-                    return (a1*999 + a2*1) - (b1*999 + b2*1);
-                }
-                return aa.sItem.localeCompare(bb.sItem);
-            });
+            mySort(curArr, 'sItem');
         });
         const arr = [...a01, ...a02, ...a03];
         this.aTree.splice(idx, 1, arr);
@@ -204,7 +202,6 @@ async function findMedia(sPath, oTarget) {
         if (isMedia) iSum++;
     });
     await Promise.all(arr);
-    // if (oTarget) oTarget.obj[oTarget.key] = iSum;
     return iSum;
 }
 
@@ -231,14 +228,8 @@ function treeObj2Arr(obj){
     const arr = [];
     for (const [label, oInfo] of Object.entries(obj)){
         if (!oInfo) continue;
-        const children = treeObj2Arr(oInfo.children).sort((aa,bb)=>{
-            // const [a1, a2=0] = (aa?.label || '').match(/\d+/g) || [];
-            // const [b1, b2=0] = (bb?.label || '').match(/\d+/g) || [];
-            // if (a1 && b1) {
-            //     return (a1*999 + a2*1) - (b1*999 + b2*1);
-            // }
-            return aa.label.localeCompare(bb.label);
-        });
+        const children = treeObj2Arr(oInfo.children);
+        mySort(children, 'label');
         arr.push({
             label,
             sPath: oInfo.sPath,
