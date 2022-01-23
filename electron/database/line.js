@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 11:41:17
+ * @LastEditTime: 2022-01-23 18:13:49
  * @Description: 
  */
 
@@ -15,20 +15,21 @@ const oLine = module.exports.line = sqlize.define('line', {
     end: DataTypes.FLOAT,
     text: DataTypes.STRING, // 原文
     trans: DataTypes.STRING, // 译文
-    // 笔记？
+    // 笔记内容？
 });
+
 
 oLine.sync({ alter: true });
 
 module.exports.oFn = {
     // ▼批量保存
-    async saveLine(arr){
+    async saveLine(arr) {
         const res = await oLine.bulkCreate(arr);
-        toLog(res);
+        return res;
     },
     // ▼查询所有【媒体字幕】
     async getLineInfo() {
-        const {oPromise, fnResolve, fnReject} = newPromise();
+        const { oPromise, fnResolve, fnReject } = newPromise();
         const sql = `
             SELECT
                 line.hash,
@@ -42,7 +43,15 @@ module.exports.oFn = {
         });
         return oPromise;
     },
+    // ▼查询某个媒体的字幕
+    async getLineByHash(hash) {
+        const res = await oLine.findAll({
+            where: {hash},
+            order: [['start', 'asc']],
+        });
+        if (!res) return;
+        // toLog(res[0]);
+        return res.map(cur=>cur.dataValues);
+    },
 };
-
-
 

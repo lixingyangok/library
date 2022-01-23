@@ -92,7 +92,7 @@ export function SubtitlesStr2Arr(sSubtitles) {
 		const [aa, bb] = cur.split(' --> ');
 		const [start, end] = [getSeconds(aa), getSeconds(bb)];
 		const text = aLine[idx].trim() || '';
-		return fixTime({start, end, text}); // fixTime({start, end, text});
+		return fixTime({start, end, text});
 	});
 }
 
@@ -104,13 +104,20 @@ export function getSeconds(text) {
 };
 
 // ▼修整某一行（补充 .long 信息
-export function fixTime(oTarget){
-	const {start, end, text} = oTarget;
-	oTarget.long = (end - start).toFixed(2) * 1;
-	oTarget.start_ = secToStr(start, true);
-	oTarget.end_ = secToStr(end, true);
-	oTarget.text = text || '';
-	return oTarget;
+export function fixTime(theTarget){
+	(()=>{
+		const {name} = theTarget.constructor;
+		if (name == 'Object') return [theTarget];
+		else if(name == 'Array') return theTarget;
+		return [];
+	})().forEach(cur=>{
+		const {start, end, text} = cur;
+		cur.long = (end - start).toFixed(2) * 1;
+		cur.start_ = secToStr(start, true);
+		cur.end_ = secToStr(end, true);
+		cur.text = text || '';
+	});
+	return theTarget;
 }
 
 

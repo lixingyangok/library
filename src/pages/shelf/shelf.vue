@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 12:06:47
+ * @LastEditTime: 2022-01-23 16:57:47
  * @Description: 
 -->
 
@@ -80,7 +80,7 @@
             </span>
         </template>
     </el-dialog>
-    <!-- ▼媒体列表 -->
+    <!-- ▼文件夹的【媒体列表】 -->
     <el-dialog title="初始化" width="550px"
         v-model="bMediaDialog"
     >
@@ -88,10 +88,17 @@
             <li v-for="(cur,idx) of aFolderMedia" :key="idx"
                 class="one-media"
             >
-                <span class="name">{{cur.name}}</span>
+                <span class="name" :title="cur.name">
+                    {{cur.name}}
+                </span>
                 <span class="status">
-                    {{['✘', '✔'][cur.iStatus]}}
-                    {{ oLineMap[cur.hash] ? '✔' : '✘' }}    
+                    媒体/字幕：
+                    <i :class="{'no-yet': cur.iStatus!=1}" >
+                        {{['✘', '✔'][cur.iStatus]}}
+                    </i>
+                    <i :class="{'no-yet': !oLineMap[cur.hash]}">
+                        {{ oLineMap[cur.hash] ? '✔' : '✘' }}
+                    </i>
                 </span>
             </li>
         </ul>

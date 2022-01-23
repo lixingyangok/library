@@ -1,5 +1,5 @@
 import {toRefs, reactive, computed, onMounted} from 'vue';
-import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
+import {SubtitlesStr2Arr, fixTime} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
 
@@ -32,11 +32,18 @@ export function mainPart(){
 		const sHash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!sHash) throw '没有hash';
 		oData.sHash = sHash;
+		getLinesFromDB(sHash);
 		const res = await fnInvoke('db', 'getMediaInfo', sHash);
 		console.log('媒体\n', res);
 	}
-	async function getLines(){
-
+	// ▼查询库中的字幕
+	async function getLinesFromDB(sHash){
+		const aRes = await fnInvoke('db', 'getLineByHash', sHash);
+		if (!aRes) return;
+		fixTime(aRes);
+		// console.log('字幕\n', aRes);
+		oData.iSubtitle = 1;
+		oData.aLineArr = aRes;
 	}
 	async function saveMedia(){
 		const arr = ls('sFilePath').split('/');
@@ -74,7 +81,7 @@ export function mainPart(){
 		setFirstLine();
 	}
 	// ============================================================================
-	getSrtFile(); // 可能要换为从数据库中取字幕
+	// getSrtFile(); // 从文件取字幕
 	
 	init();
 	onMounted(()=>{

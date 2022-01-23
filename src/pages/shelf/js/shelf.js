@@ -73,9 +73,11 @@ const fnAboutDB = {
         let idx = -1;
         while (++idx < this.aFolderMedia.length){
             const oMedia = this.aFolderMedia[idx];
-            if (oMedia.iStatus || !oMedia.hash) {
-                continue; // 已在DB中就跳过
+            if (!oMedia.hash) continue;
+            if (!this.oLineMap[oMedia.hash]) {
+                this.saveLines(oMedia);
             }
+            if (oMedia.iStatus==1) return; // 不再重试保存
             const arr = oMedia.sPath.split('/');
             const oInfo = await fnInvoke('db', 'saveMediaInfo', {
                 hash: oMedia.hash,
@@ -84,8 +86,6 @@ const fnAboutDB = {
             });
             if (!oInfo) throw '保存未成功';
             oMedia.iStatus = 1;
-            if (this.oLineMap[oMedia.hash]) return;
-            await this.saveLines(oMedia);
         }
         await this.getMediaHomesArr();
         this.setTreeList(this.aFolders[0].sPath);
@@ -100,11 +100,9 @@ const fnAboutDB = {
         const srtArr = SubtitlesStr2Arr(sSubtitles);
         if (!srtArr) return console.log('文本转为数据未成功\n');
         srtArr.forEach(cur => cur.hash = hash);
-        // console.log('srtArr\n', srtArr);
         const res = await fnInvoke('db', 'saveLine', srtArr);
         if (!res) return;
         this.oLineMap[hash] = 1;
-        console.log('保存字幕\n', res);
     },
 };
 
@@ -170,15 +168,15 @@ const oAboutTree = {
         if (isDirectory) {
             return this.aPath.splice(i1 + 1, Infinity, sItem);
         }
-        const isMedia = await checkFile(sItem, oConfig.oMedia)
-        if (!isMedia) return;
         const sFilePath = `${this.aPath.join('/')}/${sItem}`;
+        const isMedia = await checkFile(sFilePath, oConfig.oMedia)
+        if (!isMedia) return;
         this.goToLearn(sFilePath);
     },
     // ▼跳转到学习页
     goToLearn(sFilePath) {
         console.log(sFilePath);
-        localStorage.setItem('sFilePath', sFilePath);
+        ls('sFilePath', sFilePath);
         this.$router.push({ name: 'studyLounge' });
     },
 };
