@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 09:52:06
+ * @LastEditTime: 2022-01-23 16:14:07
  * @Description: 
  */
 
@@ -22,8 +22,7 @@ const oMedia = module.exports.media = sqlize.define('media', {
     duration: DataTypes.FLOAT, // 时长（秒）
     durationStr: DataTypes.STRING, // 时长（时分秒）
     finishedAt: DataTypes.DATE, // 完成时间
-}, {
-    // freezeTableName: true,
+    // dir: DataTypes.STRING, // 类型，故事，教材
 });
 oMedia.sync({ alter: true });
 

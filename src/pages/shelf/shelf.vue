@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 09:50:04
+ * @LastEditTime: 2022-01-23 12:06:47
  * @Description: 
 -->
 
@@ -43,22 +43,22 @@
         </article>
     </section>
     <!--  -->
-    <el-dialog title="初始化" width="850px"
+    <el-dialog title="初始化" width="960px"
         v-model="dialogVisible"
     >
-        <el-tree node-key="id1" default-expand-all
-            :data="dataSource" :expand-on-click-node="false"
+        <el-tree node-key="sPath" default-expand-all
+            :data="aFolders" :expand-on-click-node="false"
         >
             <template #default="{ node, data }">
                 <span class="tree-line">
                     <span class="label" :title="node.label">
                         {{ node.label }}
                     </span>
-                    <span v-if="data.hasMedia" class="right-info" >
+                    <span v-if="data.hasMedia" class="right-info">
                         <el-progress class="progress-bar" :show-text="false"
-                            :percentage="((oMediaHomes[data.sPath] || 0) / data.hasMedia) * 100" 
+                            :percentage="Math.min(100, ((oMediaHomes[data.sPath] || 0) / data.hasMedia) * 100)" 
                         />
-                        <span class="count" >
+                        <span class="count" :class="{full: data.hasMedia==oMediaHomes[data.sPath]}">
                             {{`${oMediaHomes[data.sPath] || 0}/${data.hasMedia}`}}
                         </span>
                         <el-button type="text" @click="checkFolder(data)">
@@ -81,13 +81,18 @@
         </template>
     </el-dialog>
     <!-- ▼媒体列表 -->
-    <el-dialog title="初始化" width="600px"
+    <el-dialog title="初始化" width="550px"
         v-model="bMediaDialog"
     >
-        <ul>
-            <li v-for="(cur,idx) of aMedia" :key="idx">
-                {{cur.name}}
-                {{['✘', '✔'][cur.iStatus]}}
+        <ul class="media-list-in-dialog" >
+            <li v-for="(cur,idx) of aFolderMedia" :key="idx"
+                class="one-media"
+            >
+                <span class="name">{{cur.name}}</span>
+                <span class="status">
+                    {{['✘', '✔'][cur.iStatus]}}
+                    {{ oLineMap[cur.hash] ? '✔' : '✘' }}    
+                </span>
             </li>
         </ul>
         <br/>
@@ -115,16 +120,18 @@ export default {
     name: "shelf",
     data(){
         return {
-            dataSource: [],
-            aMedia: [],
+            aFolders: [],
+            aFolderMedia: [],
             aDisks: document.body.disks,
             oConfig: window.oConfig,
             aPath: [window.oConfig.aRoot[0]],
             aTree: [],
-            dialogVisible: false,
+            dialogVisible: false, // 用于导入的1级窗口
             bMediaDialog: false,
             aMediaHomes: [],
+            // ▼数据库中的数据
             oMediaHomes: {},
+            oLineMap: {},
         };
     },
     mounted(){
