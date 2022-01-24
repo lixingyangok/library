@@ -1,12 +1,16 @@
 // ▼字幕列表
 
+.last-part{
+	overflow-y: auto;
+	flex: 1 999 auto;
+}
+
 .sentence-wrap{
     overflow-y: auto;
 	list-style: none;
 	margin: 20px 0 0;
 	border: solid #aaa;
 	border-width: 1px 0;
-    height: 500px;
 	.one-line{
 		display: flex;
 		border: solid #d1d1d1;

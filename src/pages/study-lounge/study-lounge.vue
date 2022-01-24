@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 23:33:32
+ * @LastEditTime: 2022-01-24 01:12:54
  * @Description: 
 -->
 <template>
@@ -12,7 +12,6 @@
         </section>
         <!-- 左右分界 -->
         <section class="right">
-            <br/><br/>
             <MyWave ref="oMyWave"
                 :media-path="sMediaSrc"
                 :a-line-arr="aLineArr"
@@ -33,23 +32,23 @@
                     @keydown.enter.prevent="()=>previousAndNext(1)"
                 ></textarea>
             </div>
-            <article>
-                <ul class="sentence-wrap" ref="oSententList" >
-                    <li v-for="(cur,idx) of aLineArr" :key="idx"
-                        class="one-line" :class="iCurLineIdx == idx ? 'cur' : ''"
-                        :style="{'--width': `${String(aLineArr.length || 0).length}em`}"
-                        @click="goLine(idx)"
-                    >
-                        <i className="idx">{{idx + 1}}</i>
-                        <span className="time">
-                            <em>{{cur.start_}}</em><i>-</i><em>{{cur.end_}}</em>
-                        </span>
-                        <p>
-                            {{cur.text}}
-                        </p>
-                    </li>
-                </ul>
-            </article>
+            <!-- <article class="last-part" >
+                </article> -->
+            <ul class="last-part sentence-wrap" ref="oSententList" >
+                <li v-for="(cur,idx) of aLineArr" :key="idx"
+                    class="one-line" :class="iCurLineIdx == idx ? 'cur' : ''"
+                    :style="{'--width': `${String(aLineArr.length || 0).length}em`}"
+                    @click="goLine(idx)"
+                >
+                    <i className="idx">{{idx + 1}}</i>
+                    <span className="time">
+                        <em>{{cur.start_}}</em><i>-</i><em>{{cur.end_}}</em>
+                    </span>
+                    <p>
+                        {{cur.text}}
+                    </p>
+                </li>
+            </ul>
         </section>
     </div>
 </template>

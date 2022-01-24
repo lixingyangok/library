@@ -2,6 +2,8 @@
     display: flex;
     padding: 10px;
     overflow: hidden;
+    height: 100%;
+    max-height: 100vh;
 }
 
 .left{
@@ -12,5 +14,14 @@
     flex: auto;
     max-width: 100%;
     overflow-x: hidden;
+    display: flex;
+    flex-flow: column;
+    overflow: hidden;
     // width: 900px;
+    height: 100%;
+    max-height: 100%;
+    &>*{
+        flex-shrink: 0;
+    }
 }
+
