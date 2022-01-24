@@ -2,16 +2,17 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 11:18:46
+ * @LastEditTime: 2022-01-24 19:59:26
  * @Description: 
  */
 const fsp = require('fs').promises;
 const { ipcMain } = require('electron');
 const hasher = require('hash-wasm');
 const oDbFn = { // 所有的数据库方法
-    ...require('../database/history.js').oFn,
+    ...require('../database/dev-history.js').oFn,
     ...require('../database/media.js').oFn,
     ...require('../database/line.js').oFn,
+    ...require('../database/dictionary.js').oFn,
 };
 
 module.exports.makeChannels = function(){

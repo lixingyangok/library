@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 20:29:04
+ * @LastEditTime: 2022-01-24 21:05:54
  * @Description: 
 -->
 
@@ -30,11 +30,16 @@
                     @click="ckickTree(i1, i2, cur)"
                     :class="{active: cur.sItem == aPath[i1+1]}"
                 >
-                    <i v-if="cur.isDirectory"
-                        class="folder-mark fas fa-folder"
-                        :class="{'has-media': cur.hasMedia}"
-                    />
-                    <i v-else-if="cur.isMedia" class="fas fa-circle"
+                    <template v-if="cur.isDirectory">
+                        <i class="folder-mark fas fa-folder"
+                            :class="{'has-media': cur.hasMedia}"
+                        />
+                        <i class="fas fa-check fa-xs small-check"
+                            v-if="oMediaHomes[cur.sPath]"
+                        />
+                    </template>
+                    <i v-else-if="cur.isMedia" 
+                        class="fas fa-circle"
                         :class="cur.srt ? '' : 'no-match'"
                     />
                     {{cur.sItem}}
@@ -97,7 +102,7 @@
                         {{['✘', '✔'][cur.iStatus]}}
                     </i>
                     <i :class="{'no-yet': !oLineMap[cur.hash], 'no-srt': !cur.srt}">
-                        {{ oLineMap[cur.hash] ? '✔' : '✘' }}
+                        {{ oLineMap[cur.hash] ? `✔${oLineMap[cur.hash]}` : '✘' }}
                     </i>
                 </span>
             </li>
@@ -144,9 +149,12 @@ export default {
     computed:{
         aMediaForShow(){
             return this.aFolderMedia;
-        }, 
+        },
+        aMarkedTree(){
+            return this.aTree;
+        },
     },
-    mounted(){
+    created(){
         this.getMediaHomesArr();
     },
     watch: {

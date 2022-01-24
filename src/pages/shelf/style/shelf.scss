@@ -1,6 +1,10 @@
 
 .outer{
     padding: 55px;
+    .small-check{
+        margin: 3px 0px 0px -5px;
+        color: green;
+    }
 }
 
 .directory-list{
@@ -102,15 +106,16 @@
         background: #eee;
     }
     .name{
-        width: 70%;
+        width: calc(100% - 180px);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
     .status{
         padding-right: 10px;
+        width: 150px;
         i{
-            width: 1.1em;
+            min-width: 1.1em;
             display: inline-block;
             &[class~=no-yet]{
                 color: red;

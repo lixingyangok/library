@@ -132,7 +132,7 @@ const oAboutTree = {
             const sCurPath = `${sDir}/${sItem}`;
             const oStat = await fsp.stat(sCurPath);;
             const isDirectory = oStat.isDirectory();
-            const oItem = { sItem, isDirectory };
+            const oItem = { sItem, isDirectory, sPath: sCurPath };
             if (isDirectory) {
                 oItem.hasMedia = await findMedia(sCurPath);
                 return a01.push(oItem);
