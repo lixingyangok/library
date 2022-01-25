@@ -48,17 +48,23 @@ export default {
         });
     },
     showScreen(){
+        // C:/Users/lixin/Desktop/移动鼠标.bat
+        console.log('计时开始01', new Date().toLocaleString());
         const sBatPath = '移动鼠标.bat';
         const obj = {cwd: 'C:/Users/lixin/Desktop'};
         const This = this;
-        child_process.execFile(sBatPath, null, obj, function(error, stdout, stderr){
-            if(error !== null){
-                console.log("exec error" + error)
-                return;
-            }
-            This.aLog.push('■■■移动鼠标成功');
-            console.log("■■■移动鼠标成功");
-        });
+        setTimeout(()=>{
+            console.log('计时开始02', new Date().toLocaleString());
+            child_process.execFile(sBatPath, null, obj, function(error, stdout, stderr){
+                if(error !== null){
+                    console.log("exec error" + error)
+                    return;
+                }
+                This.aLog.push('■■■移动鼠标成功');
+                console.log("■■■移动鼠标成功");
+                console.log('计时开始03', new Date().toLocaleString());
+            });
+        }, 72_000);
     },
 };
 

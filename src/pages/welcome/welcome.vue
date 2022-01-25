@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2021-12-27 21:35:38
+ * @LastEditTime: 2022-01-23 21:59:23
  * @Description: 
 -->
 
@@ -25,6 +25,10 @@
             <br/>
             <button @click="runBat" >
                 runBat01
+            </button>
+            <br/>
+            <button @click="showScreen" >
+                定时唤醒
             </button>
         </h1>
     </section>

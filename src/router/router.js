@@ -2,10 +2,26 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 14:36:56
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 20:47:52
+ * @LastEditTime: 2022-01-25 19:31:51
  * @Description: 
  */
 import { createRouter, createWebHashHistory } from 'vue-router';
+
+
+export const aTools = [{
+    path: '/alarm-clock',
+    name_: '闹钟',
+    component: () => import( /* webpackChunkName: "alarm-clock.vue" */
+        '../pages/tools/alarm-clock/alarm-clock.vue',
+    ),
+},{
+    path: '/nback',
+    name_: 'nback',
+    component: () => import( /* webpackChunkName: "nback.vue" */
+        '../pages/tools/nback/nback.vue',
+    ),
+}];
+
 
 export const routes = [
     {
@@ -39,6 +55,13 @@ export const routes = [
         component: ()=>import( /* webpackChunkName: "dictionary.vue" */
             '../pages/dictionary/dictionary.vue',
         ),
+    },{
+        path: '/tools',
+        name_: '工具页',
+        component: ()=>import( /* webpackChunkName: "tool-portal.vue" */
+            '../pages/tools/tool-portal/tool-portal.vue',
+        ),
+        children: aTools,
     },
 ];
 

@@ -1,0 +1,22 @@
+.coat{
+    padding: 20px;
+}
+.nav{
+    display: flex;
+    padding: 10px 0;
+    margin: 0 0 25px;
+    border-bottom: solid 1px;
+    li{
+        margin-right: 20px;
+        a{
+            padding: 2px 5px;
+            &:hover,
+            &[class~=router-link-active]{
+                background: yellow;
+            }
+        }
+    }
+}
+
+
+
