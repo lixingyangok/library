@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-12 21:08:08
+ * @LastEditTime: 2022-01-27 21:11:19
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -12,6 +12,66 @@ import {figureOut} from './figure-out-region.js';
 // import {getQiniuToken} from 'assets/js/learning-api.js';
 // import {aAlphabet} from 'assets/js/common.js';
 // const {media: mediaTB} = trainingDB;
+
+
+export function getKeyDownFnMap(This, sType){
+    const {oMyWave} = This;
+    const withNothing = [
+        {key: '`' , name: '播放后半句', fn: ()=>oMyWave.toPlay(true)},
+        {key: 'Tab', name: '播放当前句', fn: ()=>oMyWave.toPlay()},
+        {key: 'Prior', name: '上一句', fn: ()=>This.previousAndNext(-1)},
+        {key: 'Next', name: '下一句', fn: ()=>This.previousAndNext(1)},
+        {key: 'F1', name: '设定起点', fn: ()=>This.cutHere('start')},
+        {key: 'F2', name: '设定终点', fn: ()=>This.cutHere('end')},
+        {key: 'F3', name: '抛弃当前句', fn: `this.giveUpThisOne.bind(this)`},
+        {key: 'F4', name: '查字典', fn: ()=>This.searchWord()},
+        {key: 'Escape', name: '取消播放', fn: ()=>oMyWave.playing=false}, // 停止播放
+    ];
+    const withCtrl = [
+        {key: 'ctrl + d', name: '删除一行',  fn: () => This.toDel()},
+        {key: 'ctrl + z', name: '撤销',  fn: `this.setHistory.bind(this, -1)`},
+        {key: 'ctrl + s', name: '保存到云（字幕）',  fn: `this.uploadToCloudBefore.bind(this)`}, 
+        {key: 'ctrl + j', name: '合并上一句',  fn: ()=> This.putTogether(-1)}, 
+        {key: 'ctrl + k', name: '合并下一句',  fn: ()=> This.putTogether(1)}, 
+        {key: 'ctrl + Enter', name: '播放',  fn: ()=>oMyWave.toPlay()},
+        {key: 'ctrl + shift + Enter', name: '播放',  fn: ()=>oMyWave.toPlay(true)},
+        {key: 'ctrl + shift + z', name: '恢复',  fn: `this.setHistory.bind(this, 1)`},
+        {key: 'ctrl + shift + c', name: '分割',  fn: () => split()},
+        {key: 'ctrl + shift + s', name: '保存到本地',  fn: `this.toSaveInDb.bind(this)`}, 
+    ];
+    const withAlt = [
+        // 修改选区
+        {key: 'alt + ]', name: '扩选', fn: () => This.chooseMore()}, 
+        {key: 'alt + u', name: '起点左移', fn: ()=>This.fixRegion('start', -0.07)}, 
+        {key: 'alt + i', name: '起点右移', fn: ()=>This.fixRegion('start', 0.07)}, 
+        {key: 'alt + n', name: '终点左移', fn: ()=>This.fixRegion('end', -0.07)}, 
+        {key: 'alt + m', name: '终点右移', fn: ()=>This.fixRegion('end', 0.07)}, 
+        // 选词
+        {key: 'alt + a', name: '', fn: `this.toInset.bind(this, 0)`},
+        {key: 'alt + s', name: '', fn: `this.toInset.bind(this, 1)`},
+        {key: 'alt + d', name: '', fn: `this.toInset.bind(this, 2)`},
+        {key: 'alt + f', name: '', fn: `this.toInset.bind(this, 3)`},
+        // 未分类
+        {key: 'alt + j', name: '', fn: ()=>This.previousAndNext(-1)},
+        {key: 'alt + k', name: '', fn: ()=>This.previousAndNext(1)},
+        {key: 'alt + l', name: '跳到最后一句', fn: ()=>This.goLastLine()},
+        // alt + shift
+        {key: 'alt + shift + j', name: '向【左】插入一句', fn: ()=>This.toInsert(-1) },
+        {key: 'alt + shift + k', name: '向【右】插入一句', fn: ()=>This.toInsert(1) },
+        {key: 'alt + shift + d', name: '保存单词到云', fn: `this.saveWord.bind(this)`},
+        {key: 'alt + shift + c', name: '查字典', fn: ()=>This.searchWord()},
+    ];
+    // ▼将来用于前端显示给用户
+    // if(0) return [withNothing, withCtrl, withAlt];
+    const aFullFn = [...withNothing, ...withCtrl, ...withAlt];
+    if (sType==='obj') {
+        return aFullFn.reduce((oResult, cur)=>{
+            oResult[cur.key] = cur.fn;
+            return oResult;
+        }, {});
+    }
+    return aFullFn;
+}
 
 
 // ▼按键后的方法列表
@@ -194,6 +254,12 @@ export function fnAllKeydownFn(){
         this.saveHistory({ aLineArr, iCurLineIdx });
         this.setState({aLineArr, sCurLineTxt: aNewItems[0].text});
     }
+    // ▼搜索
+	function searchWord() {
+		const sKey = window.getSelection().toString().trim();
+		if (!sKey) return;
+		console.log('当前字符：', sKey);
+	}
     // ▼最终返回
     return {
         previousAndNext,
@@ -206,66 +272,8 @@ export function fnAllKeydownFn(){
         chooseMore,
         putTogether,
         split,
+        searchWord,
     };
-}
-
-export function getKeyDownFnMap(This, sType){
-    const {oMyWave} = This;
-    const withNothing = [
-        {key: '`' , name: '播放后半句', fn: ()=>oMyWave.toPlay(true)},
-        {key: 'Tab', name: '播放当前句', fn: ()=>oMyWave.toPlay()},
-        {key: 'Prior', name: '上一句', fn: ()=>This.previousAndNext(-1)},
-        {key: 'Next', name: '下一句', fn: ()=>This.previousAndNext(1)},
-        {key: 'F1', name: '设定起点', fn: ()=>This.cutHere('start')},
-        {key: 'F2', name: '设定终点', fn: ()=>This.cutHere('end')},
-        {key: 'F3', name: '抛弃当前句', fn: `this.giveUpThisOne.bind(this)`},
-        {key: 'F4', name: '查询选中单词', fn: `this.searchWord.bind(this, true)`},
-        {key: 'Escape', name: '取消播放', fn: ()=>oMyWave.playing=false}, // 停止播放
-    ];
-    const withCtrl = [
-        {key: 'ctrl + d', name: '删除一行',  fn: () => This.toDel()},
-        {key: 'ctrl + z', name: '撤销',  fn: `this.setHistory.bind(this, -1)`},
-        {key: 'ctrl + s', name: '保存到云（字幕）',  fn: `this.uploadToCloudBefore.bind(this)`}, 
-        {key: 'ctrl + j', name: '合并上一句',  fn: ()=> This.putTogether(-1)}, 
-        {key: 'ctrl + k', name: '合并下一句',  fn: ()=> This.putTogether(1)}, 
-        {key: 'ctrl + Enter', name: '播放',  fn: ()=>oMyWave.toPlay()},
-        {key: 'ctrl + shift + Enter', name: '播放',  fn: ()=>oMyWave.toPlay(true)},
-        {key: 'ctrl + shift + z', name: '恢复',  fn: `this.setHistory.bind(this, 1)`},
-        {key: 'ctrl + shift + c', name: '分割',  fn: () => split()},
-        {key: 'ctrl + shift + s', name: '保存到本地',  fn: `this.toSaveInDb.bind(this)`}, 
-    ];
-    const withAlt = [
-        // 修改选区
-        {key: 'alt + ]', name: '扩选', fn: () => This.chooseMore()}, 
-        {key: 'alt + u', name: '起点左移', fn: ()=>This.fixRegion('start', -0.07)}, 
-        {key: 'alt + i', name: '起点右移', fn: ()=>This.fixRegion('start', 0.07)}, 
-        {key: 'alt + n', name: '终点左移', fn: ()=>This.fixRegion('end', -0.07)}, 
-        {key: 'alt + m', name: '终点右移', fn: ()=>This.fixRegion('end', 0.07)}, 
-        // 选词
-        {key: 'alt + a', name: '', fn: `this.toInset.bind(this, 0)`},
-        {key: 'alt + s', name: '', fn: `this.toInset.bind(this, 1)`},
-        {key: 'alt + d', name: '', fn: `this.toInset.bind(this, 2)`},
-        {key: 'alt + f', name: '', fn: `this.toInset.bind(this, 3)`},
-        // 未分类
-        {key: 'alt + j', name: '', fn: ()=>This.previousAndNext(-1)},
-        {key: 'alt + k', name: '', fn: ()=>This.previousAndNext(1)},
-        {key: 'alt + l', name: '跳到最后一句', fn: ()=>This.goLastLine()},
-        // alt + shift
-        {key: 'alt + shift + j', name: '向【左】插入一句', fn: ()=>This.toInsert(-1) },
-        {key: 'alt + shift + k', name: '向【右】插入一句', fn: ()=>This.toInsert(1) },
-        {key: 'alt + shift + d', name: '保存单词到云', fn: `this.saveWord.bind(this)`},
-        {key: 'alt + shift + c', name: '查字典', fn: `this.searchWord.bind(this)`},
-    ];
-    // ▼将来用于前端显示给用户
-    // if(0) return [withNothing, withCtrl, withAlt];
-    const aFullFn = [...withNothing, ...withCtrl, ...withAlt];
-    if (sType==='obj') {
-        return aFullFn.reduce((oResult, cur)=>{
-            oResult[cur.key] = cur.fn;
-            return oResult;
-        }, {});
-    }
-    return aFullFn;
 }
 
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
@@ -373,8 +381,6 @@ export class part02 {
             this.message.success('保存成功');
         }
     }
-
-
     // ▼撤销-恢复
     setHistory(iType) {
         const { length } = this.aHistory;
@@ -416,7 +422,6 @@ export class part02 {
         this.setState({ sCurLineTxt });
         myTextArea.selectionStart = myTextArea.selectionEnd = newLeft.length;
     }
-
 }
 
 // export default window.mix(
