@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-25 17:15:48
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-25 20:33:41
+ * @LastEditTime: 2022-01-27 20:52:46
  * @Description: 
 -->
 
@@ -10,35 +10,35 @@
     <div>
         <ul>
             <li v-for="(idx) of 4" :key="idx">
-                <audio controls :ref="el=>setDom(el, idx)"
+                <audio controls
+                    :ref="el => setDom(el, idx - 1)"
                     :src="`./static/ring/market0${idx}.mp3`"
                 ></audio>
             </li>
         </ul>
-        <input type="datetime-local" 
-            v-model="timeVal"
-        />
-        {{timeVal}}
+        音量：{{oData.fVolume}}
         <br/><br/>
-        现在：{{sNow}}<br/>
-        定时：{{alarmTime[0]}}:{{alarmTime[1]}}<br/>
+        现在时间：<el-tag>{{oAlarm.sNow}}</el-tag><br/>
+        上次/下次响铃：<el-tag>{{oAlarm.sLastAlarm}}  /  {{oAlarm.sAim}}</el-tag><br/>
+        距离下次：<el-tag>{{oAlarm.sGap}}</el-tag><br/>
+        <button @click="toBoom(1)" >
+            测试
+        </button>
     </div>
 </template>
 
 <script setup>
 import { onMounted, onBeforeUnmount, toRefs } from 'vue';
 import { audioControl } from './js/alarm-clock.js';
-const {oData, oFn} = audioControl();
-const { sNow, timeVal, alarmTime } = toRefs(oData);
-const { setDom, refreshTime } = oFn;
+const {oData, oFn, oAlarm} = audioControl();
+const { setDom, refreshTime, toBoom } = oFn;
 let timer = null;
 
 onMounted(()=>{
     timer = refreshTime();
 });
-
 onBeforeUnmount(()=>{
     console.log('clearImmediate');
-    clearImmediate(timer);
+    clearInterval(timer);
 });
 </script>

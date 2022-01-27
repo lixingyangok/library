@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 14:36:56
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-25 19:51:09
+ * @LastEditTime: 2022-01-26 18:41:20
  * @Description: 
  */
 import { createRouter, createWebHashHistory } from 'vue-router';
@@ -57,7 +57,7 @@ export const routes = [
         ),
     },{
         path: '/tools',
-        // redirect: '/tools/alarm-clock',
+        redirect: '/tools/alarm-clock',
         name_: '工具页',
         component: ()=>import( /* webpackChunkName: "tool-portal.vue" */
             '../pages/tools/tool-portal/tool-portal.vue',
