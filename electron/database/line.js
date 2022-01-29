@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 12:44:50
+ * @LastEditTime: 2022-01-29 18:02:39
  * @Description: 
  */
 
@@ -15,6 +15,7 @@ const oLine = module.exports.line = sqlize.define('line', {
     end: DataTypes.FLOAT,
     text: DataTypes.STRING, // 原文
     trans: DataTypes.STRING, // 译文
+    // filledAt: DataTypes.DATE, // 录入时间
     // 笔记内容？
 });
 

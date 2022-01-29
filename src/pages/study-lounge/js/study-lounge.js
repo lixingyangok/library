@@ -48,10 +48,13 @@ export function mainPart(){
 	// ▼查询库中的字幕
 	async function getLinesFromDB(){
 		const aRes = await fnInvoke('db', 'getLineByHash', oData.sHash);
-		if (!aRes) return;
+		if (!aRes?.length) {
+			if (oData.oMediaBuffer) setFirstLine();
+			oData.iSubtitle = -1; // -1 表示文件不存在 
+			return;
+		}
 		oData.iSubtitle = 1;
 		oData.aLineArr = fixTime(aRes);
-		// console.log('字幕\n', aRes);
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
@@ -87,7 +90,8 @@ export function mainPart(){
 	function listener(oMediaBuffer){
 		oData.oMediaBuffer = oMediaBuffer;
 		if (oData.iSubtitle != -1) return; // 有字幕则返回
-		setFirstLine();
+		// ▼需要考虑，因为可能尚没查到字幕，不是没有
+		setFirstLine(); 
 	}
 	function toCheckDict(){
 		oData.isShowDictionary = true;

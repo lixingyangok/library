@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 17:42:04
+ * @LastEditTime: 2022-01-29 18:34:07
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -18,7 +18,7 @@ const oAlphabetObj = Object.values(oAlphabet).reduce((result, cur)=>{
     result[cur] = true;
     return result;
 }, {});
-const aSearching = [];
+let iSearchingQ = 0;
 
 export function getKeyDownFnMap(This, sType){
     const {oMyWave} = This;
@@ -293,9 +293,9 @@ export function fnAllKeydownFn(){
         This.sTyped = sLeft;
         if (!sLeft) return;
         This.aCandidate = [];
-        setCandidate(sLeft.toLowerCase());
+        setCandidate(sLeft.toLowerCase(), ++iSearchingQ);
     }
-    async function setCandidate(sWord){
+    async function setCandidate(sWord, iCurQs){
         const aResult = [];
         for (const cur of This.aFullWords) {
             if (cur.toLowerCase().startsWith(sWord)) {
@@ -304,16 +304,13 @@ export function fnAllKeydownFn(){
             if (aResult.length>=5) break;
         }
         This.aCandidate = aResult;
-        const oRes = fnInvoke('db', 'getCandidate', {
+        // console.time('查字典db'); // 耗时20-30ms
+        const aWords = await fnInvoke('db', 'getCandidate', {
             sWord, limit: 9 - aResult.length,
         });
-        if (!oRes) return;
-        aSearching.pop();
-        aSearching.push(oRes);
-        aSearching[aSearching.length-1].then(aWords => {
-            if (!aWords) return;
-            This.aCandidate.push(...aWords);
-        });
+        // console.timeEnd('查字典db'); // 耗时20-30ms
+        if (!aWords || iCurQs != iSearchingQ) return;
+        This.aCandidate.push(...aWords);
     }
     // ▼插入选中的单词
     async function toInset(idx) {
@@ -335,9 +332,8 @@ export function fnAllKeydownFn(){
         start = start || This.oCurLine.end;
         const {oMediaBuffer} = This;
         const oNextLine = figureOut(oMediaBuffer, start); //返回下一行的数据
-        console.log('oNextLine', oNextLine.$dc());
-
-        // this.setCurLine(oNextLine);
+        This.aLineArr[This.iCurLineIdx] = oNextLine;
+        // ▼尚需补充后续的定位功能
     }
     // ▼最终返回
     return {
