@@ -2,12 +2,13 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-27 21:11:19
+ * @LastEditTime: 2022-01-29 09:57:44
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
 import {fixTime } from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
+import {oAlphabet} from '../../../common/js/key-map.js';
 // import {trainingDB, wordsDB} from 'assets/js/common.js';
 // import {getQiniuToken} from 'assets/js/learning-api.js';
 // import {aAlphabet} from 'assets/js/common.js';
@@ -58,7 +59,7 @@ export function getKeyDownFnMap(This, sType){
         // alt + shift
         {key: 'alt + shift + j', name: '向【左】插入一句', fn: ()=>This.toInsert(-1) },
         {key: 'alt + shift + k', name: '向【右】插入一句', fn: ()=>This.toInsert(1) },
-        {key: 'alt + shift + d', name: '保存单词到云', fn: `this.saveWord.bind(this)`},
+        {key: 'alt + shift + d', name: '保存单词到云', fn: () => This.saveWord()},
         {key: 'alt + shift + c', name: '查字典', fn: ()=>This.searchWord()},
     ];
     // ▼将来用于前端显示给用户
@@ -78,7 +79,6 @@ export function getKeyDownFnMap(This, sType){
 export function fnAllKeydownFn(){
     const oInstance = getCurrentInstance();
     const This = oInstance.proxy;
-
     // ▼切换当前句子（上一句，下一句）
     function previousAndNext(iDirection) {
         const { oMediaBuffer, aLineArr, iCurLineIdx } = This; // iCurStep
@@ -258,8 +258,34 @@ export function fnAllKeydownFn(){
 	function searchWord() {
 		const sKey = window.getSelection().toString().trim();
 		if (!sKey) return;
-		console.log('当前字符：', sKey);
+		console.log('搜索：', sKey);
 	}
+    // ▼保存生词
+    async function saveWord() {
+        const word = window.getSelection().toString().trim() || '';
+        if (!word) return;
+        const lengthOK = word.length >= 2 && word.length <= 30;
+        const bExist = [].includes(word);
+        if (!lengthOK || bExist) {
+            const sTips = `已经保存不可重复添加，或单词长度不在合法范围（2-30字母）`;
+			return this.$message.error(sTips);
+		}
+        const res = await fnInvoke('db', 'saveOneNewWord', {
+            word, hash: This.sHash,
+        });
+        if (!res) return this.$message.error('保存未成功');
+        console.log('res\n', res);
+        this.$message.success('保存成功');
+	}
+    function typed(ev){
+        if (!oAlphabet[ev.keyCode] || ev.c || ev.altKey || ev.shiftKey) {
+            return;
+        }
+        const sText = ev.target.value; // 当前文字
+        const idx = ev.target.selectionStart;
+        const sLeft = (sText.slice(0, idx) || '').split(' ').pop();
+        console.log(sLeft);
+    }
     // ▼最终返回
     return {
         previousAndNext,
@@ -273,6 +299,8 @@ export function fnAllKeydownFn(){
         putTogether,
         split,
         searchWord,
+        saveWord,
+        typed,
     };
 }
 

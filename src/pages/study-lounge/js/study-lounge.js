@@ -17,6 +17,7 @@ export function mainPart(){
 		oMediaBuffer: {},
 		iSubtitle: 0, // 0=默认，-1=查不到字幕，1=有字幕
 		sHash: '',
+		isShowDictionary: false,
 	});
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
@@ -33,6 +34,7 @@ export function mainPart(){
 		if (!sHash) throw '没有hash';
 		oData.sHash = sHash;
 		getLinesFromDB(sHash);
+		getNewWords(sHash);
 		const res = await fnInvoke('db', 'getMediaInfo', sHash);
 		console.log('媒体\n', res);
 		// 如果DB中的位置信息不正确，需要弹出窗口提示更新
@@ -81,6 +83,17 @@ export function mainPart(){
 		if (oData.iSubtitle != -1) return; // 有字幕则返回
 		setFirstLine();
 	}
+	function toCheckDict(){
+		oData.isShowDictionary = true;
+	}
+	// ▼查询新词
+	async function getNewWords(hash){
+		const res = await fnInvoke('db', 'getWordsByHash', {
+			hash,
+		});
+		if (!res) return;
+		console.log('本集新词', res);
+	}
 	// ============================================================================
 	init();
 	onMounted(()=>{
@@ -94,6 +107,7 @@ export function mainPart(){
 			init,
 			listener,
 			saveMedia,
+			toCheckDict,
 		},
     });
 };

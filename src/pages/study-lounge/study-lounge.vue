@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-24 01:12:54
+ * @LastEditTime: 2022-01-29 08:32:05
  * @Description: 
 -->
 <template>
@@ -25,11 +25,15 @@
                 <button @click="saveMedia" >
                     保存媒体
                 </button>
+                <button @click="toCheckDict" >
+                    查字典
+                </button>
             </article>
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
                 <textarea ref="oTextArea"
                     v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="()=>previousAndNext(1)"
+                    @keydown="typed"
                 ></textarea>
             </div>
             <!-- <article class="last-part" >
@@ -50,6 +54,9 @@
                 </li>
             </ul>
         </section>
+        <dictionaryVue :beDialog="true"
+            v-model:dialogVisible="isShowDictionary"
+        ></dictionaryVue>
     </div>
 </template>
 
@@ -59,11 +66,13 @@ import {mainPart} from './js/study-lounge.js';
 import {getKeyDownFnMap, fnAllKeydownFn} from './js/key-down-fn.js';
 import MyWave from '../../components/wave/wave.vue';
 import {registerKeydownFn} from '../../common/js/common-fn.js'
+import dictionaryVue from '../dictionary/dictionary.vue';
 
 export default {
     name: 'study-lounge',
     components: {
         MyWave,
+        dictionaryVue,
     },
     setup(){
         const oData = mainPart();

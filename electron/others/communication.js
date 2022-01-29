@@ -13,6 +13,7 @@ const oDbFn = { // 所有的数据库方法
     ...require('../database/media.js').oFn,
     ...require('../database/line.js').oFn,
     ...require('../database/dictionary.js').oFn,
+    ...require('../database/new-word.js').oFn,
 };
 
 module.exports.makeChannels = function(){

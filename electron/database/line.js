@@ -2,11 +2,11 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 18:13:49
+ * @LastEditTime: 2022-01-29 12:44:50
  * @Description: 
  */
 
-const { DataTypes } = require('sequelize');
+const { Op, DataTypes } = require('sequelize');
 const { sqlize } = require('./init-db.js');
 
 const oLine = module.exports.line = sqlize.define('line', {
@@ -48,6 +48,21 @@ module.exports.oFn = {
         const res = await oLine.findAll({
             where: {hash},
             order: [['start', 'asc']],
+        });
+        if (!res) return;
+        // toLog(res[0]);
+        return res.map(cur=>cur.dataValues);
+    },
+    // ▼按单词搜索字幕
+    async searchLineBybWord(word) {
+        const res = await oLine.findAll({
+            where: {
+                text: {
+                    [Op.like]: `%${word}%`,
+                },
+            },
+            order: [['hash']],
+            limit: 1_000,
         });
         if (!res) return;
         // toLog(res[0]);
