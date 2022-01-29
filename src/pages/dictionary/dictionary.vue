@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 17:45:49
+ * @LastEditTime: 2022-01-29 18:55:23
  * @Description: 
 -->
 <template>
@@ -19,9 +19,7 @@
                 查字典
             </template>
             单词：
-            <input v-model="sKey" 
-                @keydown="toSearch"
-            />
+            <input v-model="sKey" @input="toSearch"/>
             <button @click="toSearch">
                 搜索
             </button>
@@ -53,18 +51,23 @@ const isShowSelf = computed({
 });
 const sKey = ref('');
 const aResult = ref([]);
+let iSearchingQ = 0;
 // ▼方法
-async function toSearch(){
+function toSearch(){
     const sAim = sKey.v || props.word;
-    if (!sAim) return;
-    aResult.v = [];
-    const aRes = await fnInvoke(
-        'db', 'searchLineBybWord', sAim,
-    ).catch(err => {
-        console.log('查询出错\n', err);
-    });
-    if (!aRes) return;
-    aResult.v = aRes;
+    if (!sAim) {
+        aResult.v = [];
+        return;
+    }
+    (async idx => {
+        const aRes = await fnInvoke(
+            'db', 'searchLineBybWord', sAim,
+        ).catch(err => {
+            console.log('查询出错\n', err);
+        });
+        if (idx != iSearchingQ) return;
+        aResult.v = aRes || [];
+    })(++iSearchingQ);
 }
 
 watch(

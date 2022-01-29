@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 18:02:39
+ * @LastEditTime: 2022-01-29 18:53:38
  * @Description: 
  */
 
@@ -52,7 +52,7 @@ module.exports.oFn = {
         });
         if (!res) return;
         // toLog(res[0]);
-        return res.map(cur=>cur.dataValues);
+        return res.map(cur => cur.dataValues);
     },
     // ▼按单词搜索字幕
     async searchLineBybWord(word) {

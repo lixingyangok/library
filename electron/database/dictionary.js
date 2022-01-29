@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-24 19:50:21
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 16:40:38
+ * @LastEditTime: 2022-01-29 18:54:18
  * @Description: 开发历史
  */
 // const fsp = require('fs').promises;
@@ -10,8 +10,18 @@ const { Op, DataTypes } = require('sequelize');
 const { sqlize } = require('./init-db.js');
 
 const oDict = module.exports.line = sqlize.define('dictionary', {
-    word: DataTypes.STRING,
+    word: {
+        type: DataTypes.STRING,
+        unique: true,
+    },
     trans: DataTypes.STRING, // 译文，将来可能加长
+    // 笔记??
+    // 记性：动词，形容词
+    // 变体：过去式，三单形式，分词，现在形式
+},{
+    indexes: [
+        { unique: true, fields: ['word'] },
+    ],
 });
 
 oDict.sync({ alter: true });
