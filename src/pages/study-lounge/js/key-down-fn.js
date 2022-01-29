@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 17:03:20
+ * @LastEditTime: 2022-01-29 17:42:04
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -29,21 +29,20 @@ export function getKeyDownFnMap(This, sType){
         {key: 'Next', name: '下一句', fn: ()=>This.previousAndNext(1)},
         {key: 'F1', name: '设定起点', fn: ()=>This.cutHere('start')},
         {key: 'F2', name: '设定终点', fn: ()=>This.cutHere('end')},
-        {key: 'F3', name: '抛弃当前句', fn: `this.giveUpThisOne.bind(this)`},
+        {key: 'F3', name: '抛弃当前句', fn: ()=> This.giveUpThisOne()},
         {key: 'F4', name: '查字典', fn: ()=>This.searchWord()},
         {key: 'Escape', name: '取消播放', fn: ()=>oMyWave.playing=false}, // 停止播放
     ];
     const withCtrl = [
         {key: 'ctrl + d', name: '删除一行',  fn: () => This.toDel()},
-        {key: 'ctrl + z', name: '撤销',  fn: `this.setHistory.bind(this, -1)`},
-        {key: 'ctrl + s', name: '保存到云（字幕）',  fn: `this.uploadToCloudBefore.bind(this)`}, 
+        // {key: 'ctrl + z', name: '撤销',  fn: `this.setHistory.bind(this, -1)`},
+        // {key: 'ctrl + s', name: '保存到云（字幕）',  fn: `this.uploadToCloudBefore.bind(this)`}, 
         {key: 'ctrl + j', name: '合并上一句',  fn: ()=> This.putTogether(-1)}, 
         {key: 'ctrl + k', name: '合并下一句',  fn: ()=> This.putTogether(1)}, 
         {key: 'ctrl + Enter', name: '播放',  fn: ()=>oMyWave.toPlay()},
         {key: 'ctrl + shift + Enter', name: '播放',  fn: ()=>oMyWave.toPlay(true)},
-        {key: 'ctrl + shift + z', name: '恢复',  fn: `this.setHistory.bind(this, 1)`},
+        // {key: 'ctrl + shift + z', name: '恢复',  fn: `this.setHistory.bind(this, 1)`},
         {key: 'ctrl + shift + c', name: '分割',  fn: () => split()},
-        {key: 'ctrl + shift + s', name: '保存到本地',  fn: `this.toSaveInDb.bind(this)`}, 
     ];
     const withAlt = [
         // 修改选区
@@ -53,10 +52,10 @@ export function getKeyDownFnMap(This, sType){
         {key: 'alt + n', name: '终点左移', fn: ()=>This.fixRegion('end', -0.07)}, 
         {key: 'alt + m', name: '终点右移', fn: ()=>This.fixRegion('end', 0.07)}, 
         // 选词
-        {key: 'alt + a', name: '', fn: `this.toInset.bind(this, 0)`},
-        {key: 'alt + s', name: '', fn: `this.toInset.bind(this, 1)`},
-        {key: 'alt + d', name: '', fn: `this.toInset.bind(this, 2)`},
-        {key: 'alt + f', name: '', fn: `this.toInset.bind(this, 3)`},
+        {key: 'alt + a', name: '', fn: ()=>This.toInset(0)},
+        {key: 'alt + s', name: '', fn: ()=>This.toInset(1)},
+        {key: 'alt + d', name: '', fn: ()=>This.toInset(2)},
+        {key: 'alt + f', name: '', fn: ()=>This.toInset(3)},
         // 未分类
         {key: 'alt + j', name: '', fn: ()=>This.previousAndNext(-1)},
         {key: 'alt + k', name: '', fn: ()=>This.previousAndNext(1)},
@@ -264,6 +263,8 @@ export function fnAllKeydownFn(){
 		const sKey = window.getSelection().toString().trim();
 		if (!sKey) return;
 		console.log('搜索：', sKey);
+        This.sSearching = sKey;
+        This.isShowDictionary = true;
 	}
     // ▼保存生词
     async function saveWord() {
@@ -296,12 +297,11 @@ export function fnAllKeydownFn(){
     }
     async function setCandidate(sWord){
         const aResult = [];
-        console.log('sWord --', sWord);
         for (const cur of This.aFullWords) {
             if (cur.toLowerCase().startsWith(sWord)) {
                 aResult.push(cur);
             }
-            if (aResult.length>5) break;
+            if (aResult.length>=5) break;
         }
         This.aCandidate = aResult;
         const oRes = fnInvoke('db', 'getCandidate', {
@@ -315,7 +315,30 @@ export function fnAllKeydownFn(){
             This.aCandidate.push(...aWords);
         });
     }
+    // ▼插入选中的单词
+    async function toInset(idx) {
+        const {sTyped, aCandidate, oTextArea} = This;
+        const theWord = (aCandidate[idx] || '').slice(sTyped.length);
+        if (!theWord) return;
+        const {text} = This.oCurLine;
+        const cursorIdx = oTextArea.selectionStart; // 表示光标左有几个单词
+        const left = text.slice(0, cursorIdx);
+        const right = text.slice(cursorIdx);
+        const newLeft = (left + theWord);
+        This.oCurLine.text = (newLeft + right).trim();
+        await This.$nextTick();
+        oTextArea.selectionStart = newLeft.length;
+        oTextArea.selectionEnd = newLeft.length;
+    }
+    // ▼抛弃当前行，或处理第一行
+    function giveUpThisOne(start){
+        start = start || This.oCurLine.end;
+        const {oMediaBuffer} = This;
+        const oNextLine = figureOut(oMediaBuffer, start); //返回下一行的数据
+        console.log('oNextLine', oNextLine.$dc());
 
+        // this.setCurLine(oNextLine);
+    }
     // ▼最终返回
     return {
         previousAndNext,
@@ -331,6 +354,8 @@ export function fnAllKeydownFn(){
         searchWord,
         saveWord,
         typed,
+        toInset,
+        giveUpThisOne,
     };
 }
 
@@ -410,35 +435,6 @@ class keyDownFn {
         console.timeEnd('查字典');
         this.setState({aMatched});
     }
-}
-
-// ▲处理按键
-// ▼其它
-
-export class part02 {
-    // ▼保存字幕到浏览器
-    async toSaveInDb(bForUpload) {
-        if (bForUpload){
-            const {aLineArr, iCurLineIdx, sCurLineTxt=''} = this.state;
-            const isDifferent = aLineArr[iCurLineIdx].text !== sCurLineTxt;
-            if (isDifferent){
-                aLineArr[iCurLineIdx].text = sCurLineTxt.trim();
-                this.setState({aLineArr});
-            }
-        }
-        const {
-            oMediaInfo: {id},
-            aLineArr: subtitleFile_,
-        } = this.state;
-        const [,oTime] = await getQiniuToken();
-        const changeTs_ = oTime.getTime();
-        if (!id) return this.message.error('保存未成功');
-        mediaTB.update(id, {subtitleFile_, changeTs_});
-        this.setState({changeTs: changeTs_});
-        if (!bForUpload){
-            this.message.success('保存成功');
-        }
-    }
     // ▼撤销-恢复
     setHistory(iType) {
         const { length } = this.aHistory;
@@ -458,31 +454,5 @@ export class part02 {
         });
         this.goLine(iCurLineIdx, false, true);
     }
-    // ▼抛弃当前行，或处理第一行
-    giveUpThisOne(start = this.getCurLine().end){
-        const oNextLine = figureOut(oMediaBuffer, start); //返回下一行的数据
-        this.setCurLine(oNextLine);
-    }
-    // ▼插入选中的单词
-    toInset(idx) {
-        console.log('插入----', idx);
-        let { sTyped, aMatched, sCurLineTxt } = this.state;
-        const theWord = (aMatched[idx] || '').slice(sTyped.length);
-        if (!theWord) return;
-        const myTextArea = this.oTextArea.current;
-        const cursorIdx = myTextArea.selectionStart;
-        const [left, right] = [
-            sCurLineTxt.slice(0, cursorIdx),
-            sCurLineTxt.slice(cursorIdx),
-        ];
-        const newLeft = left + theWord;
-        sCurLineTxt = (newLeft + right).trim();
-        this.setState({ sCurLineTxt });
-        myTextArea.selectionStart = myTextArea.selectionEnd = newLeft.length;
-    }
 }
-
-// export default window.mix(
-//     keyDownFn, part02,
-// );
 

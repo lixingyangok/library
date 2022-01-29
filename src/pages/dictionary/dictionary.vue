@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 15:07:00
+ * @LastEditTime: 2022-01-29 17:45:49
  * @Description: 
 -->
 <template>
@@ -35,11 +35,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
     dialogVisible: Boolean,
     beDialog: Boolean,
+    word: String,
 });
 const emit = defineEmits(['update:dialogVisible']);
 const isShowSelf = computed({
@@ -54,18 +55,27 @@ const sKey = ref('');
 const aResult = ref([]);
 // ▼方法
 async function toSearch(){
-    if (!sKey.v) return;
+    const sAim = sKey.v || props.word;
+    if (!sAim) return;
     aResult.v = [];
-    console.log('搜索：', sKey.v);
     const aRes = await fnInvoke(
-        'db', 'searchLineBybWord', sKey.v
-    ).catch(err=>{
+        'db', 'searchLineBybWord', sAim,
+    ).catch(err => {
         console.log('查询出错\n', err);
     });
-    console.log('搜索结果：', aRes);
     if (!aRes) return;
     aResult.v = aRes;
 }
+
+watch(
+    isShowSelf,
+    (newVal, oldVal) => {
+        if (!newVal || !props.word) return;
+        console.log('搜索：', props.word);
+        toSearch();
+    },
+);
+
 </script>
 
 <style lang="scss"

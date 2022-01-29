@@ -23,6 +23,7 @@ export function mainPart(){
 		aWordsList: [[], []],
 		aCandidate: [],
 		sTyped: '',
+		sSearching: '',
 	});
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];

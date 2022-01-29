@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 16:57:58
+ * @LastEditTime: 2022-01-29 17:45:15
  * @Description: 
 -->
 <template>
@@ -39,7 +39,7 @@
                     @keydown.backspace="typed"
                     @input="typed"
                 ></textarea>
-                <ul class="candidate-list" >
+                <ul class="candidate-list">
                     <li class="one-word"
                         v-for="(cur, idx) of aCandidate" :key="idx"
                     >
@@ -72,6 +72,7 @@
         <!-- ▼弹出窗口 -->
         <dictionaryVue :beDialog="true"
             v-model:dialogVisible="isShowDictionary"
+            :word="sSearching"
         ></dictionaryVue>
         <el-dialog title="单词表" v-model="isShowNewWords">
             <div class="one-box" 
