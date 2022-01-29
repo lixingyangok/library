@@ -1,0 +1,38 @@
+.one-box{
+	height: 100px;
+	margin: 0 0 30px;
+	.title{
+		width: 100%;
+		border-bottom: solid 1px gray;
+		line-height: 1.8;
+		font-weight: bold;
+	}
+}
+
+.one-ul{
+	display: flex;
+	flex-flow: row wrap;
+	li{
+		margin: 0 3px 0 0;
+		line-height: 2;
+		cursor: pointer;
+		padding: 0px 6px;
+		border-radius: 3px;
+		font-size: 18px;
+		i{
+			opacity: 0;
+			margin-left: 5px;
+			&:hover{
+				color: red;
+			}
+		}
+		&:hover{
+			background: #eee;
+			i{
+				opacity: 1;
+			}
+		}
+	}
+}
+
+

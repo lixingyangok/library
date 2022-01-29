@@ -8,3 +8,47 @@
 		font-family: inherit;
 	}
 }
+
+.candidate-list{
+	min-height: 25px;
+	display: flex;
+	overflow: hidden;
+	.one-word{
+		margin-right: 15px;
+		font-size: 18px;
+		padding: 0;
+		color: #444;
+		display: flex;
+		align-items: center;
+	}
+}
+
+.one-word{
+	.idx{
+		display: inline-block;
+		width: 16px;
+		height: 16px;
+		text-align: center;
+		line-height: 15px;
+		border-radius: 100px;
+		background: blue;
+		margin-right: 5px;
+		color: white;
+		font-size: 14px;
+		/* position: relative; top: 1px; */
+	}
+	&:nth-child(n+5) .idx{
+		background: deepskyblue;
+	}
+	.new-word,
+	.name{
+		cursor: pointer;
+	}
+
+	.left-word{
+		color: #000;
+	}
+	.right-word{
+		color: #666;
+	}
+}

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 12:43:39
+ * @LastEditTime: 2022-01-29 14:30:50
  * @Description: 
  */
 
@@ -19,7 +19,7 @@ const oNewWord = module.exports.line = sqlize.define('new_word', {
         allowNull: false,
     },
     type: {
-        type: DataTypes.INTEGER, // 1新词汇, 1专有名词
+        type: DataTypes.INTEGER, // 1新词汇, 2专有名词
         allowNull: false,
     },
 });
@@ -54,7 +54,7 @@ module.exports.oFn = {
     // ▼修改媒体的生词
     async switchWordType(obj) {
         const res = await oNewWord.update({
-            type: obj.type == 0 ? 1 : 0,
+            type: obj.type == 1 ? 2 : 1,
         }, {
             where: {
                 hash: obj.hash,

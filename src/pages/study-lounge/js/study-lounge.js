@@ -18,6 +18,11 @@ export function mainPart(){
 		iSubtitle: 0, // 0=默认，-1=查不到字幕，1=有字幕
 		sHash: '',
 		isShowDictionary: false,
+		isShowNewWords: false,
+		aFullWords: [],
+		aWordsList: [[], []],
+		aCandidate: [],
+		sTyped: '',
 	});
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
@@ -27,21 +32,21 @@ export function mainPart(){
 		arr[arr.length-1] = 'srt';
 		return arr.join('.');
 	})();
-	// ▲数据====================================================================================
-	// ▼方法====================================================================================
+	// ▲数据 ====================================================================================
+	// ▼方法 ====================================================================================
 	async function init(){
 		const sHash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!sHash) throw '没有hash';
 		oData.sHash = sHash;
-		getLinesFromDB(sHash);
-		getNewWords(sHash);
+		getLinesFromDB();
+		getNewWords();
 		const res = await fnInvoke('db', 'getMediaInfo', sHash);
 		console.log('媒体\n', res);
 		// 如果DB中的位置信息不正确，需要弹出窗口提示更新
 	}
 	// ▼查询库中的字幕
-	async function getLinesFromDB(sHash){
-		const aRes = await fnInvoke('db', 'getLineByHash', sHash);
+	async function getLinesFromDB(){
+		const aRes = await fnInvoke('db', 'getLineByHash', oData.sHash);
 		if (!aRes) return;
 		oData.iSubtitle = 1;
 		oData.aLineArr = fixTime(aRes);
@@ -86,13 +91,33 @@ export function mainPart(){
 	function toCheckDict(){
 		oData.isShowDictionary = true;
 	}
-	// ▼查询新词
-	async function getNewWords(hash){
-		const res = await fnInvoke('db', 'getWordsByHash', {
-			hash,
+	async function changeWordType(oWord){
+		console.log('单词', oWord.$dc());
+		const res = await fnInvoke('db', 'switchWordType', {
+			...oWord,
+			hash: oData.sHash,
 		});
 		if (!res) return;
-		console.log('本集新词', res);
+		console.log('修改反馈', res);
+		getNewWords();
+	}
+	async function delOneWord(cur){
+		console.log('单词', oWord.$dc());
+	}
+	// ▼查询新词
+	async function getNewWords(){
+		const aRes = await fnInvoke('db', 'getWordsByHash', {
+			hash: oData.sHash,
+		});
+		if (!aRes) return;
+		oData.aFullWords = aRes.map(cur => cur.word);
+		oData.aWordsList = aRes.reduce((aResult, cur)=>{
+			let iAimTo = 0;
+			if (cur.type == 2) iAimTo = 1;
+			aResult[iAimTo].push(cur);
+			return aResult;
+		}, [[],[]]);
+		console.log('本集新词', aRes);
 	}
 	// ============================================================================
 	init();
@@ -108,6 +133,9 @@ export function mainPart(){
 			listener,
 			saveMedia,
 			toCheckDict,
+			changeWordType,
+			delOneWord,
+			getNewWords,
 		},
     });
 };

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-28 21:22:51
+ * @LastEditTime: 2022-01-29 15:07:00
  * @Description: 
 -->
 <template>
@@ -42,7 +42,6 @@ const props = defineProps({
     beDialog: Boolean,
 });
 const emit = defineEmits(['update:dialogVisible']);
-console.log('emit---\n', emit);
 const isShowSelf = computed({
     get: () => {
         return props.dialogVisible;

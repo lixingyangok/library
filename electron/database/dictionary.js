@@ -2,11 +2,11 @@
  * @Author: 李星阳
  * @Date: 2022-01-24 19:50:21
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-24 21:04:33
+ * @LastEditTime: 2022-01-29 16:40:38
  * @Description: 开发历史
  */
-const fsp = require('fs').promises;
-const { DataTypes } = require('sequelize');
+// const fsp = require('fs').promises;
+const { Op, DataTypes } = require('sequelize');
 const { sqlize } = require('./init-db.js');
 
 const oDict = module.exports.line = sqlize.define('dictionary', {
@@ -28,29 +28,28 @@ module.exports.oFn = {
     //     return res02;
     // },
     // ▼查询所有
-    async getLineInfo123() {
-        const { oPromise, fnResolve, fnReject } = newPromise();
-        const sql = `
-            SELECT
-                line.hash,
-                count(*) as count
-            FROM line 
-            group by line.hash
-        `;
-        db.all(sql, (err, row) => {
-            if (err) return toLog('查询出错');
-            fnResolve(row);
+    async getCandidate(obj) {
+        const {sWord, limit=10} = obj;
+        const res = await oDict.findAll({
+            attributes: ['word'],
+            where: {
+                word: {
+                    [Op.like]: `${sWord}%`,
+                },
+            },
+            limit,
         });
-        return oPromise;
+        if (!res) return;
+        return res.map(cur => cur.dataValues.word);
     },
     // ▼查询某个媒体的字幕
     async getLineByHash123(hash) {
         const res = await oDict.findAll({
-            where: {hash},
+            where: { hash },
             order: [['start', 'asc']],
         });
         if (!res) return;
         // toLog(res[0]);
-        return res.map(cur=>cur.dataValues);
+        return res.map(cur => cur.dataValues);
     },
 };

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 09:57:44
+ * @LastEditTime: 2022-01-29 17:03:20
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -14,6 +14,11 @@ import {oAlphabet} from '../../../common/js/key-map.js';
 // import {aAlphabet} from 'assets/js/common.js';
 // const {media: mediaTB} = trainingDB;
 
+const oAlphabetObj = Object.values(oAlphabet).reduce((result, cur)=>{
+    result[cur] = true;
+    return result;
+}, {});
+const aSearching = [];
 
 export function getKeyDownFnMap(This, sType){
     const {oMyWave} = This;
@@ -276,16 +281,41 @@ export function fnAllKeydownFn(){
         if (!res) return this.$message.error('保存未成功');
         console.log('res\n', res);
         this.$message.success('保存成功');
+        This.getNewWords();
 	}
     function typed(ev){
-        if (!oAlphabet[ev.keyCode] || ev.c || ev.altKey || ev.shiftKey) {
-            return;
-        }
+        const Backspace = ev.code == 'Backspace';
+        if (!oAlphabetObj[ev.data] && !Backspace) return;
         const sText = ev.target.value; // 当前文字
-        const idx = ev.target.selectionStart;
-        const sLeft = (sText.slice(0, idx) || '').split(' ').pop();
-        console.log(sLeft);
+        const idx = ev.target.selectionStart - (Backspace ? 1 : 0);
+        const sLeft = (sText.slice(0, idx) || '').split(' ').pop().trim();
+        This.sTyped = sLeft;
+        if (!sLeft) return;
+        This.aCandidate = [];
+        setCandidate(sLeft.toLowerCase());
     }
+    async function setCandidate(sWord){
+        const aResult = [];
+        console.log('sWord --', sWord);
+        for (const cur of This.aFullWords) {
+            if (cur.toLowerCase().startsWith(sWord)) {
+                aResult.push(cur);
+            }
+            if (aResult.length>5) break;
+        }
+        This.aCandidate = aResult;
+        const oRes = fnInvoke('db', 'getCandidate', {
+            sWord, limit: 9 - aResult.length,
+        });
+        if (!oRes) return;
+        aSearching.pop();
+        aSearching.push(oRes);
+        aSearching[aSearching.length-1].then(aWords => {
+            if (!aWords) return;
+            This.aCandidate.push(...aWords);
+        });
+    }
+
     // ▼最终返回
     return {
         previousAndNext,
