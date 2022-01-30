@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 17:03:35
+ * @LastEditTime: 2022-01-30 18:39:59
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -101,15 +101,14 @@ export function fnAllKeydownFn(){
     }
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine, toRecord) {
-        if (toRecord) recordHistory();
-        if (typeof iAimLine === 'number') { // 观察：能不能进来？
+        if (iAimLine >= 0) {
             This.iCurLineIdx = iAimLine;
         }else{
             iAimLine = This.iCurLineIdx;
         }
         setLinePosition(iAimLine);
-        if (!oNewLine) return;
-        This.aLineArr.push(oNewLine);
+        if (oNewLine) This.aLineArr.push(oNewLine);
+        if (toRecord) recordHistory();
     }
     // ▼跳行后定位
 	function setLinePosition(iAimLine){
@@ -186,11 +185,16 @@ export function fnAllKeydownFn(){
     function toDel() {
         let { iCurLineIdx, aLineArr } = This;
         if (aLineArr.length <= 1) return;
+        const oDelAim = aLineArr[iCurLineIdx];
+        if (oDelAim.id){ // 有id就记录，否则就删除吧
+            This.oDeleted[oDelAim.id] = true;
+        }
         aLineArr.splice(iCurLineIdx, 1);
         const iMax = aLineArr.length - 1;
         This.iCurLineIdx = Math.min(iMax, iCurLineIdx);
         goLine(This.iCurLineIdx);
         This.oMyWave.goOneLine(aLineArr[This.iCurLineIdx]);
+        recordHistory();
     }
     // ▼到最后一行
     function goLastLine() {
@@ -286,13 +290,18 @@ export function fnAllKeydownFn(){
         this.$message.success('保存成功');
         This.getNewWords();
 	}
+    let inputTimer = null;
     let myTimer = null;
     // ▼处理用户输入
-    function typed(ev){
+    function inputHandler(ev){
         // console.log('内容有变\n', ev);
-        // clearTimeout(myTimer);
+        clearTimeout(inputTimer);
         const Backspace = ev.inputType == "deleteContentBackward";
-        // if (ev.data == ' ') console.log('空格结尾');
+        if (ev.data == ' ') {
+            recordHistory();
+        } else {
+            inputTimer = setTimeout(recordHistory, 600);
+        }
         if (!oAlphabetObj[ev.data] && !Backspace) return;
         const sText = ev.target.value; // 当前文字
         const idx = ev.target.selectionStart;
@@ -347,8 +356,18 @@ export function fnAllKeydownFn(){
         // ▼尚需补充后续的定位功能
     }
     // ▼保存到数据库
-    function saveLines(){
-
+    async function saveLines(){
+        const arr = This.aLineArr.map(cur => {
+            Reflect.deleteProperty(This.oDeleted, cur.id);
+            return { ...cur, mediaId: This.oMediaInfo.id };
+        });
+        console.log('字幕\n', arr);
+        const res = await fnInvoke('db', 'updateLine', {
+            toSaveArr: arr,
+            toDelArr: Object.keys(This.oDeleted),
+        });
+        console.log('保存结果\n', res);
+        This.$message.success(`保存成功`);
     }
     // ▼撤销-恢复
     function setHistory(iType) {
@@ -360,21 +379,24 @@ export function fnAllKeydownFn(){
             return This.$message.error(`没有${actionName}一步数据，已经到头了`);
         }
         const oHistory = This.aHistory[iCurStep];
+        const aLineArr = JSON.parse(oHistory.sLineArr); 
         This.iCurStep = iCurStep;
-        This.aLineArr = JSON.parse(oHistory.sLineArr);
+        This.aLineArr = aLineArr;
         This.iCurLineIdx = oHistory.iCurLineIdx;
         goLine(oHistory.iCurLineIdx, false);
     }
     // ▼保存一条历史记录
     function recordHistory(){
-        This.iCurStep++;
-        This.aHistory.push({
+        console.log('保存历史');
+        This.aHistory.splice(This.iCurStep + 1, Infinity, {
             sLineArr: JSON.stringify(This.aLineArr),
             iCurLineIdx: This.iCurLineIdx,
         });
+        This.iCurStep++;
         if (This.aHistory.length < 30) return;
         This.aHistory.shift();
     }
+    
     // ▼最终返回
     return {
         previousAndNext,
@@ -389,7 +411,7 @@ export function fnAllKeydownFn(){
         split,
         searchWord,
         saveWord,
-        typed,
+        inputHandler,
         toInset,
         giveUpThisOne,
         saveLines,

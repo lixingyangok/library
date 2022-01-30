@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 14:18:57
+ * @LastEditTime: 2022-01-30 18:43:06
  * @Description: 
  */
 
@@ -29,13 +29,37 @@ const oLine = module.exports.line = sqlize.define('line', {
 
 oLine.sync({ alter: true });
 
-module.exports.oFn = {
-    // ▼批量保存
+const oFn = module.exports.oFn = {
+    // ▼批量保存（导入用）
     async saveLine(arr) {
-        const res = await oLine.bulkCreate(arr);
+        const res = await oLine.bulkCreate(arr, {
+            updateOnDuplicate: ['start', 'end', 'text', 'trans', 'filledAt'],
+            // updateOnDuplicate是在插入的时候如果主键冲突就执行更新操作
+        });
         return res;
     },
-    // ▼查询所有【媒体字幕】
+    // ▼修改字幕
+    async updateLine(obj) {
+        const arr = [true, true];
+        if (obj?.toSaveArr?.length) {
+            obj.toSaveArr.forEach(cur => {
+                if (cur.filledAt && !cur.text) return;
+                cur.filledAt = new Date();
+            });
+            arr[0] = oFn.saveLine(obj.toSaveArr);
+        }
+        if (obj?.toDelArr?.length) {
+            arr[1] = oLine.destroy({
+                where: { id: obj.toDelArr },
+            });
+        }
+        const res = await Promise.all(arr);
+        if (res[0]?.map){
+            res[0] = res[0].map(cur => cur.dataValues);
+        }
+        return res;
+    },
+    // ▼统计所有【媒体字幕】
     async getLineInfo() {
         const { oPromise, fnResolve, fnReject } = newPromise();
         const sql = `

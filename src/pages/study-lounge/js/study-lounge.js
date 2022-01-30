@@ -15,6 +15,7 @@ export function mainPart(){
 		iCurLineIdx: 0,
 		aHistory: [{ sLineArr: '[]', iCurLineIdx: 0 }],
 		iCurStep: 0,
+		oDeleted: {}, // 已删除的行id
 	};
 	const oInputMethod = { // 输入法
 		sTyped: '',
@@ -58,6 +59,7 @@ export function mainPart(){
 	// ▼查询库中的字幕
 	async function getLinesFromDB(){
 		const aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
+		// console.log('查询字幕', aRes.length);
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();
 			oData.iSubtitle = -1; // -1 表示文件不存在 
@@ -97,9 +99,11 @@ export function mainPart(){
 		const oFirst = figureOut(oData.oMediaBuffer, 0, 20);
 		oFirst.text = '默认行';
 		oData.aLineArr = [oFirst];
+		oData.aHistory[0].sLineArr = JSON.stringify([oFirst]);
 	}
 	// ▼接收波形数据
 	function listener(oMediaBuffer){
+		// console.log('收到波形');
 		oData.oMediaBuffer = oMediaBuffer;
 		if (oData.iSubtitle != -1) return; // 有字幕则返回
 		// ▼需要考虑，因为可能尚没查到字幕，不是没有

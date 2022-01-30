@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 16:47:22
+ * @LastEditTime: 2022-01-30 17:19:37
  * @Description: 
 -->
 <template>
@@ -43,7 +43,7 @@
                 <textarea ref="oTextArea"
                     v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="()=>previousAndNext(1)"
-                    @input="typed"
+                    @input="inputHandler"
                 ></textarea>
                 <!-- @keydown.backspace="typed" -->
                 <ul class="candidate-list">
