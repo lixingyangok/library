@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-24 19:50:21
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 18:54:18
+ * @LastEditTime: 2022-01-30 10:53:48
  * @Description: 开发历史
  */
 // const fsp = require('fs').promises;
@@ -37,7 +37,7 @@ module.exports.oFn = {
     //     const res02 = await oDict.bulkCreate(JSON.parse(res01));
     //     return res02;
     // },
-    // ▼查询所有
+    // ▼ 查询提示词
     async getCandidate(obj) {
         const {sWord, limit=10} = obj;
         const res = await oDict.findAll({
@@ -52,14 +52,5 @@ module.exports.oFn = {
         if (!res) return;
         return res.map(cur => cur.dataValues.word);
     },
-    // ▼查询某个媒体的字幕
-    async getLineByHash123(hash) {
-        const res = await oDict.findAll({
-            where: { hash },
-            order: [['start', 'asc']],
-        });
-        if (!res) return;
-        // toLog(res[0]);
-        return res.map(cur => cur.dataValues);
-    },
 };
+

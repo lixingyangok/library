@@ -2,17 +2,22 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 14:30:50
+ * @LastEditTime: 2022-01-30 10:51:42
  * @Description: 
  */
 
 const { DataTypes } = require('sequelize');
 const { sqlize } = require('./init-db.js');
+const {media} = require('./media');
 
 const oNewWord = module.exports.line = sqlize.define('new_word', {
-    hash: {
-        type: DataTypes.STRING,
+    mediaId: { // 媒体记录的行ID，防止文件hash变化后引发错误
+        type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: media, // 这是对另一个模型的参考
+            key: 'id', // 这是引用模型的列名
+        },
     },
     word: {
         type: DataTypes.STRING,

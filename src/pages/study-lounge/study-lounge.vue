@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 17:45:15
+ * @LastEditTime: 2022-01-29 21:51:28
  * @Description: 
 -->
 <template>
@@ -36,16 +36,19 @@
                 <textarea ref="oTextArea"
                     v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="()=>previousAndNext(1)"
-                    @keydown.backspace="typed"
                     @input="typed"
                 ></textarea>
+                <!-- @keydown.backspace="typed" -->
                 <ul class="candidate-list">
                     <li class="one-word"
-                        v-for="(cur, idx) of aCandidate" :key="idx"
+                        v-for="(cur, idx) of sTyped ? aCandidate : aFullWords" :key="idx"
                     >
-                        <i class="idx">{{idx+1}}</i>
-                        <em class="left-word" >{{sTyped}}</em>
-                        <template v-if="cur.length > sTyped.length">
+                        <template v-if="sTyped" >
+                            <i class="idx">{{idx+1}}</i>
+                            <em class="left-word">{{sTyped}}</em>
+                        </template>
+                        <em v-else class="left-word">{{cur}}</em>
+                        <template v-if="sTyped && (cur.length > sTyped.length)">
                             ·<span class="right-word">{{cur.slice(sTyped.length)}}</span>
                         </template>
                     </li>

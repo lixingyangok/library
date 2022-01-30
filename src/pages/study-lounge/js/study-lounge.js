@@ -42,7 +42,7 @@ export function mainPart(){
 		getLinesFromDB();
 		getNewWords();
 		const res = await fnInvoke('db', 'getMediaInfo', sHash);
-		console.log('媒体\n', res);
+		console.log('库中媒体信息\n', res);
 		// 如果DB中的位置信息不正确，需要弹出窗口提示更新
 	}
 	// ▼查询库中的字幕
@@ -55,6 +55,10 @@ export function mainPart(){
 		}
 		oData.iSubtitle = 1;
 		oData.aLineArr = fixTime(aRes);
+		// console.time('转对象');
+		// let step02 = JSON.parse(JSON.stringify(oData.aLineArr));
+		// console.timeEnd('转对象');
+		// console.log(step02);
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
@@ -122,7 +126,6 @@ export function mainPart(){
 			aResult[iAimTo].push(cur);
 			return aResult;
 		}, [[],[]]);
-		console.log('本集新词', aRes);
 	}
 	// ============================================================================
 	init();

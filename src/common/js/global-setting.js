@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-07 17:08:49
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 10:27:21
+ * @LastEditTime: 2022-01-30 11:00:58
  * @Description: 
  */
 
@@ -56,12 +56,16 @@ export function setGlobal(){
 
 
 function toClone(source) {
-    if (!(source instanceof Object && typeof source == 'object' && source)) return source; //不处理非数组、非对象
+    if (!source || typeof source != 'object' || !(source instanceof Object)) return source; //不处理非数组、非对象
     const newObj = new source.constructor;
     const iterator = source instanceof Array ? source.entries() : Object.entries(source);
     for (const [key, val] of iterator) {
         newObj[key] = val instanceof Object ? toClone(val) : val;
     }
+    // const iLen = iterator.length;
+    // while(iLen--){
+    //     newObj[iterator[iLen][0]] = iterator[iLen][1] instanceof Object ? toClone(iterator[iLen][1]) : iterator[iLen][1];
+    // }
     return newObj;
 }
 

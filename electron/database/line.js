@@ -2,23 +2,30 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 18:53:38
+ * @LastEditTime: 2022-01-30 10:51:47
  * @Description: 
  */
 
 const { Op, DataTypes } = require('sequelize');
 const { sqlize } = require('./init-db.js');
+const {media} = require('./media');
 
 const oLine = module.exports.line = sqlize.define('line', {
-    hash: DataTypes.STRING,
+    mediaId: { // 媒体记录的行ID，防止文件hash变化后引发错误
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: media, // 这是对另一个模型的参考
+            key: 'id', // 这是引用模型的列名
+        },
+    },
     start: DataTypes.FLOAT,
     end: DataTypes.FLOAT,
     text: DataTypes.STRING, // 原文
     trans: DataTypes.STRING, // 译文
-    // filledAt: DataTypes.DATE, // 录入时间
+    filledAt: DataTypes.DATE, // 录入时间
     // 笔记内容？
 });
-
 
 oLine.sync({ alter: true });
 

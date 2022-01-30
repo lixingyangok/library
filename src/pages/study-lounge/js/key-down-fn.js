@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 18:55:33
+ * @LastEditTime: 2022-01-30 11:06:17
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -270,8 +270,9 @@ export function fnAllKeydownFn(){
     async function saveWord() {
         const word = window.getSelection().toString().trim() || '';
         if (!word) return;
+        const wordLow = word.toLowerCase();
+        const bExist = This.aFullWords.some(cur => cur.toLowerCase() == wordLow);
         const lengthOK = word.length >= 2 && word.length <= 30;
-        const bExist = [].includes(word);
         if (!lengthOK || bExist) {
             const sTips = `已经保存不可重复添加，或单词长度不在合法范围（2-30字母）`;
 			return this.$message.error(sTips);
@@ -284,16 +285,24 @@ export function fnAllKeydownFn(){
         this.$message.success('保存成功');
         This.getNewWords();
 	}
+    let myTimer = null;
+    // ▼处理用户输入
     function typed(ev){
+        // console.log('内容有变\n', ev);
+        // clearTimeout(myTimer);
         const Backspace = ev.code == 'Backspace';
+        // if (ev.data == ' ') console.log('空格结尾');
         if (!oAlphabetObj[ev.data] && !Backspace) return;
         const sText = ev.target.value; // 当前文字
         const idx = ev.target.selectionStart - (Backspace ? 1 : 0);
         const sLeft = (sText.slice(0, idx) || '').split(' ').pop().trim();
         This.sTyped = sLeft;
+        console.log('左侧文本：', sLeft);
         if (!sLeft) return;
         This.aCandidate = [];
-        setCandidate(sLeft.toLowerCase(), ++iSearchingQ);
+        myTimer = setTimeout(()=>{
+            setCandidate(sLeft.toLowerCase(), ++iSearchingQ);
+        }, 0);
     }
     async function setCandidate(sWord, iCurQs){
         const aResult = [];
