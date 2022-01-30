@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-18 20:48:34
+ * @LastEditTime: 2022-01-30 12:04:32
  * @Description: 
  */
 
@@ -64,6 +64,12 @@ protocolRegister();
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+    // ▼加载调试插件
+    installExtension(VUEJS3_DEVTOOLS).then((name) => {
+        console.log(`\nAdded Extension:  ${name}`);
+    }).catch((err) => {
+        console.log('\nAn error occurred: ', err);
+    });
     // ▼创建窗口
     createWindow(); // 在此生成 toLog
     makeChannels();
@@ -74,12 +80,7 @@ app.whenReady().then(async () => {
         // dock icon is clicked and there are no other windows open.
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
-    // ▼加载调试插件
-    installExtension(VUEJS3_DEVTOOLS).then((name) => {
-        console.log(`Added Extension:  ${name}`);
-    }).catch((err) => {
-        console.log('An error occurred: ', err);
-    });
+
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

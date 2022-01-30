@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 10:51:47
+ * @LastEditTime: 2022-01-30 14:18:57
  * @Description: 
  */
 
@@ -39,11 +39,9 @@ module.exports.oFn = {
     async getLineInfo() {
         const { oPromise, fnResolve, fnReject } = newPromise();
         const sql = `
-            SELECT
-                line.hash,
-                count(*) as count
-            FROM line 
-            group by line.hash
+            SELECT line.mediaId, count(*) as count
+            FROM line
+            group by line.mediaId
         `;
         db.all(sql, (err, row) => {
             if (err) return toLog('查询出错');
@@ -52,13 +50,12 @@ module.exports.oFn = {
         return oPromise;
     },
     // ▼查询某个媒体的字幕
-    async getLineByHash(hash) {
+    async getLineByMedia(mediaId) {
         const res = await oLine.findAll({
-            where: {hash},
+            where: {mediaId},
             order: [['start', 'asc']],
         });
         if (!res) return;
-        // toLog(res[0]);
         return res.map(cur => cur.dataValues);
     },
     // ▼按单词搜索字幕
@@ -69,7 +66,7 @@ module.exports.oFn = {
                     [Op.like]: `%${word}%`,
                 },
             },
-            order: [['hash']],
+            order: [['mediaId']],
             limit: 1_000,
         });
         if (!res) return;

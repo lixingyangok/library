@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 11:06:17
+ * @LastEditTime: 2022-01-30 14:22:30
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -278,7 +278,7 @@ export function fnAllKeydownFn(){
 			return this.$message.error(sTips);
 		}
         const res = await fnInvoke('db', 'saveOneNewWord', {
-            word, hash: This.sHash,
+            word, mediaId: This.oMediaInfo.id,
         });
         if (!res) return this.$message.error('保存未成功');
         console.log('res\n', res);

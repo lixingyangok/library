@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 01:27:57
+ * @LastEditTime: 2022-01-30 11:21:39
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 
@@ -10,6 +10,7 @@ const fs = require('fs');
 const fsp = require('fs').promises;
 const path = require('path');
 
+// ▼查询：某文件夹内的媒体文件与配对的字幕
 export async function getFolderKids(sPath){
     const oStat = await fsp.stat(sPath);
     if (!oStat.isDirectory()) return;

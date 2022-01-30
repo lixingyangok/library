@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-24 21:05:54
+ * @LastEditTime: 2022-01-30 14:44:11
  * @Description: 
 -->
 
@@ -89,8 +89,12 @@
     <el-dialog title="初始化" width="550px"
         v-model="bMediaDialog"
     >
+        <h3>
+            {{fucousFolder}}
+        </h3>
+        <br/>
         <ul class="media-list-in-dialog" >
-            <li v-for="(cur,idx) of aMediaForShow" :key="idx"
+            <li v-for="(cur,idx) of aFolderMedia" :key="idx"
                 class="one-media"
             >
                 <span class="name" :title="cur.name">
@@ -98,11 +102,15 @@
                 </span>
                 <span class="status">
                     媒体/字幕：
-                    <i :class="{'no-yet': cur.iStatus!=1}" >
-                        {{['✘', '✔'][cur.iStatus]}}
+                    <i :class="{'no-yet': cur.hash && !cur.infoAtDb}" >
+                        {{cur.infoAtDb ? '✔' : '✘'}}
                     </i>
-                    <i :class="{'no-yet': !oLineMap[cur.hash], 'no-srt': !cur.srt}">
-                        {{ oLineMap[cur.hash] ? `✔${oLineMap[cur.hash]}` : '✘' }}
+                    <i :class="{'no-yet': !oLineMap[cur?.infoAtDb?.id], 'no-srt': !cur.srt}">
+                        {{ 
+                            oLineMap[cur?.infoAtDb?.id] 
+                            ? `✔${oLineMap[cur?.infoAtDb?.id]}`
+                            : '✘'
+                        }}
                     </i>
                 </span>
             </li>
@@ -144,12 +152,10 @@ export default {
             // ▼数据库中的数据
             oMediaHomes: {},
             oLineMap: {},
+            fucousFolder: '', // 当前入库的目录
         };
     },
     computed:{
-        aMediaForShow(){
-            return this.aFolderMedia;
-        },
         aMarkedTree(){
             return this.aTree;
         },

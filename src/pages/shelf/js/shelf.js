@@ -23,7 +23,7 @@ const fnAboutDB = {
             return oResult;
         }, {});
         this.oLineMap = aRes[1].reduce((oResult, oCur)=>{
-            oResult[oCur.hash] = oCur.count;
+            oResult[oCur.mediaId] = oCur.count;
             return oResult;
         }, {});
     },
@@ -49,6 +49,7 @@ const fnAboutDB = {
     },
     // ▼打开2级窗口————查询某个目录
     async checkFolder(oInfo){
+        this.fucousFolder = oInfo.sPath;
         this.bMediaDialog = true;
         const aFolderMedia = await getFolderKids(oInfo.sPath);
         mySort(aFolderMedia, 'name');
@@ -63,51 +64,49 @@ const fnAboutDB = {
         const hash = await fnInvoke('getHash', oMedia.sPath);
         const res = await fnInvoke('db', 'getMediaInfo', hash);
         oMedia.hash = hash;
-        oMedia.iStatus = res ? 1 : 0;
+        oMedia.infoAtDb = res;
     },
     // ▼将某个文件夹内的媒体逐个保存媒体到DB
     async saveOneByOne(){
         const allHasHash = this.aFolderMedia.every(cur=>cur.hash);
         if (this.aFolderMedia.length && !allHasHash) {
-            return console.log('没有加载完');
+            return this.$message.error('没有加载完');
         }
         let idx = -1;
         while (++idx < this.aFolderMedia.length){
             const oMedia = this.aFolderMedia[idx];
-            if (!oMedia.hash) continue;
-            if (!this.oLineMap[oMedia.hash]) {
-                this.saveLines(oMedia);
+            if (!oMedia.infoAtDb) { // 不再重试保存
+                const arr = oMedia.sPath.split('/');
+                const oInfo = await fnInvoke('db', 'saveMediaInfo', {
+                    hash: oMedia.hash,
+                    name: arr.slice(-1)[0],
+                    dir: arr.slice(0, -1).join('/'),
+                });
+                if (!oInfo) { // 媒体没存上不能存字幕，应 return 
+                    return this.$message.error('保存媒体信息未成功');
+                }
+                oMedia.infoAtDb = oInfo;
             }
-            if (oMedia.iStatus==1) continue; // 不再重试保存
-            const arr = oMedia.sPath.split('/');
-            const oInfo = await fnInvoke('db', 'saveMediaInfo', {
-                hash: oMedia.hash,
-                name: arr.slice(-1)[0],
-                dir: arr.slice(0, -1).join('/'),
-            });
-            if (oInfo) {
-                oMedia.iStatus = 1;
-            }else{
-                console.log('保存媒体信息未成功');
-            }
+            if (this.oLineMap[oMedia.infoAtDb.id]) return;
+            this.saveLines(oMedia);
         }
         await this.getMediaHomesArr();
         this.setTreeList(this.aFolders[0].sPath);
     },
     async saveLines(oMedia){
-        const {hash, srt} = oMedia;
-        if (!srt || !hash) return;
-        // const res01 = await fetch(getTubePath(srt)).catch((err)=>{ });
+        const {infoAtDb, srt} = oMedia;
+        if (!srt || !infoAtDb) return;
         const res01 = await fsp.readFile(srt, 'utf8').catch(err=>{
             console.log('读取字幕未成功\n', srt);
         });
-        if (!res01) return;
-        const srtArr = SubtitlesStr2Arr(res01);
-        if (!srtArr) return console.log('文本转为数据未成功\n');
-        srtArr.forEach(cur => cur.hash = hash);
-        const res = await fnInvoke('db', 'saveLine', srtArr);
-        if (!res) return;
-        this.oLineMap[hash] = 1;
+        const srtArr = SubtitlesStr2Arr(res01 || '');
+        if (!res01 || !srtArr) {
+            return this.$message.error('解析字幕文件未成功');
+        }
+        srtArr.forEach(cur => cur.mediaId = infoAtDb.id);
+        const aRes = await fnInvoke('db', 'saveLine', srtArr);
+        if (!aRes) return;
+        this.oLineMap[infoAtDb.id] = aRes.length;
     },
 };
 

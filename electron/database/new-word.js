@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 10:51:42
+ * @LastEditTime: 2022-01-30 14:42:22
  * @Description: 
  */
 
@@ -11,7 +11,7 @@ const { sqlize } = require('./init-db.js');
 const {media} = require('./media');
 
 const oNewWord = module.exports.line = sqlize.define('new_word', {
-    mediaId: { // 媒体记录的行ID，防止文件hash变化后引发错误
+    mediaId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -35,7 +35,7 @@ module.exports.oFn = {
     // ▼保存
     async saveOneNewWord(obj) {
         const hasSaved = await oNewWord.findOne({ 
-            where: { hash: obj.hash, word: obj.word },
+            where: { mediaId: obj.mediaId, word: obj.word },
         });
         if (hasSaved) throw Error('不能重复保存');
         obj.type = (
@@ -47,11 +47,9 @@ module.exports.oFn = {
         return res;
     },
     // ▼查询媒体的生词
-    async getWordsByHash({hash, more}) {
+    async getWordsByMedia({mediaId, more}) {
         const res = await oNewWord.findAll({
-            where: {
-                hash,
-            },
+            where: { mediaId },
         });
         if (!res) return;
         return res.map(cur=>cur.dataValues);
@@ -62,7 +60,7 @@ module.exports.oFn = {
             type: obj.type == 1 ? 2 : 1,
         }, {
             where: {
-                hash: obj.hash,
+                mediaId: obj.mediaId,
                 word: obj.word,
             },
         });
@@ -70,9 +68,9 @@ module.exports.oFn = {
     },
     // ▼删除媒体的生词
     async delOneNewWord(obj) {
-        const res = await User.destroy({
+        const res = await oNewWord.destroy({
             where: {
-                hash: obj.hash,
+                mediaId: obj.mediaId,
                 word: obj.word,
             },
         });

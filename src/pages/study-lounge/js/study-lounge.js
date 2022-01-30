@@ -24,6 +24,7 @@ export function mainPart(){
 		aCandidate: [],
 		sTyped: '',
 		sSearching: '',
+		oMediaInfo: {}, // 库中媒体信息
 	});
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
@@ -38,16 +39,17 @@ export function mainPart(){
 	async function init(){
 		const sHash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!sHash) throw '没有hash';
+		const oRes = await fnInvoke('db', 'getMediaInfo', sHash);
+		if (!oRes) return;
 		oData.sHash = sHash;
+		oData.oMediaInfo = oRes;
+		console.log('库中媒体信息\n', oRes);
 		getLinesFromDB();
 		getNewWords();
-		const res = await fnInvoke('db', 'getMediaInfo', sHash);
-		console.log('库中媒体信息\n', res);
-		// 如果DB中的位置信息不正确，需要弹出窗口提示更新
 	}
 	// ▼查询库中的字幕
 	async function getLinesFromDB(){
-		const aRes = await fnInvoke('db', 'getLineByHash', oData.sHash);
+		const aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();
 			oData.iSubtitle = -1; // -1 表示文件不存在 
@@ -104,19 +106,26 @@ export function mainPart(){
 		console.log('单词', oWord.$dc());
 		const res = await fnInvoke('db', 'switchWordType', {
 			...oWord,
-			hash: oData.sHash,
+			mediaId: oData.oMediaInfo.id,
 		});
 		if (!res) return;
 		console.log('修改反馈', res);
 		getNewWords();
 	}
-	async function delOneWord(cur){
-		console.log('单词', oWord.$dc());
+	async function delOneWord(oWord){
+		const res = await fnInvoke('db', 'delOneNewWord', {
+			...oWord,
+			mediaId: oData.oMediaInfo.id,
+		});
+		if (!res) this.$message.error('删除单词未成功');
+		this.$message.success('已删除');
+		getNewWords();
 	}
 	// ▼查询新词
 	async function getNewWords(){
-		const aRes = await fnInvoke('db', 'getWordsByHash', {
-			hash: oData.sHash,
+		const aRes = await fnInvoke('db', 'getWordsByMedia', {
+			mediaId: oData.oMediaInfo.id,
+			// more: ****
 		});
 		if (!aRes) return;
 		oData.aFullWords = aRes.map(cur => cur.word);
