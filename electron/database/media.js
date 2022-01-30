@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 14:37:25
+ * @LastEditTime: 2022-01-30 20:32:27
  * @Description: 
  */
 
@@ -25,7 +25,7 @@ const oMedia = module.exports.media = sqlize.define('media', {
     // xxxx: DataTypes.STRING, // 类型，故事，教材，似乎应该按目录解析，不记在媒体文件上
     type: {
         type: DataTypes.INTEGER,
-        // 1默认独生子，2同级文件是同胞，3文件夹的同级也都是同胞
+        // 1默认独生子，2有同胞(同级文件)，3有同胞(范围包含堂亲)
         defaultValue: 1,  // 修改时应改一片，需要思考
     },
 });

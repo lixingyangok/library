@@ -2,35 +2,35 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 21:59:23
+ * @LastEditTime: 2022-01-30 20:45:34
  * @Description: 
 -->
 
 <template>
-    <section >
-        <h1 class="welcome top-one" >
-            十年大计
+    <section class="welcome-page" >
+        <h1 class="top-one" >
+            十年大计-{{$store.state.userInfo.name}}
         </h1>
-        <h1 class="welcome" >
-            Welcome
-            {{$store.state.userInfo.name}}
-            <br/>
+        <div class="welcome" >
             <button @click="logFn" >
                 给主进程送信
             </button>
-            <br/>
             <button @click="showFFmpeg" >
                 showFFmpeg
             </button>
-            <br/>
             <button @click="runBat" >
                 runBat01
             </button>
-            <br/>
             <button @click="showScreen" >
                 定时唤醒
             </button>
-        </h1>
+        </div>
+        <h4>
+            本周新增：xxxx句
+        </h4>
+        <h4>
+            本周录入：xxxx句
+        </h4>
     </section>
     <ul>
         <li v-for="(cur,idx) of aLog" :key="idx" >

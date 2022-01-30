@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 18:39:59
+ * @LastEditTime: 2022-01-30 20:49:52
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -80,7 +80,7 @@ export function fnAllKeydownFn(){
     const This = oInstance.proxy;
     // ▼切换当前句子（上一句，下一句）
     function previousAndNext(iDirection) {
-        const { oMediaBuffer, aLineArr, iCurLineIdx } = This; // iCurStep
+        const { oMediaBuffer, aLineArr, iCurLineIdx } = This;
         const iCurLineNew = iCurLineIdx + iDirection;
         if (iCurLineNew < 0) {
             return this.$message.warning('没有上一行');
@@ -101,11 +101,8 @@ export function fnAllKeydownFn(){
     }
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine, toRecord) {
-        if (iAimLine >= 0) {
-            This.iCurLineIdx = iAimLine;
-        }else{
-            iAimLine = This.iCurLineIdx;
-        }
+        if (iAimLine >= 0) This.iCurLineIdx = iAimLine;
+        else iAimLine = This.iCurLineIdx;
         setLinePosition(iAimLine);
         if (oNewLine) This.aLineArr.push(oNewLine);
         if (toRecord) recordHistory();
@@ -186,8 +183,8 @@ export function fnAllKeydownFn(){
         let { iCurLineIdx, aLineArr } = This;
         if (aLineArr.length <= 1) return;
         const oDelAim = aLineArr[iCurLineIdx];
-        if (oDelAim.id){ // 有id就记录，否则就删除吧
-            This.oDeleted[oDelAim.id] = true;
+        if (oDelAim.id) {
+            This.deletedSet.add(oDelAim.id);
         }
         aLineArr.splice(iCurLineIdx, 1);
         const iMax = aLineArr.length - 1;
@@ -239,7 +236,7 @@ export function fnAllKeydownFn(){
         if (!isMergeNext) This.iCurLineIdx--;
         // this.setState({...obj, sCurLineTxt: aLineArr[iCurLineIdx].text});
     }
-    // ▼一刀两段
+    // ▼一刀两段 todo，要修改
     function split() {
         goLine();
         const { aLineArr } = This;
@@ -296,6 +293,7 @@ export function fnAllKeydownFn(){
     function inputHandler(ev){
         // console.log('内容有变\n', ev);
         clearTimeout(inputTimer);
+        This.oCurLine.changed = true; // 有此标记才提交
         const Backspace = ev.inputType == "deleteContentBackward";
         if (ev.data == ' ') {
             recordHistory();
@@ -357,17 +355,30 @@ export function fnAllKeydownFn(){
     }
     // ▼保存到数据库
     async function saveLines(){
-        const arr = This.aLineArr.map(cur => {
-            Reflect.deleteProperty(This.oDeleted, cur.id);
-            return { ...cur, mediaId: This.oMediaInfo.id };
+        const toSaveArr = [];
+        This.aLineArr.forEach(cur => {
+            if (cur.id) {
+                This.deletedSet.delete(cur.id);
+                if (This.oIdStore[cur.id] && !cur.changed) return;
+            }
+            toSaveArr.push({ ...cur, mediaId: This.oMediaInfo.id });
         });
-        console.log('字幕\n', arr);
-        const res = await fnInvoke('db', 'updateLine', {
-            toSaveArr: arr,
-            toDelArr: Object.keys(This.oDeleted),
+        const toDelArr = [...This.deletedSet];
+        if (toSaveArr.length==0 && toDelArr.length==0){
+            return This.$message.warning(`没有修改，无法保存`);
+        }
+        const [res0, res1] = await fnInvoke('db', 'updateLine', {
+            toSaveArr, toDelArr,
         });
-        console.log('保存结果\n', res);
-        This.$message.success(`保存成功`);
+        This.getLinesFromDB();
+        res0.length && This.aLineArr.forEach(cur=>{
+            cur.changed = false;
+        });
+        console.log('保存字幕\n', toSaveArr, toDelArr);
+        // console.log('保存结果\n', res);
+        const sTips = `成功：修改 ${res0.length} 条，删除 ${res1} 条`;
+        This.$message.success(sTips);
+        This.deletedSet.clear();
     }
     // ▼撤销-恢复
     function setHistory(iType) {
@@ -376,13 +387,13 @@ export function fnAllKeydownFn(){
         console.log('前往：', iCurStep);
         if (iCurStep < 0 || iCurStep > length - 1) {
             const actionName = { '-1': '上', '1': '下' }[iType];
-            return This.$message.error(`没有${actionName}一步数据，已经到头了`);
+            return This.$message.error(`没有【${actionName}一步】数据`);
         }
         const oHistory = This.aHistory[iCurStep];
-        const aLineArr = JSON.parse(oHistory.sLineArr); 
+        const aLineArr = JSON.parse(oHistory.sLineArr);
         This.iCurStep = iCurStep;
         This.aLineArr = aLineArr;
-        This.iCurLineIdx = oHistory.iCurLineIdx;
+        This.iCurLineIdx = oHistory.iCurLineIdx; // 置于最后一行
         goLine(oHistory.iCurLineIdx, false);
     }
     // ▼保存一条历史记录
@@ -396,7 +407,6 @@ export function fnAllKeydownFn(){
         if (This.aHistory.length < 30) return;
         This.aHistory.shift();
     }
-    
     // ▼最终返回
     return {
         previousAndNext,

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 18:43:06
+ * @LastEditTime: 2022-01-30 20:34:22
  * @Description: 
  */
 
@@ -40,10 +40,10 @@ const oFn = module.exports.oFn = {
     },
     // ▼修改字幕
     async updateLine(obj) {
-        const arr = [true, true];
+        const arr = [[], 0];
         if (obj?.toSaveArr?.length) {
             obj.toSaveArr.forEach(cur => {
-                if (cur.filledAt && !cur.text) return;
+                if (cur.filledAt || !cur.text) return;
                 cur.filledAt = new Date();
             });
             arr[0] = oFn.saveLine(obj.toSaveArr);

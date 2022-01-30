@@ -11,11 +11,13 @@ export function mainPart(){
 		oSententList: null, // 字幕列表
 	});
 	const oOperation = { // 编辑功能
+		aLineFromDB: [], // 查出来立即存在这
+		oIdStore: {}, // 查出来立即存在这
 		aLineArr: [],
 		iCurLineIdx: 0,
 		aHistory: [{ sLineArr: '[]', iCurLineIdx: 0 }],
 		iCurStep: 0,
-		oDeleted: {}, // 已删除的行id
+		deletedSet: new Set(), // 已删除的行id
 	};
 	const oInputMethod = { // 输入法
 		sTyped: '',
@@ -59,16 +61,21 @@ export function mainPart(){
 	// ▼查询库中的字幕
 	async function getLinesFromDB(){
 		const aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
-		// console.log('查询字幕', aRes.length);
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();
 			oData.iSubtitle = -1; // -1 表示文件不存在 
 			return;
 		}
+		oData.oIdStore = aRes.reduce((oResult, cur)=>{ // 保存所有id
+			oResult[cur.id] = true;
+			return oResult;
+		}, {});
 		const aLineArr = fixTime(aRes);
+		const sLineArr = JSON.stringify(aLineArr);
+		oData.aHistory[0].sLineArr = sLineArr;
+		oData.aLineFromDB = JSON.parse(sLineArr);
 		oData.iSubtitle = 1;
-		oData.aLineArr = aLineArr;
-		oData.aHistory[0].sLineArr = JSON.stringify(aLineArr);
+		oData.aLineArr = aLineArr; // 正式使用的数据
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
@@ -80,6 +87,7 @@ export function mainPart(){
 		};
 		const oInfo = await fnInvoke('db', 'saveMediaInfo', obj);
 		if (!oInfo) throw '保存未成功';
+		init();
 		console.log('已经保存', oInfo);
 	}
 	// ▼取得【字幕文件】的数据
@@ -163,17 +171,8 @@ export function mainPart(){
 			changeWordType,
 			delOneWord,
 			getNewWords,
+			getLinesFromDB,
 		},
     });
 };
 
-
-// const AC = new window.AudioContext();
-// AC.decodeAudioData(uint8Buffer.buffer).then(audioBuf => {
-//     const analyser = AC.createAnalyser();
-//     const bs = AC.createBufferSource();
-//     bs.buffer = audioBuf;
-//     bs.connect(analyser);
-//     analyser.connect(AC.destination);
-//     bs.start();
-// });
