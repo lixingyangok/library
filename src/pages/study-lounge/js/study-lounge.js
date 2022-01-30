@@ -10,21 +10,29 @@ export function mainPart(){
 		oTextArea: null, // 输入框
 		oSententList: null, // 字幕列表
 	});
-	const oData = reactive({
-		sMediaSrc: getTubePath(ls('sFilePath')),
+	const oOperation = { // 编辑功能
 		aLineArr: [],
 		iCurLineIdx: 0,
-		oMediaBuffer: {},
-		iSubtitle: 0, // 0=默认，-1=查不到字幕，1=有字幕
-		sHash: '',
-		isShowDictionary: false,
-		isShowNewWords: false,
+		aHistory: [{ sLineArr: '[]', iCurLineIdx: 0 }],
+		iCurStep: 0,
+	};
+	const oInputMethod = { // 输入法
+		sTyped: '',
 		aFullWords: [],
 		aWordsList: [[], []],
 		aCandidate: [],
-		sTyped: '',
-		sSearching: '',
+	};
+	const oData = reactive({
+		...oOperation,
+		...oInputMethod,
+		sMediaSrc: getTubePath(ls('sFilePath')),
+		sHash: '',
 		oMediaInfo: {}, // 库中媒体信息
+		oMediaBuffer: {}, // 媒体文件
+		iSubtitle: 0, // 字幕状态：0=默认，-1=查不到字幕，1=有字幕
+		isShowDictionary: false,
+		isShowNewWords: false,
+		sSearching: '', // 查字典
 	});
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
@@ -55,12 +63,10 @@ export function mainPart(){
 			oData.iSubtitle = -1; // -1 表示文件不存在 
 			return;
 		}
+		const aLineArr = fixTime(aRes);
 		oData.iSubtitle = 1;
-		oData.aLineArr = fixTime(aRes);
-		// console.time('转对象');
-		// let step02 = JSON.parse(JSON.stringify(oData.aLineArr));
-		// console.timeEnd('转对象');
-		// console.log(step02);
+		oData.aLineArr = aLineArr;
+		oData.aHistory[0].sLineArr = JSON.stringify(aLineArr);
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){

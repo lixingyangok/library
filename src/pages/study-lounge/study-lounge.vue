@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 21:51:28
+ * @LastEditTime: 2022-01-30 16:47:22
  * @Description: 
 -->
 <template>
@@ -28,11 +28,18 @@
                 <button @click="toCheckDict" >
                     查字典
                 </button>
-                <button @click="isShowNewWords = true" >
+                <button @click="isShowNewWords = true">
                     单词表
                 </button>
             </article>
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
+                <ul class="history-ul" >
+                    <li v-for="(cur, idx) of aHistory" :key="idx"
+                        :class="{cur: idx==iCurStep}"
+                    >
+                        {{idx+1}}
+                    </li>
+                </ul>
                 <textarea ref="oTextArea"
                     v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="()=>previousAndNext(1)"

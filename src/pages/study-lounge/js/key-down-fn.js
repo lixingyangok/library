@@ -2,17 +2,13 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 14:22:30
+ * @LastEditTime: 2022-01-30 17:03:35
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
 import {fixTime } from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {oAlphabet} from '../../../common/js/key-map.js';
-// import {trainingDB, wordsDB} from 'assets/js/common.js';
-// import {getQiniuToken} from 'assets/js/learning-api.js';
-// import {aAlphabet} from 'assets/js/common.js';
-// const {media: mediaTB} = trainingDB;
 
 const oAlphabetObj = Object.values(oAlphabet).reduce((result, cur)=>{
     result[cur] = true;
@@ -35,13 +31,13 @@ export function getKeyDownFnMap(This, sType){
     ];
     const withCtrl = [
         {key: 'ctrl + d', name: '删除一行',  fn: () => This.toDel()},
-        // {key: 'ctrl + z', name: '撤销',  fn: `this.setHistory.bind(this, -1)`},
-        // {key: 'ctrl + s', name: '保存到云（字幕）',  fn: `this.uploadToCloudBefore.bind(this)`}, 
+        {key: 'ctrl + z', name: '撤销',  fn: ()=>This.setHistory(-1)},
+        {key: 'ctrl + s', name: '保存到云',  fn: ()=>This.saveLines()}, 
         {key: 'ctrl + j', name: '合并上一句',  fn: ()=> This.putTogether(-1)}, 
         {key: 'ctrl + k', name: '合并下一句',  fn: ()=> This.putTogether(1)}, 
         {key: 'ctrl + Enter', name: '播放',  fn: ()=>oMyWave.toPlay()},
         {key: 'ctrl + shift + Enter', name: '播放',  fn: ()=>oMyWave.toPlay(true)},
-        // {key: 'ctrl + shift + z', name: '恢复',  fn: `this.setHistory.bind(this, 1)`},
+        {key: 'ctrl + shift + z', name: '恢复',  fn: ()=>This.setHistory(1)},
         {key: 'ctrl + shift + c', name: '分割',  fn: () => split()},
     ];
     const withAlt = [
@@ -78,7 +74,6 @@ export function getKeyDownFnMap(This, sType){
     return aFullFn;
 }
 
-
 // ▼按键后的方法列表
 export function fnAllKeydownFn(){
     const oInstance = getCurrentInstance();
@@ -86,7 +81,10 @@ export function fnAllKeydownFn(){
     // ▼切换当前句子（上一句，下一句）
     function previousAndNext(iDirection) {
         const { oMediaBuffer, aLineArr, iCurLineIdx } = This; // iCurStep
-        const iCurLineNew = Math.max(0, iCurLineIdx + iDirection);
+        const iCurLineNew = iCurLineIdx + iDirection;
+        if (iCurLineNew < 0) {
+            return this.$message.warning('没有上一行');
+        }
         This.iCurLineIdx = iCurLineNew;
         const oNewLine = (() => {
             if (aLineArr[iCurLineNew]) return false; //有数据，不新增
@@ -96,11 +94,14 @@ export function fnAllKeydownFn(){
             const {end} = aLineArr[aLineArr.length-1];
             return figureOut(oMediaBuffer, end); // 要新增一行，返回下行数据
         })();
-        if (oNewLine === null) return console.log(`已经到头了`);
-        goLine(iCurLineNew, oNewLine);
+        if (oNewLine === null) {
+            return this.$message.warning('后面没有了');
+        }
+        goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行
-    async function goLine(iAimLine, oNewLine) {
+    async function goLine(iAimLine, oNewLine, toRecord) {
+        if (toRecord) recordHistory();
         if (typeof iAimLine === 'number') { // 观察：能不能进来？
             This.iCurLineIdx = iAimLine;
         }else{
@@ -290,11 +291,11 @@ export function fnAllKeydownFn(){
     function typed(ev){
         // console.log('内容有变\n', ev);
         // clearTimeout(myTimer);
-        const Backspace = ev.code == 'Backspace';
+        const Backspace = ev.inputType == "deleteContentBackward";
         // if (ev.data == ' ') console.log('空格结尾');
         if (!oAlphabetObj[ev.data] && !Backspace) return;
         const sText = ev.target.value; // 当前文字
-        const idx = ev.target.selectionStart - (Backspace ? 1 : 0);
+        const idx = ev.target.selectionStart;
         const sLeft = (sText.slice(0, idx) || '').split(' ').pop().trim();
         This.sTyped = sLeft;
         console.log('左侧文本：', sLeft);
@@ -304,13 +305,14 @@ export function fnAllKeydownFn(){
             setCandidate(sLeft.toLowerCase(), ++iSearchingQ);
         }, 0);
     }
+    // ▼查询候选词
     async function setCandidate(sWord, iCurQs){
         const aResult = [];
         for (const cur of This.aFullWords) {
             if (cur.toLowerCase().startsWith(sWord)) {
                 aResult.push(cur);
             }
-            if (aResult.length>=5) break;
+            if (aResult.length>3) break;
         }
         This.aCandidate = aResult;
         // console.time('查字典db'); // 耗时20-30ms
@@ -344,6 +346,35 @@ export function fnAllKeydownFn(){
         This.aLineArr[This.iCurLineIdx] = oNextLine;
         // ▼尚需补充后续的定位功能
     }
+    // ▼保存到数据库
+    function saveLines(){
+
+    }
+    // ▼撤销-恢复
+    function setHistory(iType) {
+        const { length } = This.aHistory;
+        const iCurStep = This.iCurStep + iType;
+        console.log('前往：', iCurStep);
+        if (iCurStep < 0 || iCurStep > length - 1) {
+            const actionName = { '-1': '上', '1': '下' }[iType];
+            return This.$message.error(`没有${actionName}一步数据，已经到头了`);
+        }
+        const oHistory = This.aHistory[iCurStep];
+        This.iCurStep = iCurStep;
+        This.aLineArr = JSON.parse(oHistory.sLineArr);
+        This.iCurLineIdx = oHistory.iCurLineIdx;
+        goLine(oHistory.iCurLineIdx, false);
+    }
+    // ▼保存一条历史记录
+    function recordHistory(){
+        This.iCurStep++;
+        This.aHistory.push({
+            sLineArr: JSON.stringify(This.aLineArr),
+            iCurLineIdx: This.iCurLineIdx,
+        });
+        if (This.aHistory.length < 30) return;
+        This.aHistory.shift();
+    }
     // ▼最终返回
     return {
         previousAndNext,
@@ -361,6 +392,8 @@ export function fnAllKeydownFn(){
         typed,
         toInset,
         giveUpThisOne,
+        saveLines,
+        setHistory,
     };
 }
 
@@ -425,39 +458,6 @@ class keyDownFn {
             }, 280);
         }
         console.timeEnd('本地查找★★');
-    }
-    // ▼ 查字典 耗时 > 100ms
-    async checkDict(sTyped, aMatched, iMax){
-        console.time('查字典');
-        const theTB = wordsDB[sTyped[0]].where('word').startsWith(sTyped);
-        const res = await theTB.limit(iMax - aMatched.length).toArray();
-        res.forEach(({word})=>{
-            const hasIn = aMatched.find(one=>{
-                return one.toLocaleLowerCase() === word.toLocaleLowerCase();
-            });
-            hasIn || aMatched.push(word);
-        });
-        console.timeEnd('查字典');
-        this.setState({aMatched});
-    }
-    // ▼撤销-恢复
-    setHistory(iType) {
-        const { length } = this.aHistory;
-        let iCurStep = this.state.iCurStep + iType;
-        console.log('前往：', iCurStep);
-        if (iCurStep < 0 || iCurStep > length - 1) {
-            const actionName = { '-1': '上', '1': '下' }[iType];
-            return this.message.error(`没有${actionName}一步数据，已经到头了`);
-        }
-        const oHistory = this.aHistory[iCurStep];
-        const {aLineArr, iCurLineIdx} = oHistory;
-        this.setState({ 
-            iCurStep,
-            aLineArr,
-            iCurLineIdx,
-            sCurLineTxt: oHistory.sCurLineTxt || aLineArr[iCurLineIdx].text,
-        });
-        this.goLine(iCurLineIdx, false, true);
     }
 }
 

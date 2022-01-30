@@ -9,6 +9,21 @@
 	}
 }
 
+.history-ul{
+	display: flex;
+	margin: 0 0 1px;
+	flex-flow: row nowrap;
+	li{
+		width: 25px;
+		height: 3px;
+		background: skyblue;
+		margin-right: 3px;
+		&[class~=cur]{
+			background: blue;
+		}
+	}
+}
+
 .candidate-list{
 	min-height: 25px;
 	display: flex;
