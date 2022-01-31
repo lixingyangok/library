@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-31 20:05:59
+ * @LastEditTime: 2022-01-31 20:55:30
  * @Description: 
 -->
 <template>
@@ -18,10 +18,12 @@
             <button @click="toSearch">
                 搜索
             </button>
+            {{(aResult.count || []).length}}
             <ul class="result-list" >
-                <li v-for="(cur,idx) of aResult" :key="idx">
+                <li v-for="(cur,idx) of aResult.rows" :key="idx">
+                    ◆{{idx+1}}
                     <span v-for="(sWord, i02) of cur.text.split(/\s+/g)" :key="i02"
-                        :class="{key: sWord.toLowerCase().startsWith((sKey || word).toLowerCase())}"
+                        :class="splitSentence(sWord, sKey || word)"
                     >
                         {{sWord}}
                     </span>
@@ -50,20 +52,21 @@ const isShowSelf = computed({
     },
 });
 const sKey = ref('');
-const aResult = ref([]);
+const aResult = ref({});
 let iSearchingQ = 0;
 // ▼方法
+toSearch();
 function toSearch(){
     const sAim = sKey.v || props.word;
-    if (!sAim) return (aResult.v = []);
+    if (!sAim) return (aResult.v = {});
     (async idx => {
-        const aRes = await fnInvoke(
+        const oRes = await fnInvoke(
             'db', 'searchLineBybWord', sAim,
         ).catch(err => {
             console.log('查询出错\n', err);
         });
         if (idx != iSearchingQ) return;
-        aResult.v = (aRes || []);
+        aResult.v = (oRes || {});
     })(++iSearchingQ);
 }
 
@@ -78,6 +81,4 @@ watch(
 
 </script>
 
-<style lang="scss"
-    src="./style/dictionary.scss" 
-></style>
+<style lang="scss" src="./style/dictionary.scss" ></style>

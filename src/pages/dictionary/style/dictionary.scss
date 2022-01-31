@@ -7,14 +7,19 @@
     height: 80vh;
     overflow-y: auto;
     li{
-        line-height: 1.6;
+        line-height: 2.5;
     }
     span{
-        + span{
-            margin-left: 6px;
+        margin-left: 6px;
+        &[class~=l-01]{
+            color: red;
+            background: rgb(255, 255, 100);
         }
-        &[class~=key]{
-            background: rgb(255, 255, 195);
+        &[class~=l-02]{
+            background: rgb(255, 255, 100);
+        }
+        &[class~=l-03]{
+            background: rgb(255, 255, 180);
         }
     }
 }

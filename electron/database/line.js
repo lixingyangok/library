@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-31 20:08:11
+ * @LastEditTime: 2022-01-31 20:51:20
  * @Description: 
  */
 
@@ -86,13 +86,15 @@ const oFn = module.exports.oFn = {
     async searchLineBybWord(word) {
         const res = await oLine.findAndCountAll({
             where: {
-                text: {
-                    [Op.like]: `%${word}%`,
-                },
+                [Op.and]: [
+                    {text: {[Op.like]: `%${word}%`}},
+                    {text: {[Op.like]: `% %`}},
+                ],
             },
+            group: ['text'],
             order: [['mediaId']],
             offset: 0,
-            limit: 100,
+            limit: 50,
         });
         if (!res) return;
         res.rows = res.rows.map(cur=>cur.dataValues);
