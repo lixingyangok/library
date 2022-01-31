@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 17:19:37
+ * @LastEditTime: 2022-01-31 19:40:17
  * @Description: 
 -->
 <template>
@@ -18,14 +18,18 @@
                 :i-cur-line-idx="iCurLineIdx"
                 @pipe="listener"
             />
-            <article class="wave-below" >
-                <button @click="init" >
-                    查媒体
+            <article class="wave-below">
+                时长：{{oMediaBuffer.sDuration_}}&emsp;
+                <button @click="oMyWave.toSaveTemp">
+                    保存波形缓存
                 </button>
-                <button @click="saveMedia" >
+                <button @click="showMediaDialog">
+                    媒体信息
+                </button>
+                <button @click="saveMedia">
                     保存媒体
                 </button>
-                <button @click="toCheckDict" >
+                <button @click="toCheckDict">
                     查字典
                 </button>
                 <button @click="isShowNewWords = true">
@@ -84,6 +88,7 @@
             v-model:dialogVisible="isShowDictionary"
             :word="sSearching"
         ></dictionaryVue>
+        <!-- ▼单词表 -->
         <el-dialog title="单词表" v-model="isShowNewWords">
             <div class="one-box" 
                 v-for="(oneList,i01) of aWordsList" :key="i01"
@@ -104,6 +109,20 @@
                     </li>
                 </ul>
             </div>
+        </el-dialog>
+        <!-- ▼媒体信息 -->
+        <el-dialog title="媒体信息" width="700px"
+            v-model="isShowMediaInfo"
+        >
+            文件位置：{{oMediaInfo.dir}}<br/>
+            文件名称：{{oMediaInfo.name}}<br/>
+            <br/>
+            同级文件：
+            <ul>
+                <li v-for="(cur,idx) of 3" :key="cur+idx" >
+                    {{cur}}
+                </li>
+            </ul>
         </el-dialog>
     </div>
 </template>

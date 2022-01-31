@@ -25,16 +25,20 @@ export function mainPart(){
 		aWordsList: [[], []],
 		aCandidate: [],
 	};
+	const visiableControl = { // 控制窗口显隐
+		isShowDictionary: false,
+		isShowNewWords: false,
+		isShowMediaInfo: false,
+	};
 	const oData = reactive({
 		...oOperation,
 		...oInputMethod,
+		...visiableControl,
 		sMediaSrc: getTubePath(ls('sFilePath')),
 		sHash: '',
 		oMediaInfo: {}, // 库中媒体信息
-		oMediaBuffer: {}, // 媒体文件
+		oMediaBuffer: {}, // 媒体的波形信息
 		iSubtitle: 0, // 字幕状态：0=默认，-1=查不到字幕，1=有字幕
-		isShowDictionary: false,
-		isShowNewWords: false,
 		sSearching: '', // 查字典
 	});
 	const oCurLine = computed(()=>{
@@ -154,6 +158,10 @@ export function mainPart(){
 			return aResult;
 		}, [[],[]]);
 	}
+	// ▼显示媒体信息
+	function showMediaDialog(){
+		this.isShowMediaInfo = true;
+	}
 	// ============================================================================
 	init();
 	onMounted(()=>{
@@ -172,6 +180,7 @@ export function mainPart(){
 			delOneWord,
 			getNewWords,
 			getLinesFromDB,
+			showMediaDialog,
 		},
     });
 };

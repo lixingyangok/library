@@ -2,17 +2,12 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-29 18:55:23
+ * @LastEditTime: 2022-01-31 20:05:59
  * @Description: 
 -->
 <template>
-    <article>
-        <br/>
-        <br/>
-        <br/>
-        <!-- class="dictionary" -->
-        <component 
-            :is="beDialog ? 'el-dialog' : 'div'"
+    <article class="outer-dom">
+        <component :is="beDialog ? 'el-dialog' : 'div'"
             v-model="isShowSelf"
         >
             <template #title v-if="beDialog">
@@ -25,7 +20,11 @@
             </button>
             <ul class="result-list" >
                 <li v-for="(cur,idx) of aResult" :key="idx">
-                    {{cur.text}}
+                    <span v-for="(sWord, i02) of cur.text.split(/\s+/g)" :key="i02"
+                        :class="{key: sWord.toLowerCase().startsWith((sKey || word).toLowerCase())}"
+                    >
+                        {{sWord}}
+                    </span>
                 </li>
             </ul>
         </component>
@@ -34,6 +33,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { splitSentence } from './js/dictionary.js';
 
 const props = defineProps({
     dialogVisible: Boolean,
@@ -55,10 +55,7 @@ let iSearchingQ = 0;
 // ▼方法
 function toSearch(){
     const sAim = sKey.v || props.word;
-    if (!sAim) {
-        aResult.v = [];
-        return;
-    }
+    if (!sAim) return (aResult.v = []);
     (async idx => {
         const aRes = await fnInvoke(
             'db', 'searchLineBybWord', sAim,
@@ -66,7 +63,7 @@ function toSearch(){
             console.log('查询出错\n', err);
         });
         if (idx != iSearchingQ) return;
-        aResult.v = aRes || [];
+        aResult.v = (aRes || []);
     })(++iSearchingQ);
 }
 

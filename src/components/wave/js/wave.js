@@ -187,7 +187,7 @@ export default function(){
 		}, ~~(1000 / 70)); //每秒执行次数70
 		oData.playing = playing;
 	}
-    // ▼保存blob
+    // ▼保存波形缓存 blob
     async function toSaveTemp(){
         const {oMediaBuffer} = oData;
         const {mediaPath} = oInstance.props;
@@ -209,6 +209,9 @@ export default function(){
             // 将来补上：当前横纵缩放的程度，当前行号
         };
         toUpdateTempInfo(oNewTempInfo);
+        const sTips = `已成功保存于：${sSaveTo}`;
+        console.log(sTips);
+        this.$message.success(sTips);
 	}
     // ▼更新 localStorage
     function toUpdateTempInfo(oNewOne){

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-12 20:13:21
+ * @LastEditTime: 2022-01-31 19:25:26
  * @Description: 
 -->
 <template>
@@ -46,19 +46,9 @@
             </div>
         </section>
     </article>
-    <!-- ▼信息条 -->
-    <div>
-        <br/>
-        时长：{{oMediaBuffer.sDuration_}}&emsp;
-        <button @click="toPlay()">
-            实验
-        </button>
-        <button @click="toSaveTemp()">
-            保存
-        </button>
-    </div>
 </template>
-<!--  -->
+
+
 <script>
 import { toRefs, computed } from 'vue';
 import w01, {getKeyDownFnMap} from './js/wave.js';

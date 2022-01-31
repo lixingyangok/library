@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 20:34:22
+ * @LastEditTime: 2022-01-31 20:08:11
  * @Description: 
  */
 
@@ -84,18 +84,20 @@ const oFn = module.exports.oFn = {
     },
     // ▼按单词搜索字幕
     async searchLineBybWord(word) {
-        const res = await oLine.findAll({
+        const res = await oLine.findAndCountAll({
             where: {
                 text: {
                     [Op.like]: `%${word}%`,
                 },
             },
             order: [['mediaId']],
-            limit: 1_000,
+            offset: 0,
+            limit: 100,
         });
         if (!res) return;
-        // toLog(res[0]);
-        return res.map(cur=>cur.dataValues);
+        res.rows = res.rows.map(cur=>cur.dataValues);
+        return res;
     },
 };
+
 

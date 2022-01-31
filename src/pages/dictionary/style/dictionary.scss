@@ -1,3 +1,22 @@
-.result-list{
-    min-height: 50vh;
+.outer-dom{
+    padding: 40px 20px 20px;
 }
+
+.result-list{
+    margin: 20px 0 0;
+    height: 80vh;
+    overflow-y: auto;
+    li{
+        line-height: 1.6;
+    }
+    span{
+        + span{
+            margin-left: 6px;
+        }
+        &[class~=key]{
+            background: rgb(255, 255, 195);
+        }
+    }
+}
+
+
