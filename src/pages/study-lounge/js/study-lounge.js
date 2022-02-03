@@ -44,6 +44,9 @@ export function mainPart(){
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
 	});
+	const reFullWords = computed(()=>{
+		return new RegExp(`\\b${oData.aFullWords.join('|')}\\b`, 'gi');
+	});
 	const sSubtitleSrc = (()=>{ // 字幕文件位置（todo 用tube管道取
 		const arr = oData.sMediaSrc.split('.');
 		arr[arr.length-1] = 'srt';
@@ -151,6 +154,7 @@ export function mainPart(){
 		});
 		if (!aRes) return;
 		oData.aFullWords = aRes.map(cur => cur.word);
+		console.log(reFullWords.v.toString());
 		oData.aWordsList = aRes.reduce((aResult, cur)=>{
 			let iAimTo = 0;
 			if (cur.type == 2) iAimTo = 1;
@@ -162,9 +166,28 @@ export function mainPart(){
 	function showMediaDialog(){
 		this.isShowMediaInfo = true;
 	}
+	function splitOneLine(text){
+		const aResult = [];
+		let iLastEnd = 0;
+		if (reFullWords.v.toString().length>9) {
+			// console.log(text);
+		}
+		text.replace(reFullWords.v, function(sCurMach, iCurIdx){
+			iCurIdx && aResult.push(text.slice(iLastEnd, iCurIdx));
+			aResult.push({
+				sClassName: 'red',
+				word: sCurMach,
+			});
+			iLastEnd = iCurIdx + sCurMach.length;
+			// console.log(iCurIdx, sCurMach);
+		});
+		if (!iLastEnd) return [text];
+		return aResult;
+	}
 	// ============================================================================
 	init();
 	onMounted(()=>{
+		
 		// console.log('oDom', oDom.oMyWave);
 	});
     return reactive({
@@ -181,6 +204,7 @@ export function mainPart(){
 			getNewWords,
 			getLinesFromDB,
 			showMediaDialog,
+			splitOneLine,
 		},
     });
 };

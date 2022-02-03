@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-31 19:40:17
+ * @LastEditTime: 2022-02-03 21:04:07
  * @Description: 
 -->
 <template>
@@ -77,8 +77,17 @@
                     <span className="time">
                         <em>{{cur.start_}}</em><i>-</i><em>{{cur.end_}}</em>
                     </span>
-                    <p>
-                        {{cur.text}}
+                    <p class="text" :class="{changed: cur.changed}" >
+                        <template
+                            v-for="(word, i02) of splitOneLine(cur.text)" :key="i02"
+                        >
+                            <span v-if="word.sClassName" :class="word.sClassName">
+                                {{word.word}}
+                            </span>
+                            <template v-else>
+                                {{word}}
+                            </template>
+                        </template>
                     </p>
                 </li>
             </ul>
