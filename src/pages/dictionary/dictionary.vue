@@ -2,11 +2,11 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-31 20:55:30
+ * @LastEditTime: 2022-02-04 21:00:24
  * @Description: 
 -->
 <template>
-    <article class="outer-dom">
+    <article class="outer-dom" v-show="isShowSelf">
         <component :is="beDialog ? 'el-dialog' : 'div'"
             v-model="isShowSelf"
         >

@@ -1,28 +1,25 @@
 // ▼字幕列表
 
 .last-part{
-	overflow-y: auto;
 	flex: 1 999 auto;
-}
-
-.sentence-wrap{
-    overflow-y: auto;
-	list-style: none;
+	overflow-y: auto;
 	margin: 20px 0 0;
 	border: solid #aaa;
 	border-width: 1px 0;
+}
+
+.sentence-wrap{
+	list-style: none;
 	.one-line{
 		display: flex;
-		border: solid #d1d1d1;
-		border-width:  0 0 1px;
 		font-size: 16px;
 		font-weight: 500;
-		height: 35px;
+		height: var(--height);
 		cursor: pointer;
 		overflow: hidden;
-		// &:hover{
-		// 	height: auto;
-		// }
+		+li{
+			border-top: solid 1px #d1d1d1;
+		}
 		&[class~=cur]{
 			background: #ceffe7;
 		}

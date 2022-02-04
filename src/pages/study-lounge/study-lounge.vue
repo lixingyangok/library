@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-03 21:04:07
+ * @LastEditTime: 2022-02-04 21:05:28
  * @Description: 
 -->
 <template>
@@ -46,7 +46,7 @@
                 </ul>
                 <textarea ref="oTextArea"
                     v-model="aLineArr[iCurLineIdx].text"
-                    @keydown.enter.prevent="()=>previousAndNext(1)"
+                    @keydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
                 ></textarea>
                 <!-- @keydown.backspace="typed" -->
@@ -54,7 +54,7 @@
                     <li class="one-word"
                         v-for="(cur, idx) of sTyped ? aCandidate : aFullWords" :key="idx"
                     >
-                        <template v-if="sTyped" >
+                        <template v-if="sTyped">
                             <i class="idx">{{idx+1}}</i>
                             <em class="left-word">{{sTyped}}</em>
                         </template>
@@ -65,32 +65,34 @@
                     </li>
                 </ul>
             </div>
-            <!-- <article class="last-part" >
-                </article> -->
-            <ul class="last-part sentence-wrap" ref="oSententList" >
-                <li v-for="(cur,idx) of aLineArr" :key="idx"
-                    class="one-line" :class="iCurLineIdx == idx ? 'cur' : ''"
-                    :style="{'--width': `${String(aLineArr.length || 0).length}em`}"
-                    @click="goLine(idx)"
+            <article class="last-part" @scroll="lineScroll" >
+                <ul class="sentence-wrap" ref="oSententList" 
+                    :style="{
+                        '--height': '35px',
+                        '--width': `${String(aLineArr.length || 0).length}em`,
+                        'height': `calc(${aLineArr.length} * var(--height))`,
+                        'padding-top': `calc(${iShowStart} * var(--height))`,
+                    }"
                 >
-                    <i className="idx">{{idx + 1}}</i>
-                    <span className="time">
-                        <em>{{cur.start_}}</em><i>-</i><em>{{cur.end_}}</em>
-                    </span>
-                    <p class="text" :class="{changed: cur.changed}" >
-                        <template
-                            v-for="(word, i02) of splitOneLine(cur.text)" :key="i02"
-                        >
-                            <span v-if="word.sClassName" :class="word.sClassName">
-                                {{word.word}}
-                            </span>
-                            <template v-else>
-                                {{word}}
+                    <li v-for="(cur, idx) of aLineForShow" :key="idx"
+                        class="one-line" :class="{cur: iCurLineIdx == cur.ii}"
+                        @click="goLine(cur.ii)"
+                    >
+                        <i className="idx">{{cur.ii+1}}</i>
+                        <span className="time">
+                            <em>{{cur.start_}}</em><i>-</i><em>{{cur.end_}}</em>
+                        </span>
+                        <p class="text" :class="{changed: cur.changed}">
+                            <template v-for="word of splitOneLine(cur.text, cur.ii)">
+                                <span v-if="word.sClassName" :class="word.sClassName">
+                                    {{word.word}}
+                                </span>
+                                <template v-else>{{word}}</template>
                             </template>
-                        </template>
-                    </p>
-                </li>
-            </ul>
+                        </p>
+                    </li>
+                </ul>
+            </article>
         </section>
         <!-- ▼弹出窗口 -->
         <dictionaryVue :beDialog="true"
@@ -137,24 +139,34 @@
 </template>
 
 <script>
-import {toRefs} from 'vue';
+import {toRefs, computed} from 'vue';
 import {mainPart} from './js/study-lounge.js';
 import {getKeyDownFnMap, fnAllKeydownFn} from './js/key-down-fn.js';
 import MyWave from '../../components/wave/wave.vue';
 import {registerKeydownFn} from '../../common/js/common-fn.js'
 import dictionaryVue from '../dictionary/dictionary.vue';
+import myInputing from './inputing.vue';
 
 export default {
     name: 'study-lounge',
     components: {
         MyWave,
         dictionaryVue,
+        myInputing,
     },
     setup(){
         const oData = mainPart();
+        const aLineForShow = computed(() => {
+            const {iShowStart} = oData;
+            return oData.aLineArr.slice(iShowStart, iShowStart + 22).map((cur, idx)=>{
+                cur.ii = idx + iShowStart;
+                return cur;
+            });
+        });
         return {
             ...toRefs(oData),
             ...fnAllKeydownFn(),
+            aLineForShow,
         };
     },
     mounted(){

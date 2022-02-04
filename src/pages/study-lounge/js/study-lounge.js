@@ -40,12 +40,16 @@ export function mainPart(){
 		oMediaBuffer: {}, // 媒体的波形信息
 		iSubtitle: 0, // 字幕状态：0=默认，-1=查不到字幕，1=有字幕
 		sSearching: '', // 查字典
+		iShowStart: 0,
 	});
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
 	});
 	const reFullWords = computed(()=>{
-		return new RegExp(`\\b${oData.aFullWords.join('|')}\\b`, 'gi');
+		const arr = oData.aFullWords.concat().sort((aa,bb)=>{
+			return bb.length - aa.length;
+		});
+		return new RegExp(`\\b(${arr.join('|')})\\b`, 'gi');
 	});
 	const sSubtitleSrc = (()=>{ // 字幕文件位置（todo 用tube管道取
 		const arr = oData.sMediaSrc.split('.');
@@ -166,13 +170,11 @@ export function mainPart(){
 	function showMediaDialog(){
 		this.isShowMediaInfo = true;
 	}
-	function splitOneLine(text){
+	function splitOneLine(text, idx){
 		const aResult = [];
 		let iLastEnd = 0;
-		if (reFullWords.v.toString().length>9) {
-			// console.log(text);
-		}
-		text.replace(reFullWords.v, function(sCurMach, iCurIdx){
+		// if (reFullWords.v.toString().length > 9 && idx > 3 && idx < 8) console.log(idx, text);
+		text.replace(reFullWords.v, function(abc, sCurMach, iCurIdx){
 			iCurIdx && aResult.push(text.slice(iLastEnd, iCurIdx));
 			aResult.push({
 				sClassName: 'red',
@@ -182,7 +184,13 @@ export function mainPart(){
 			// console.log(iCurIdx, sCurMach);
 		});
 		if (!iLastEnd) return [text];
+		if (iLastEnd < text.length){
+			aResult.push(text.slice(iLastEnd));
+		}
 		return aResult;
+	}
+	function lineScroll(ev){
+		oData.iShowStart = Math.floor(ev.target.scrollTop / 35);
 	}
 	// ============================================================================
 	init();
@@ -205,6 +213,7 @@ export function mainPart(){
 			getLinesFromDB,
 			showMediaDialog,
 			splitOneLine,
+			lineScroll,
 		},
     });
 };
