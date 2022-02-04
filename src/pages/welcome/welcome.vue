@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 20:45:34
+ * @LastEditTime: 2022-02-04 00:26:40
  * @Description: 
 -->
 
@@ -31,6 +31,7 @@
         <h4>
             本周录入：xxxx句
         </h4>
+        <myInputing/>
     </section>
     <ul>
         <li v-for="(cur,idx) of aLog" :key="idx" >
@@ -41,9 +42,13 @@
 
 <script>
 import oMethods from './js/welcome.js';
+import myInputing from '../study-lounge/inputing.vue';
 
 export default {
     name: "welcome",
+    components:{
+        myInputing,
+    },
     data(){
         return {
             aRoot: [],
