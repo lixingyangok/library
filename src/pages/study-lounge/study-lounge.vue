@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-05 11:24:44
+ * @LastEditTime: 2022-02-05 17:30:31
  * @Description: 
 -->
 <template>
@@ -23,17 +23,17 @@
                 <button @click="oMyWave.toSaveTemp">
                     保存波形缓存
                 </button>
-                <button @click="showMediaDialog">
-                    媒体信息
-                </button>
                 <button @click="saveMedia">
                     保存媒体
+                </button>
+                <button @click="showMediaDialog">
+                    信息与列表
                 </button>
                 <button @click="toCheckDict">
                     查字典
                 </button>
                 <button @click="isShowNewWords = true">
-                    单词表
+                    单词表：{{aFullWords.length}}个
                 </button>
             </article>
             <!-- ▼输入 -->
@@ -43,7 +43,7 @@
                         :class="{cur: idx==iCurStep}"
                     ></li>
                 </ul>
-                <div class="textarea">
+                <div class="textarea" :key="iCurLineIdx">
                     <template v-for="word of splitSentence(aLineArr[iCurLineIdx].text)">
                         <span v-if="word.sClassName" :class="word.sClassName">
                             {{word.word}}
@@ -141,9 +141,11 @@
             <ul class="siblings-list" >
                 <li v-for="(cur, idx) of aSiblings" :key="idx"
                     :class="{'cur-file': cur.hash==sHash}"
+                    :style="{'--idx-width': `${String(aSiblings.length).length}em`}"
                     @click="visitSibling(cur)"
                 >
-                    {{idx+1}}、{{cur.name}}
+                    <i class="idx">{{idx+1}}</i>
+                    <em class="file-name" >{{cur.name}}</em>
                 </li>
             </ul>
         </el-dialog>

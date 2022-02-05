@@ -17,8 +17,8 @@
 	li{
 		width: calc(100% / var(--max));
 		height: 3px;
-		background: skyblue;
 		margin-right: 3px;
+		background: skyblue;
 		&[class~=cur]{
 			background: blue;
 		}
@@ -26,11 +26,12 @@
 }
 
 .textarea{
+	--box-height: 115px;
     box-sizing: border-box;
 	display: block;
     padding: 5px 15px;
     width: 100%;
-	height: 100px;
+	height: var(--box-height);
 	font-size: 20px;
 	resize: none;
     line-height: 1.6;
@@ -39,7 +40,7 @@
     background-color: var(--el-input-bg-color, var(--el-color-white));
     background-image: none;
     border: var(--el-input-border, var(--el-border-base));
-    border-radius: var(--el-input-border-radius, var(--el-border-radius-base));
+    border-radius: 0;
     transition: var(--el-transition-border);
 	word-break: break-word;
     white-space: pre-wrap;
@@ -48,7 +49,7 @@
 
 .textarea-real{
 	color: rgba($color: #fff, $alpha: 0.1);
-	margin-top: -100px;
+	margin-top: calc(-1 * var(--box-height));
 	caret-color: #000;
 	&:hover{
 		border-color: var(--el-input-hover-border, var(--el-border-color-hover));
@@ -65,7 +66,7 @@
 	overflow: hidden;
 	.one-word{
 		margin-right: 15px;
-		font-size: 18px;
+		font-size: 16px;
 		padding: 0;
 		color: #444;
 		display: flex;

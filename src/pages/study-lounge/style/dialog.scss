@@ -46,4 +46,15 @@
 			color: red;
 		}
 	}
+	.idx{
+		display: inline-block;
+		text-align: right;
+		width: var(--idx-width);
+		opacity: 0.8;
+	}
+	.file-name{
+		margin-left: 8px;
+	}
 }
+
+

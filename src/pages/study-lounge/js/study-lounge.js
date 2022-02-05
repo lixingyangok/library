@@ -68,11 +68,11 @@ export function mainPart(){
 	async function init(){
 		const hash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!hash) throw '没有hash';
-		const oRes = await fnInvoke('db', 'getMediaInfo', {hash});
-		if (!oRes) return;
+		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
+		console.log('库中媒体信息\n', aRes[0]?.$dc());
+		if (!aRes?.[0]) return;
 		oData.sHash = hash;
-		oData.oMediaInfo = oRes[0];
-		console.log('库中媒体信息\n', oRes[0].$dc());
+		oData.oMediaInfo = aRes[0];
 		getLinesFromDB();
 		getNewWords();
 	}
@@ -184,12 +184,11 @@ export function mainPart(){
 	// ▼显示一批媒体信息
 	async function showMediaDialog(){
 		this.isShowMediaInfo = true;
-		const oRes = await fnInvoke('db', 'getMediaInfo', {
+		const aRes = await fnInvoke('db', 'getMediaInfo', {
 			dir: oData.oMediaInfo.dir
 		});
-		if (!oRes) return;
-		oData.aSiblings = oRes;
-		console.log('oRes\n', oRes);
+		if (!aRes) return;
+		oData.aSiblings = aRes;
 	}
 	// ▼跳转到邻居
 	function visitSibling(oMedia){
