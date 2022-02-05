@@ -44,6 +44,7 @@ export function mainPart(){
 		sSearching: '', // 查字典
 		iShowStart: 0,
 		aSiblings: [], // 当前媒体的邻居文件
+		iHisMax: 30, // 最多历史记录数量
 	});
 	// ▼当前行
 	const oCurLine = computed(()=>{

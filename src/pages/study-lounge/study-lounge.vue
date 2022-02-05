@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-05 10:40:43
+ * @LastEditTime: 2022-02-05 11:24:44
  * @Description: 
 -->
 <template>
@@ -36,15 +36,23 @@
                     单词表
                 </button>
             </article>
+            <!-- ▼输入 -->
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
-                <ul class="history-ul" >
+                <ul class="history-ul" :style="{'--max': iHisMax}">
                     <li v-for="(cur, idx) of aHistory" :key="idx"
                         :class="{cur: idx==iCurStep}"
-                    >
-                        {{idx+1}}
-                    </li>
+                    ></li>
                 </ul>
+                <div class="textarea">
+                    <template v-for="word of splitSentence(aLineArr[iCurLineIdx].text)">
+                        <span v-if="word.sClassName" :class="word.sClassName">
+                            {{word.word}}
+                        </span>
+                        <template v-else>{{word}}</template>
+                    </template>
+                </div>
                 <textarea ref="oTextArea"
+                    class="textarea textarea-real"
                     v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
@@ -65,6 +73,7 @@
                     </li>
                 </ul>
             </div>
+            <!-- ▼字幕大列表 -->
             <article class="last-part" @scroll="lineScroll" >
                 <ul class="sentence-wrap" ref="oSententList" 
                     :style="{

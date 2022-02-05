@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 20:49:52
+ * @LastEditTime: 2022-02-05 11:22:16
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -403,8 +403,8 @@ export function fnAllKeydownFn(){
             sLineArr: JSON.stringify(This.aLineArr),
             iCurLineIdx: This.iCurLineIdx,
         });
-        This.iCurStep++;
-        if (This.aHistory.length < 30) return;
+        This.iCurStep = Math.min(This.iCurStep + 1, This.iHisMax - 1);
+        if (This.aHistory.length <= This.iHisMax) return;
         This.aHistory.shift();
     }
     // ▼最终返回

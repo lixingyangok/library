@@ -8,13 +8,6 @@
 
 .type-box{
 	margin: 10px 0 0;
-	textarea{
-		width: 100%;
-		height: 100px;
-		font-size: 20px;
-		padding: 8px 10px;
-		font-family: inherit;
-	}
 }
 
 .history-ul{
@@ -22,13 +15,47 @@
 	margin: 0 0 1px;
 	flex-flow: row nowrap;
 	li{
-		width: 35px;
+		width: calc(100% / var(--max));
 		height: 3px;
 		background: skyblue;
 		margin-right: 3px;
 		&[class~=cur]{
 			background: blue;
 		}
+	}
+}
+
+.textarea{
+    box-sizing: border-box;
+	display: block;
+    padding: 5px 15px;
+    width: 100%;
+	height: 100px;
+	font-size: 20px;
+	resize: none;
+    line-height: 1.6;
+	font-family: inherit;
+    color: #000;
+    background-color: var(--el-input-bg-color, var(--el-color-white));
+    background-image: none;
+    border: var(--el-input-border, var(--el-border-base));
+    border-radius: var(--el-input-border-radius, var(--el-border-radius-base));
+    transition: var(--el-transition-border);
+	word-break: break-word;
+    white-space: pre-wrap;
+	overflow: hidden;
+}
+
+.textarea-real{
+	color: rgba($color: #fff, $alpha: 0.1);
+	margin-top: -100px;
+	caret-color: #000;
+	&:hover{
+		border-color: var(--el-input-hover-border, var(--el-border-color-hover));
+	}
+	&:focus{
+		outline: none;
+		border-color: var(--el-input-focus-border, var(--el-color-primary));
 	}
 }
 
