@@ -2,71 +2,71 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-05 11:22:16
+ * @LastEditTime: 2022-02-05 19:31:28
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
-import {fixTime } from '../../../common/js/pure-fn.js';
-import {figureOut} from './figure-out-region.js';
-import {oAlphabet} from '../../../common/js/key-map.js';
+import { fixTime } from '../../../common/js/pure-fn.js';
+import { figureOut } from './figure-out-region.js';
+import { oAlphabet } from '../../../common/js/key-map.js';
 
-const oAlphabetObj = Object.values(oAlphabet).reduce((result, cur)=>{
+const oAlphabetObj = Object.values(oAlphabet).reduce((result, cur) => {
     result[cur] = true;
     return result;
 }, {});
 let iSearchingQ = 0;
 
-export function getKeyDownFnMap(This, sType){
-    const {oMyWave} = This;
+export function getKeyDownFnMap(This, sType) {
+    const { oMyWave } = This;
     const withNothing = [
-        {key: '`' , name: '播放后半句', fn: ()=>oMyWave.toPlay(true)},
-        {key: 'Tab', name: '播放当前句', fn: ()=>oMyWave.toPlay()},
-        {key: 'Prior', name: '上一句', fn: ()=>This.previousAndNext(-1)},
-        {key: 'Next', name: '下一句', fn: ()=>This.previousAndNext(1)},
-        {key: 'F1', name: '设定起点', fn: ()=>This.cutHere('start')},
-        {key: 'F2', name: '设定终点', fn: ()=>This.cutHere('end')},
-        {key: 'F3', name: '抛弃当前句', fn: ()=> This.giveUpThisOne()},
-        {key: 'F4', name: '查字典', fn: ()=>This.searchWord()},
-        {key: 'Escape', name: '取消播放', fn: ()=>oMyWave.playing=false}, // 停止播放
+        { key: '`', name: '播放后半句', fn: () => oMyWave.toPlay(true) },
+        { key: 'Tab', name: '播放当前句', fn: () => oMyWave.toPlay() },
+        { key: 'Prior', name: '上一句', fn: () => This.previousAndNext(-1) },
+        { key: 'Next', name: '下一句', fn: () => This.previousAndNext(1) },
+        { key: 'F1', name: '设定起点', fn: () => This.cutHere('start') },
+        { key: 'F2', name: '设定终点', fn: () => This.cutHere('end') },
+        { key: 'F3', name: '抛弃当前句', fn: () => This.giveUpThisOne() },
+        { key: 'F4', name: '查字典', fn: () => This.searchWord() },
+        { key: 'Escape', name: '取消播放', fn: () => oMyWave.playing = false }, // 停止播放
     ];
     const withCtrl = [
-        {key: 'ctrl + d', name: '删除一行',  fn: () => This.toDel()},
-        {key: 'ctrl + z', name: '撤销',  fn: ()=>This.setHistory(-1)},
-        {key: 'ctrl + s', name: '保存到云',  fn: ()=>This.saveLines()}, 
-        {key: 'ctrl + j', name: '合并上一句',  fn: ()=> This.putTogether(-1)}, 
-        {key: 'ctrl + k', name: '合并下一句',  fn: ()=> This.putTogether(1)}, 
-        {key: 'ctrl + Enter', name: '播放',  fn: ()=>oMyWave.toPlay()},
-        {key: 'ctrl + shift + Enter', name: '播放',  fn: ()=>oMyWave.toPlay(true)},
-        {key: 'ctrl + shift + z', name: '恢复',  fn: ()=>This.setHistory(1)},
-        {key: 'ctrl + shift + c', name: '分割',  fn: () => split()},
+        { key: 'ctrl + d', name: '删除一行', fn: () => This.toDel() },
+        { key: 'ctrl + z', name: '撤销', fn: () => This.setHistory(-1) },
+        { key: 'ctrl + s', name: '保存到云', fn: () => This.saveLines() },
+        { key: 'ctrl + j', name: '合并上一句', fn: () => This.putTogether(-1) },
+        { key: 'ctrl + k', name: '合并下一句', fn: () => This.putTogether(1) },
+        { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() },
+        { key: 'ctrl + shift + Enter', name: '播放', fn: () => oMyWave.toPlay(true) },
+        { key: 'ctrl + shift + z', name: '恢复', fn: () => This.setHistory(1) },
+        { key: 'ctrl + shift + c', name: '分割', fn: () => This.split() },
     ];
     const withAlt = [
         // 修改选区
-        {key: 'alt + ]', name: '扩选', fn: () => This.chooseMore()}, 
-        {key: 'alt + u', name: '起点左移', fn: ()=>This.fixRegion('start', -0.07)}, 
-        {key: 'alt + i', name: '起点右移', fn: ()=>This.fixRegion('start', 0.07)}, 
-        {key: 'alt + n', name: '终点左移', fn: ()=>This.fixRegion('end', -0.07)}, 
-        {key: 'alt + m', name: '终点右移', fn: ()=>This.fixRegion('end', 0.07)}, 
+        { key: 'alt + ]', name: '扩选', fn: () => This.chooseMore() },
+        { key: 'alt + u', name: '起点左移', fn: () => This.fixRegion('start', -0.07) },
+        { key: 'alt + i', name: '起点右移', fn: () => This.fixRegion('start', 0.07) },
+        { key: 'alt + n', name: '终点左移', fn: () => This.fixRegion('end', -0.07) },
+        { key: 'alt + m', name: '终点右移', fn: () => This.fixRegion('end', 0.07) },
         // 选词
-        {key: 'alt + a', name: '', fn: ()=>This.toInset(0)},
-        {key: 'alt + s', name: '', fn: ()=>This.toInset(1)},
-        {key: 'alt + d', name: '', fn: ()=>This.toInset(2)},
-        {key: 'alt + f', name: '', fn: ()=>This.toInset(3)},
+        { key: 'alt + a', name: '', fn: () => This.toInset(0) },
+        { key: 'alt + s', name: '', fn: () => This.toInset(1) },
+        { key: 'alt + d', name: '', fn: () => This.toInset(2) },
+        { key: 'alt + f', name: '', fn: () => This.toInset(3) },
         // 未分类
-        {key: 'alt + j', name: '', fn: ()=>This.previousAndNext(-1)},
-        {key: 'alt + k', name: '', fn: ()=>This.previousAndNext(1)},
-        {key: 'alt + l', name: '跳到最后一句', fn: ()=>This.goLastLine()},
+        { key: 'alt + j', name: '', fn: () => This.previousAndNext(-1) },
+        { key: 'alt + k', name: '', fn: () => This.previousAndNext(1) },
+        { key: 'alt + l', name: '跳到最后一句', fn: () => This.goLastLine() },
         // alt + shift
-        {key: 'alt + shift + j', name: '向【左】插入一句', fn: ()=>This.toInsert(-1) },
-        {key: 'alt + shift + k', name: '向【右】插入一句', fn: ()=>This.toInsert(1) },
-        {key: 'alt + shift + d', name: '保存单词到云', fn: () => This.saveWord()},
-        {key: 'alt + shift + c', name: '查字典', fn: ()=>This.searchWord()},
+        { key: 'alt + shift + j', name: '向【左】插入一句', fn: () => This.toInsert(-1) },
+        { key: 'alt + shift + k', name: '向【右】插入一句', fn: () => This.toInsert(1) },
+        { key: 'alt + shift + d', name: '保存单词到云', fn: () => This.saveWord() },
+        { key: 'alt + shift + c', name: '查字典', fn: () => This.searchWord() },
     ];
     // ▼将来用于前端显示给用户
     // if(0) return [withNothing, withCtrl, withAlt];
     const aFullFn = [...withNothing, ...withCtrl, ...withAlt];
-    if (sType==='obj') {
-        return aFullFn.reduce((oResult, cur)=>{
+    if (sType === 'obj') {
+        return aFullFn.reduce((oResult, cur) => {
             oResult[cur.key] = cur.fn;
             return oResult;
         }, {});
@@ -75,7 +75,7 @@ export function getKeyDownFnMap(This, sType){
 }
 
 // ▼按键后的方法列表
-export function fnAllKeydownFn(){
+export function fnAllKeydownFn() {
     const oInstance = getCurrentInstance();
     const This = oInstance.proxy;
     // ▼切换当前句子（上一句，下一句）
@@ -91,7 +91,7 @@ export function fnAllKeydownFn(){
             if ((oMediaBuffer.duration - aLineArr[iCurLineIdx].end) < 0.1) {
                 return null; //临近终点，不新增
             }
-            const {end} = aLineArr[aLineArr.length-1];
+            const { end } = aLineArr[aLineArr.length - 1];
             return figureOut(oMediaBuffer, end); // 要新增一行，返回下行数据
         })();
         if (oNewLine === null) {
@@ -108,31 +108,28 @@ export function fnAllKeydownFn(){
         if (toRecord) recordHistory();
     }
     // ▼跳行后定位
-	function setLinePosition(iAimLine){
-		const {oSententList} = This;
-		const {scrollTop: sTop, offsetHeight: oHeight} = oSententList;
-        const iLineHeight = 35; // 行高
-		const abloveCurLine = iAimLine * iLineHeight; // 当前行以上高度
-		oSententList.scrollTop = (()=>{
-			if (abloveCurLine < sTop + iLineHeight) {
+    function setLinePosition(iAimLine) {
+        const { oSententList, iLineHeight } = This;
+        const { scrollTop: sTop, offsetHeight: oHeight } = oSententList;
+        const abloveCurLine = iAimLine * iLineHeight; // 当前行以上高度
+        oSententList.scrollTop = (() => {
+            if (abloveCurLine < sTop + iLineHeight) {
                 return abloveCurLine - iLineHeight;
             }
-			// ▲上方超出可视区，▼下方超出可视区（以下代码没能深刻理解）
-			if (abloveCurLine > sTop + oHeight - iLineHeight * 2) {
-				return abloveCurLine - oHeight + iLineHeight * 2;
-			}
-			return sTop;
-		})();
-	}
+            // ▲上方超出可视区，▼下方超出可视区（以下代码没能深刻理解）
+            if (abloveCurLine > sTop + oHeight - iLineHeight * 2) {
+                return abloveCurLine - oHeight + iLineHeight * 2;
+            }
+            return sTop;
+        })();
+    }
     // ▼微调区域（1参可能是 start、end。2参是调整步幅
     function fixRegion(sKey, iDirection) {
-        console.log('fixRegion');
-        const {aLineArr, iCurLineIdx} = This;
+        const { aLineArr, iCurLineIdx } = This;
         const oOld = aLineArr[iCurLineIdx];
         const previous = aLineArr[iCurLineIdx - 1];
         const next = aLineArr[iCurLineIdx + 1];
-        let fNewVal = oOld[sKey] + iDirection;
-        if (fNewVal < 0) fNewVal = 0;
+        const fNewVal = Math.max(0, oOld[sKey] + iDirection);
         if (previous && fNewVal < previous.end) {
             fNewVal = previous.end;
         }
@@ -140,48 +137,49 @@ export function fnAllKeydownFn(){
             fNewVal = next.start;
         }
         setTime(sKey, fNewVal);
+        recordHistory();
     }
     // ▼设定时间。1参是类型，2参是秒数
     function setTime(sKey, fVal) {
-		const {oCurLine} = This;
-		const {start, end} = oCurLine;
-		if (sKey === 'start' && fVal > end) { //起点在终点右侧
-			oCurLine.start = end;
-			oCurLine.end = fVal;
-		} else if (sKey === 'end' && fVal < start) { // 终点在起点左侧
-			oCurLine.start = fVal;
-			oCurLine.end = start;
-		} else {
-			oCurLine[sKey] = fVal;
-		}
-		// fixTime(oCurLine);
+        const { oCurLine } = This;
+        const { start, end } = oCurLine;
+        if (sKey === 'start' && fVal > end) { //起点在终点右侧
+            oCurLine.start = end;
+            oCurLine.end = fVal;
+        } else if (sKey === 'end' && fVal < start) { // 终点在起点左侧
+            oCurLine.start = fVal;
+            oCurLine.end = start;
+        } else {
+            oCurLine[sKey] = fVal;
+        }
         This.aLineArr[This.iCurLineIdx] = fixTime(oCurLine);
-	}
+    }
     // ▼插入一句。 参数说明：-1=向左，1=向右
     function toInsert(iDirection) {
-        const isToLeft = iDirection === -1;
-        let {iCurLineIdx, aLineArr, oMediaBuffer:{duration}} = This;
+        let { iCurLineIdx, aLineArr, oMediaBuffer: { duration } } = This;
         const { start, end } = aLineArr[iCurLineIdx]; //当前行
         if (start === 0) return; //0开头，不可向前插入
+        const isToLeft = iDirection === -1;
         const oAim = aLineArr[iCurLineIdx + iDirection] || {};
         const newIdx = isToLeft ? iCurLineIdx : iCurLineIdx + 1;
         const oNewLine = fixTime({
             start: isToLeft ? (oAim.end || 0) : end,
-            end: (
-                isToLeft
-                ? start 
-                : Math.min(oAim.start || end + 10, duration + 0.5)
-            ),
+            end: (() => {
+                if (isToLeft) return start;
+                return Math.min(oAim.start || end + 10, duration + 0.5);
+            })(),
         });
         if (oNewLine.start === oNewLine.end) return;
         aLineArr.splice(newIdx, 0, oNewLine);
-        iCurLineIdx += isToLeft ? 0 : 1;
-        This.iCurLineIdx = iCurLineIdx;
+        if (!isToLeft) This.iCurLineIdx++;
+        recordHistory();
     }
     // ▼删除某行（当前行）
     function toDel() {
         let { iCurLineIdx, aLineArr } = This;
-        if (aLineArr.length <= 1) return;
+        if (aLineArr.length <= 1) {
+            return This.$message.warning(`至少保留一行`);
+        }
         const oDelAim = aLineArr[iCurLineIdx];
         if (oDelAim.id) {
             This.deletedSet.add(oDelAim.id);
@@ -195,32 +193,37 @@ export function fnAllKeydownFn(){
     }
     // ▼到最后一行
     function goLastLine() {
-        const { aLineArr, iCurLineIdx } = This;
-        let idx = aLineArr.findIndex(cur => cur.text.length <= 1);
+        const { aLineArr, iCurLineIdx, oTextArea } = This;
+        let idx = aLineArr.findIndex(cur => {
+            return cur.text.length <= 1;
+        });
         if (idx === -1 || idx === iCurLineIdx) idx = aLineArr.length - 1;
         goLine(idx);
-        document.querySelectorAll('textarea')[0].focus();
+        oTextArea.focus();
+        recordHistory();
     }
     // ▼重新定位起点，终点
     function cutHere(sKey) {
-        const {oAudio} = This.oMyWave;
+        const { oAudio } = This.oMyWave;
         if (!oAudio) return;
         setTime(sKey, oAudio.currentTime);
+        recordHistory();
     }
     // ▼扩选
     function chooseMore() {
-        const {oMediaBuffer, oCurLine, iCurLineIdx} = This;
+        const { oMediaBuffer, oCurLine } = This;
         const newEnd = figureOut(oMediaBuffer, oCurLine.end, 0.35).end;
         setTime('end', newEnd);
-        goLine(iCurLineIdx);
+        goLine();
+        recordHistory();
     }
     // ▼合并, -1上一句，1下一句
     function putTogether(iType) {
-        const {iCurLineIdx, aLineArr} = This;
+        const { iCurLineIdx, aLineArr } = This;
         const isMergeNext = iType === 1;
         const oTarget = ({
-            '-1': aLineArr[iCurLineIdx - 1], //合并上一条
-            '1': aLineArr[iCurLineIdx + 1], //合并下一条
+            '-1': aLineArr[iCurLineIdx - 1], // 要合并上一条
+            '1': aLineArr[iCurLineIdx + 1], // 要合并下一条
         }[iType]);
         if (!oTarget) return; //没有邻居不再执行
         const oCur = aLineArr[iCurLineIdx];
@@ -234,40 +237,38 @@ export function fnAllKeydownFn(){
         fixTime(oTarget);
         aLineArr.splice(iCurLineIdx, 1);
         if (!isMergeNext) This.iCurLineIdx--;
-        // this.setState({...obj, sCurLineTxt: aLineArr[iCurLineIdx].text});
+        recordHistory();
     }
     // ▼一刀两段 todo，要修改
     function split() {
         goLine();
-        const { aLineArr } = This;
+        const { aLineArr, iCurLineIdx, oCurLine } = This;
         const { selectionStart } = This.oTextArea;
         const { currentTime } = This.oMyWave.oAudio;
-        const { iCurLineIdx, oCurLine } = This;
-        const sCurLineTxt = oCurLine.v.text;
+        const { text } = oCurLine;
         const aNewItems = [
             fixTime({
                 ...oCurLine,
                 end: currentTime,
-                text: sCurLineTxt.slice(0, selectionStart).trim(),
+                text: text.slice(0, selectionStart).trim(),
             }),
             fixTime({
                 ...oCurLine,
                 start: currentTime + 0.01,
-                text: sCurLineTxt.slice(selectionStart).trim(),
+                text: text.slice(selectionStart).trim(),
             }),
         ];
         aLineArr.splice(iCurLineIdx, 1, ...aNewItems);
-        this.saveHistory({ aLineArr, iCurLineIdx });
-        this.setState({aLineArr, sCurLineTxt: aNewItems[0].text});
+        recordHistory();
     }
     // ▼搜索
-	function searchWord() {
-		const sKey = window.getSelection().toString().trim();
-		if (!sKey) return;
-		console.log('搜索：', sKey);
+    function searchWord() {
+        const sKey = window.getSelection().toString().trim();
+        if (!sKey) return;
+        console.log('搜索：', sKey);
         This.sSearching = sKey;
         This.isShowDictionary = true;
-	}
+    }
     // ▼保存生词
     async function saveWord() {
         const word = window.getSelection().toString().trim() || '';
@@ -277,8 +278,8 @@ export function fnAllKeydownFn(){
         const lengthOK = word.length >= 2 && word.length <= 30;
         if (!lengthOK || bExist) {
             const sTips = `已经保存不可重复添加，或单词长度不在合法范围（2-30字母）`;
-			return this.$message.error(sTips);
-		}
+            return this.$message.error(sTips);
+        }
         const res = await fnInvoke('db', 'saveOneNewWord', {
             word, mediaId: This.oMediaInfo.id,
         });
@@ -286,75 +287,75 @@ export function fnAllKeydownFn(){
         console.log('res\n', res);
         this.$message.success('保存成功');
         This.getNewWords();
-	}
+    }
     let inputTimer = null;
-    let myTimer = null;
+    let candidateTimer = null;
     // ▼处理用户输入
-    function inputHandler(ev){
-        // console.log('内容有变\n', ev);
+    function inputHandler(ev) {
         clearTimeout(inputTimer);
+        clearTimeout(candidateTimer);
         This.oCurLine.changed = true; // 有此标记才提交
         const Backspace = ev.inputType == "deleteContentBackward";
         if (ev.data == ' ') {
             recordHistory();
         } else {
-            inputTimer = setTimeout(recordHistory, 600);
+            inputTimer = setTimeout(recordHistory, 1_200);
         }
         if (!oAlphabetObj[ev.data] && !Backspace) return;
         const sText = ev.target.value; // 当前文字
-        const idx = ev.target.selectionStart;
+        const idx = ev.target.selectionStart; // 光标位置
         const sLeft = (sText.slice(0, idx) || '').split(' ').pop().trim();
         This.sTyped = sLeft;
-        console.log('左侧文本：', sLeft);
+        // console.log('左侧文本：', sLeft);
         if (!sLeft) return;
         This.aCandidate = [];
-        myTimer = setTimeout(()=>{
+        candidateTimer = setTimeout(() => {
             setCandidate(sLeft.toLowerCase(), ++iSearchingQ);
-        }, 0);
+        }, 200);
     }
     // ▼查询候选词
-    async function setCandidate(sWord, iCurQs){
+    async function setCandidate(sWord, iCurQs) {
         const aResult = [];
         for (const cur of This.aFullWords) {
             if (cur.toLowerCase().startsWith(sWord)) {
                 aResult.push(cur);
             }
-            if (aResult.length>3) break;
+            if (aResult.length >= 4) break;
         }
         This.aCandidate = aResult;
-        // console.time('查字典db'); // 耗时20-30ms
         const aWords = await fnInvoke('db', 'getCandidate', {
             sWord, limit: 9 - aResult.length,
         });
-        // console.timeEnd('查字典db'); // 耗时20-30ms
         if (!aWords || iCurQs != iSearchingQ) return;
         This.aCandidate.push(...aWords);
     }
     // ▼插入选中的单词
     async function toInset(idx) {
-        const {sTyped, aCandidate, oTextArea} = This;
+        const { sTyped, aCandidate, oTextArea } = This;
         const theWord = (aCandidate[idx] || '').slice(sTyped.length);
         if (!theWord) return;
-        const {text} = This.oCurLine;
+        const { text } = This.oCurLine;
         const cursorIdx = oTextArea.selectionStart; // 表示光标左有几个单词
         const left = text.slice(0, cursorIdx);
         const right = text.slice(cursorIdx);
         const newLeft = (left + theWord);
         This.oCurLine.text = (newLeft + right).trim();
+        recordHistory();
         await This.$nextTick();
         oTextArea.selectionStart = newLeft.length;
         oTextArea.selectionEnd = newLeft.length;
     }
     // ▼抛弃当前行，或处理第一行
-    function giveUpThisOne(start){
+    function giveUpThisOne(start) {
         start = start || This.oCurLine.end;
-        const {oMediaBuffer} = This;
+        const { oMediaBuffer } = This;
         const oNextLine = figureOut(oMediaBuffer, start); //返回下一行的数据
         This.aLineArr[This.iCurLineIdx] = oNextLine;
-        // ▼尚需补充后续的定位功能
+        recordHistory();
+        This.oMyWave.goOneLine(oNextLine);
     }
     // ▼保存到数据库
-    async function saveLines(){
+    async function saveLines() {
         const toSaveArr = [];
         This.aLineArr.forEach(cur => {
             if (cur.id) {
@@ -364,14 +365,14 @@ export function fnAllKeydownFn(){
             toSaveArr.push({ ...cur, mediaId: This.oMediaInfo.id });
         });
         const toDelArr = [...This.deletedSet];
-        if (toSaveArr.length==0 && toDelArr.length==0){
+        if (toSaveArr.length == 0 && toDelArr.length == 0) {
             return This.$message.warning(`没有修改，无法保存`);
         }
         const [res0, res1] = await fnInvoke('db', 'updateLine', {
             toSaveArr, toDelArr,
         });
         This.getLinesFromDB();
-        res0.length && This.aLineArr.forEach(cur=>{
+        res0.length && This.aLineArr.forEach(cur => {
             cur.changed = false;
         });
         console.log('保存字幕\n', toSaveArr, toDelArr);
@@ -384,20 +385,24 @@ export function fnAllKeydownFn(){
     function setHistory(iType) {
         const { length } = This.aHistory;
         const iCurStep = This.iCurStep + iType;
-        console.log('前往：', iCurStep);
+        console.log(`${iType == 1 ? 'Go' : 'Back'}To ->`, iCurStep);
         if (iCurStep < 0 || iCurStep > length - 1) {
-            const actionName = { '-1': '上', '1': '下' }[iType];
-            return This.$message.error(`没有【${actionName}一步】数据`);
+            const actionName = ({
+                '-1': '没有上一步的数据，无法撤销',
+                '1': '已没有下一步的数据',
+            }[iType]);
+            return This.$message.error(actionName);
         }
         const oHistory = This.aHistory[iCurStep];
         const aLineArr = JSON.parse(oHistory.sLineArr);
+        // const notSameLine = This.iCurStep != iCurStep;
         This.iCurStep = iCurStep;
         This.aLineArr = aLineArr;
         This.iCurLineIdx = oHistory.iCurLineIdx; // 置于最后一行
-        goLine(oHistory.iCurLineIdx, false);
+        This.oMyWave.goOneLine(This.oCurLine);
     }
     // ▼保存一条历史记录
-    function recordHistory(){
+    function recordHistory() {
         console.log('保存历史');
         This.aHistory.splice(This.iCurStep + 1, Infinity, {
             sLineArr: JSON.stringify(This.aLineArr),
@@ -469,23 +474,23 @@ class keyDownFn {
         sTyped = sTyped.toLocaleLowerCase().trim();
         const iMax = 8;
         const aMatched = (() => {
-            const {aWords, aNames} = this.state;
+            const { aWords, aNames } = this.state;
             const allWords = aWords.concat(aNames);
             if (!sTyped) return allWords;
             const aFiltered = [];
             // ▼遍历耗时 ≈ 0.0x 毫秒
-            for (let idx = allWords.length; idx--;){
-                if (allWords[idx].toLocaleLowerCase().startsWith(sTyped)){
+            for (let idx = allWords.length; idx--;) {
+                if (allWords[idx].toLocaleLowerCase().startsWith(sTyped)) {
                     aFiltered.push(allWords[idx]);
-                    if (aFiltered.length===iMax) break; // 最多x个，再多也没法按数字键去选取
+                    if (aFiltered.length === iMax) break; // 最多x个，再多也没法按数字键去选取
                 }
             }
             return aFiltered;
         })();
-        this.setState({aMatched});
+        this.setState({ aMatched });
         const isNeedReplenish = sTyped && aMatched.length < iMax;
-        if (isNeedReplenish){
-            this.typeingTimer = setTimeout(()=>{
+        if (isNeedReplenish) {
+            this.typeingTimer = setTimeout(() => {
                 this.checkDict(sTyped, aMatched, iMax);
             }, 280);
         }

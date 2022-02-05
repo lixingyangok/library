@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-05 17:30:31
+ * @LastEditTime: 2022-02-05 18:00:54
  * @Description: 
 -->
 <template>
@@ -77,7 +77,7 @@
             <article class="last-part" @scroll="lineScroll" >
                 <ul class="sentence-wrap" ref="oSententList" 
                     :style="{
-                        '--height': '35px',
+                        '--height': `${iLineHeight}px`,
                         '--width': `${String(aLineArr.length || 0).length}em`,
                         'height': `calc(${aLineArr.length} * var(--height))`,
                         'padding-top': `calc(${iShowStart} * var(--height))`,
@@ -85,7 +85,7 @@
                 >
                     <li v-for="(cur, idx) of aLineForShow" :key="idx"
                         class="one-line" :class="{cur: iCurLineIdx == cur.ii}"
-                        @click="goLine(cur.ii)"
+                        @click="goLine(cur.ii, null, true)"
                     >
                         <i className="idx">{{cur.ii+1}}</i>
                         <time className="time">

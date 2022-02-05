@@ -45,6 +45,7 @@ export function mainPart(){
 		iShowStart: 0,
 		aSiblings: [], // 当前媒体的邻居文件
 		iHisMax: 30, // 最多历史记录数量
+		iLineHeight: 35, // 行高xxPx
 	});
 	// ▼当前行
 	const oCurLine = computed(()=>{
@@ -52,6 +53,7 @@ export function mainPart(){
 	});
 	// ▼ 抓捕字幕的正则表达式
 	const reFullWords = computed(()=>{
+		if (!oData.aFullWords.length) return;
 		const arr = oData.aFullWords.concat().sort((aa,bb)=>{
 			return bb.length - aa.length;
 		});
@@ -168,7 +170,6 @@ export function mainPart(){
 		});
 		if (!aRes) return;
 		oData.aFullWords = aRes.map(cur => cur.word);
-		console.log(reFullWords.v.toString());
 		oData.oProperNoun = {}; // 清空
 		oData.oKeyWord = {}; // 清空
 		oData.aWordsList = aRes.reduce((aResult, cur)=>{
@@ -199,6 +200,7 @@ export function mainPart(){
 	}
 	// ▼切割句子
 	function splitSentence(text, idx){
+		if (!reFullWords.v) return [text];
 		const aResult = [];
 		let iLastEnd = 0;
 		text.replace(reFullWords.v, (abc, sCurMach, iCurIdx) => {
@@ -217,7 +219,9 @@ export function mainPart(){
 	}
 	// ▼字幕滚动
 	function lineScroll(ev){
-		oData.iShowStart = Math.floor(ev.target.scrollTop / 35);
+		oData.iShowStart = Math.floor(
+			ev.target.scrollTop / oData.iLineHeight
+		);
 	}
 	// ============================================================================
 	init();
