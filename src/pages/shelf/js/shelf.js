@@ -62,9 +62,9 @@ const fnAboutDB = {
     // ▼查询【某1个媒体】在DB中的信息
     async getOneMediaInfoFromDB(oMedia){
         const hash = await fnInvoke('getHash', oMedia.sPath);
-        const res = await fnInvoke('db', 'getMediaInfo', hash);
+        const res = await fnInvoke('db', 'getMediaInfo', {hash});
         oMedia.hash = hash;
-        oMedia.infoAtDb = res;
+        oMedia.infoAtDb = res[0];
     },
     // ▼将某个文件夹内的媒体逐个保存媒体到DB
     async saveOneByOne(){

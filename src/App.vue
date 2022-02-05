@@ -28,6 +28,13 @@ export default {
             console.log('▼ 主进程来信：\n', arg);
         });
     },
+    methods:{
+        async f5(){
+            this.show = false;
+            await this.$nextTick();
+            this.show = true;
+        },
+    },
 };
 </script>
 

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 20:32:27
+ * @LastEditTime: 2022-02-05 10:47:12
  * @Description: 
  */
 
@@ -40,11 +40,13 @@ module.exports.oFn = {
         return res?.dataValues;
     },
     // ▼查询库中媒体，一个或多个
-    async getMediaInfo(hash) {
-        const res = await oMedia.findOne({
-            where: {hash},
+    async getMediaInfo(obj) {
+        // obj: {hash, dir}
+        const aRes = await oMedia.findAll({
+            where: obj,
+            limit: (obj.hash && !obj.dir) ? 1 : 999,
         });
-        return res?.dataValues;
+        return aRes.map(cur => cur.dataValues);
     },
     // ▼查询所有【媒体文件夹】
     async getMediaHomes() {
@@ -61,6 +63,7 @@ module.exports.oFn = {
         return oPromise;
     },
 };
+
 
 // ▼插入数据01
 // const stmt = db.prepare(`

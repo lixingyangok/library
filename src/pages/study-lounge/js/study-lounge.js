@@ -21,9 +21,11 @@ export function mainPart(){
 	};
 	const oInputMethod = { // 输入法
 		sTyped: '',
-		aFullWords: [],
-		aWordsList: [[], []],
-		aCandidate: [],
+		aCandidate: [], // 计算所得的候选词
+		aFullWords: [], // 所有词（候选词的缺省）
+		aWordsList: [[], []], // 关键词，专有名词
+		oKeyWord: {}, // 关键词
+		oProperNoun: {}, // 专有名词
 	};
 	const visiableControl = { // 控制窗口显隐
 		isShowDictionary: false,
@@ -41,17 +43,21 @@ export function mainPart(){
 		iSubtitle: 0, // 字幕状态：0=默认，-1=查不到字幕，1=有字幕
 		sSearching: '', // 查字典
 		iShowStart: 0,
+		aSiblings: [], // 当前媒体的邻居文件
 	});
+	// ▼当前行
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
 	});
+	// ▼ 抓捕字幕的正则表达式
 	const reFullWords = computed(()=>{
 		const arr = oData.aFullWords.concat().sort((aa,bb)=>{
 			return bb.length - aa.length;
 		});
 		return new RegExp(`\\b(${arr.join('|')})\\b`, 'gi');
 	});
-	const sSubtitleSrc = (()=>{ // 字幕文件位置（todo 用tube管道取
+	// ▼ 字幕文件位置（todo 用tube管道取
+	const sSubtitleSrc = (()=>{
 		const arr = oData.sMediaSrc.split('.');
 		arr[arr.length-1] = 'srt';
 		return arr.join('.');
@@ -59,13 +65,13 @@ export function mainPart(){
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
 	async function init(){
-		const sHash = await fnInvoke("getHash", ls('sFilePath'));
-		if (!sHash) throw '没有hash';
-		const oRes = await fnInvoke('db', 'getMediaInfo', sHash);
+		const hash = await fnInvoke("getHash", ls('sFilePath'));
+		if (!hash) throw '没有hash';
+		const oRes = await fnInvoke('db', 'getMediaInfo', {hash});
 		if (!oRes) return;
-		oData.sHash = sHash;
-		oData.oMediaInfo = oRes;
-		console.log('库中媒体信息\n', oRes);
+		oData.sHash = hash;
+		oData.oMediaInfo = oRes[0];
+		console.log('库中媒体信息\n', oRes[0].$dc());
 		getLinesFromDB();
 		getNewWords();
 	}
@@ -120,17 +126,19 @@ export function mainPart(){
 		oData.aLineArr = [oFirst];
 		oData.aHistory[0].sLineArr = JSON.stringify([oFirst]);
 	}
-	// ▼接收波形数据
-	function listener(oMediaBuffer){
+	// ▼接收子组件波形数据
+	function bufferReceiver(oMediaBuffer){
 		// console.log('收到波形');
 		oData.oMediaBuffer = oMediaBuffer;
 		if (oData.iSubtitle != -1) return; // 有字幕则返回
 		// ▼需要考虑，因为可能尚没查到字幕，不是没有
 		setFirstLine(); 
 	}
+	// ▼打开字典窗口
 	function toCheckDict(){
 		oData.isShowDictionary = true;
 	}
+	// ▼切换单词类型
 	async function changeWordType(oWord){
 		console.log('单词', oWord.$dc());
 		const res = await fnInvoke('db', 'switchWordType', {
@@ -141,6 +149,7 @@ export function mainPart(){
 		console.log('修改反馈', res);
 		getNewWords();
 	}
+	// ▼删除1个单词
 	async function delOneWord(oWord){
 		const res = await fnInvoke('db', 'delOneNewWord', {
 			...oWord,
@@ -159,29 +168,46 @@ export function mainPart(){
 		if (!aRes) return;
 		oData.aFullWords = aRes.map(cur => cur.word);
 		console.log(reFullWords.v.toString());
+		oData.oProperNoun = {}; // 清空
+		oData.oKeyWord = {}; // 清空
 		oData.aWordsList = aRes.reduce((aResult, cur)=>{
 			let iAimTo = 0;
 			if (cur.type == 2) iAimTo = 1;
 			aResult[iAimTo].push(cur);
+			[oData.oKeyWord, oData.oProperNoun][iAimTo][
+				cur.word.toLowerCase()
+			] = true;
 			return aResult;
 		}, [[],[]]);
 	}
-	// ▼显示媒体信息
-	function showMediaDialog(){
+	// ▼显示一批媒体信息
+	async function showMediaDialog(){
 		this.isShowMediaInfo = true;
+		const oRes = await fnInvoke('db', 'getMediaInfo', {
+			dir: oData.oMediaInfo.dir
+		});
+		if (!oRes) return;
+		oData.aSiblings = oRes;
+		console.log('oRes\n', oRes);
 	}
-	function splitOneLine(text, idx){
+	// ▼跳转到邻居
+	function visitSibling(oMedia){
+		console.log('oMedia', oMedia.$dc());
+		const sFilePath = `${oMedia.dir}/${oMedia.name}`;
+		ls('sFilePath', sFilePath);
+		vm.f5();
+	}
+	// ▼切割句子
+	function splitSentence(text, idx){
 		const aResult = [];
 		let iLastEnd = 0;
-		// if (reFullWords.v.toString().length > 9 && idx > 3 && idx < 8) console.log(idx, text);
-		text.replace(reFullWords.v, function(abc, sCurMach, iCurIdx){
+		text.replace(reFullWords.v, (abc, sCurMach, iCurIdx) => {
 			iCurIdx && aResult.push(text.slice(iLastEnd, iCurIdx));
-			aResult.push({
-				sClassName: 'red',
-				word: sCurMach,
-			});
+			const sClassName = (
+				oData.oKeyWord[sCurMach.toLowerCase()] ? 'red' : 'blue'
+			);
+			aResult.push({ sClassName, word: sCurMach });
 			iLastEnd = iCurIdx + sCurMach.length;
-			// console.log(iCurIdx, sCurMach);
 		});
 		if (!iLastEnd) return [text];
 		if (iLastEnd < text.length){
@@ -189,32 +215,34 @@ export function mainPart(){
 		}
 		return aResult;
 	}
+	// ▼字幕滚动
 	function lineScroll(ev){
 		oData.iShowStart = Math.floor(ev.target.scrollTop / 35);
 	}
 	// ============================================================================
 	init();
 	onMounted(()=>{
-		
 		// console.log('oDom', oDom.oMyWave);
 	});
+	const oFn = {
+		init,
+		bufferReceiver,
+		saveMedia,
+		toCheckDict,
+		changeWordType,
+		delOneWord,
+		getNewWords,
+		getLinesFromDB,
+		showMediaDialog,
+		splitSentence,
+		lineScroll,
+		visitSibling,
+	};
     return reactive({
         ...toRefs(oDom),
         ...toRefs(oData),
+		...oFn,
 		oCurLine,
-		...{
-			init,
-			listener,
-			saveMedia,
-			toCheckDict,
-			changeWordType,
-			delOneWord,
-			getNewWords,
-			getLinesFromDB,
-			showMediaDialog,
-			splitOneLine,
-			lineScroll,
-		},
     });
 };
 

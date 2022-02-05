@@ -36,3 +36,14 @@
 }
 
 
+// ▼同级文件
+.siblings-list{
+	li{
+		line-height: 1.8;
+		cursor: pointer;
+		&:hover,
+		&[class~=cur-file]{
+			color: red;
+		}
+	}
+}

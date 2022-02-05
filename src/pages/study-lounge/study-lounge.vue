@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-04 21:05:28
+ * @LastEditTime: 2022-02-05 10:40:43
  * @Description: 
 -->
 <template>
@@ -16,7 +16,7 @@
                 :media-path="sMediaSrc"
                 :a-line-arr="aLineArr"
                 :i-cur-line-idx="iCurLineIdx"
-                @pipe="listener"
+                @pipe="bufferReceiver"
             />
             <article class="wave-below">
                 时长：{{oMediaBuffer.sDuration_}}&emsp;
@@ -79,11 +79,11 @@
                         @click="goLine(cur.ii)"
                     >
                         <i className="idx">{{cur.ii+1}}</i>
-                        <span className="time">
-                            <em>{{cur.start_}}</em><i>-</i><em>{{cur.end_}}</em>
-                        </span>
+                        <time className="time">
+                            {{cur.start_}} - {{cur.end_}}
+                        </time>
                         <p class="text" :class="{changed: cur.changed}">
-                            <template v-for="word of splitOneLine(cur.text, cur.ii)">
+                            <template v-for="word of splitSentence(cur.text, cur.ii)">
                                 <span v-if="word.sClassName" :class="word.sClassName">
                                     {{word.word}}
                                 </span>
@@ -122,16 +122,19 @@
             </div>
         </el-dialog>
         <!-- ▼媒体信息 -->
-        <el-dialog title="媒体信息" width="700px"
+        <el-dialog title="媒体信息" width="600px"
             v-model="isShowMediaInfo"
         >
             文件位置：{{oMediaInfo.dir}}<br/>
             文件名称：{{oMediaInfo.name}}<br/>
             <br/>
             同级文件：
-            <ul>
-                <li v-for="(cur,idx) of 3" :key="cur+idx" >
-                    {{cur}}
+            <ul class="siblings-list" >
+                <li v-for="(cur, idx) of aSiblings" :key="idx"
+                    :class="{'cur-file': cur.hash==sHash}"
+                    @click="visitSibling(cur)"
+                >
+                    {{idx+1}}、{{cur.name}}
                 </li>
             </ul>
         </el-dialog>
