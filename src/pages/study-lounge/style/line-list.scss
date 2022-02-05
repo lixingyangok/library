@@ -66,8 +66,6 @@ p.text{
 	margin: 0;
 	padding: 0.4em 0.8em;
 	box-sizing: content-box;
-	/* word-break: break-all; */
-	/* white-space: break-spaces; */
 	word-break: break-word;
 	position: relative;
 	&[class~=changed]{
