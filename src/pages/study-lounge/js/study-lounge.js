@@ -1,5 +1,5 @@
 import {toRefs, reactive, computed, onMounted} from 'vue';
-import {SubtitlesStr2Arr, fixTime} from '../../../common/js/pure-fn.js';
+import {SubtitlesStr2Arr, fixTime, copyString} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
 
@@ -47,7 +47,7 @@ export function mainPart(){
 		aSiblings: [], // 当前媒体的邻居文件
 		iHisMax: 30, // 最多历史记录数量
 		iLineHeight: 35, // 行高xxPx
-		isShowPDF: !false,
+		isShowPDF: !!false,
 	});
 	// ▼当前行
 	const oCurLine = computed(()=>{
@@ -70,6 +70,7 @@ export function mainPart(){
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
 	async function init(){
+		oData.iCurLineIdx = 0;
 		const hash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!hash) throw '没有hash';
 		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
@@ -198,7 +199,8 @@ export function mainPart(){
 		console.log('oMedia', oMedia.$dc());
 		const sFilePath = `${oMedia.dir}/${oMedia.name}`;
 		ls('sFilePath', sFilePath);
-		vm.f5();
+		oData.sMediaSrc = getTubePath(ls('sFilePath'));
+		init();
 	}
 	// ▼切割句子
 	function splitSentence(text, idx){
@@ -225,8 +227,18 @@ export function mainPart(){
 			ev.target.scrollTop / oData.iLineHeight
 		);
 	}
+	// ▼显示左侧
+	function showLeftColumn(){
+
+		oData.isShowPDF = !oData.isShowPDF;
+	}
+	// ▼打开PDF
 	function openPDF(){
-		console.log('media', oData.oMediaInfo.$dc());
+		console.log('oMediaInfo\n', oData.oMediaInfo.$dc());
+		oData.isShowPDF = true;
+		const dir = oData.oMediaInfo.dir.replaceAll('/', '\\');
+		const bCopy = copyString(dir);
+		if (bCopy) this.$message.success('已复制路径');
 		const btn = oDom?.oIframe?.contentDocument?.querySelector('#openFile');
 		if (!btn) return;
 		btn.click();
@@ -250,6 +262,7 @@ export function mainPart(){
 		lineScroll,
 		visitSibling,
 		openPDF,
+		showLeftColumn,
 	};
     return reactive({
         ...toRefs(oDom),

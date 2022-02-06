@@ -163,9 +163,9 @@ export function copyString(sString){
 	oInput.select();  // 选中创建的input
 	// ▼执行复制方法，该方法返回布尔值，表示复制的成功性
 	const isCopyOk = document.execCommand('copy');
-	if (isCopyOk) console.log('已复制到粘贴板');
-	else console.log('复制失败');
+	console.log(`复制：${isCopyOk ? '成功' : '失败'}`);
 	body.removeChild(oInput); // 操作中完成后 从Dom中删除创建的input
+	return !!isCopyOk;
 }
 
 // ▼得到字母表 a,b,c.....

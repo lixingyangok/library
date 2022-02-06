@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-05 19:31:28
+ * @LastEditTime: 2022-02-06 19:06:52
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -30,6 +30,7 @@ export function getKeyDownFnMap(This, sType) {
         { key: 'Escape', name: '取消播放', fn: () => oMyWave.playing = false }, // 停止播放
     ];
     const withCtrl = [
+        { key: 'ctrl + b', name: '显示左栏', fn: () => This.showLeftColumn() },
         { key: 'ctrl + d', name: '删除一行', fn: () => This.toDel() },
         { key: 'ctrl + z', name: '撤销', fn: () => This.setHistory(-1) },
         { key: 'ctrl + s', name: '保存到云', fn: () => This.saveLines() },
@@ -85,7 +86,6 @@ export function fnAllKeydownFn() {
         if (iCurLineNew < 0) {
             return this.$message.warning('没有上一行');
         }
-        This.iCurLineIdx = iCurLineNew;
         const oNewLine = (() => {
             if (aLineArr[iCurLineNew]) return false; //有数据，不新增
             if ((oMediaBuffer.duration - aLineArr[iCurLineIdx].end) < 0.1) {
@@ -101,10 +101,10 @@ export function fnAllKeydownFn() {
     }
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine, toRecord) {
+        if (oNewLine) This.aLineArr.push(oNewLine);
         if (iAimLine >= 0) This.iCurLineIdx = iAimLine;
         else iAimLine = This.iCurLineIdx;
         setLinePosition(iAimLine);
-        if (oNewLine) This.aLineArr.push(oNewLine);
         if (toRecord) recordHistory();
     }
     // ▼跳行后定位
@@ -403,7 +403,7 @@ export function fnAllKeydownFn() {
     }
     // ▼保存一条历史记录
     function recordHistory() {
-        console.log('保存历史');
+        // console.log('保存历史');
         This.aHistory.splice(This.iCurStep + 1, Infinity, {
             sLineArr: JSON.stringify(This.aLineArr),
             iCurLineIdx: This.iCurLineIdx,

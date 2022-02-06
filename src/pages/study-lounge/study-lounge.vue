@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-06 11:51:47
+ * @LastEditTime: 2022-02-06 19:05:49
  * @Description: 
 -->
 <template>
@@ -38,7 +38,7 @@
                 <button @click="isShowNewWords = true">
                     单词表：{{aFullWords.length}}个
                 </button>
-                <button @click="isShowPDF = !isShowPDF">
+                <button @click="showLeftColumn">
                     {{isShowPDF ? '关闭': '显示'}}左侧
                 </button>
                 <button @click="openPDF">
@@ -88,7 +88,7 @@
                     :style="{
                         '--height': `${iLineHeight}px`,
                         '--width': `${String(aLineArr.length || 0).length}em`,
-                        'height': `calc(${aLineArr.length} * var(--height))`,
+                        'height': `calc(${aLineArr.length + 10} * var(--height))`,
                         'padding-top': `calc(${iShowStart} * var(--height))`,
                     }"
                 >
@@ -100,7 +100,7 @@
                         <time className="time">
                             {{cur.start_}} - {{cur.end_}}
                         </time>
-                        <p class="text" :class="{changed: cur.changed}">
+                        <p class="text" :class="{changed: !cur.id || cur.changed}">
                             <template v-for="word of splitSentence(cur.text, cur.ii)">
                                 <span v-if="word.sClassName" :class="word.sClassName">
                                     {{word.word}}

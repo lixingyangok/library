@@ -144,10 +144,13 @@ export default function(){
     // ▼设宽并绘制
     function setCanvasWidthAndDraw(){
         const {length} = Object.keys(oData.oMediaBuffer);
-        const iWidth = oDom.oViewport?.offsetWidth;
-        if (!length || !iWidth) return;
-		oDom.oCanvasDom.width = iWidth;
-		const {aPeaks, fPerSecPx} = getPeaks(oData.oMediaBuffer, oData.iPerSecPx, 0, iWidth);
+        const {oViewport, oCanvasDom} = oDom;
+        if (!length || !oViewport) return;
+        const {scrollLeft, offsetWidth} = oViewport;
+		oCanvasDom.width = offsetWidth;
+		const {aPeaks, fPerSecPx} = getPeaks(
+            oData.oMediaBuffer, oData.iPerSecPx, scrollLeft, offsetWidth,
+        );
         aPeaksData = aPeaks;
 		oData.fPerSecPx = fPerSecPx;
         toDraw();
@@ -165,9 +168,6 @@ export default function(){
 		const { style } = oDom.oPointer; 
 		const fStartTime = start + long * (isFromHalf ? 0.4 : 0);
 		style.left = `${fStartTime * oData.fPerSecPx}px`;
-        if (!oDom.oAudio) {
-            console.log('没有<Audio/>');
-        }
 		oDom.oAudio.currentTime = fStartTime;
 		oDom.oAudio.play();
         style.opacity = 1;
@@ -328,12 +328,13 @@ export default function(){
             oData.sWaveBarClassName = 'waist100';
         }, 200);
     });
+    // 旧版本监听 oDom.oViewport 但有时滚动条会触发监听，就改为了监听 oDom.oMyWaveBar 结果还是照旧
     watch(() => oDom.oViewport, (oNew)=>{
         if (!oNew) return;
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
             const {width} = entryArr[0].contentRect;
-            if (0) console.log('大小位置', width);
+            if (0) console.log('宽度变成了：', width);
         });
         myObserver.observe(oNew);
     });
