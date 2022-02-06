@@ -6,6 +6,7 @@ import {getTubePath} from '../../../common/js/common-fn.js';
 
 export function mainPart(){
 	const oDom = reactive({
+		oIframe: null,
 		oMyWave: null, // 波
 		oTextArea: null, // 输入框
 		oSententList: null, // 字幕列表
@@ -46,6 +47,7 @@ export function mainPart(){
 		aSiblings: [], // 当前媒体的邻居文件
 		iHisMax: 30, // 最多历史记录数量
 		iLineHeight: 35, // 行高xxPx
+		isShowPDF: !false,
 	});
 	// ▼当前行
 	const oCurLine = computed(()=>{
@@ -223,6 +225,12 @@ export function mainPart(){
 			ev.target.scrollTop / oData.iLineHeight
 		);
 	}
+	function openPDF(){
+		console.log('media', oData.oMediaInfo.$dc());
+		const btn = oDom?.oIframe?.contentDocument?.querySelector('#openFile');
+		if (!btn) return;
+		btn.click();
+	}
 	// ============================================================================
 	init();
 	onMounted(()=>{
@@ -241,6 +249,7 @@ export function mainPart(){
 		splitSentence,
 		lineScroll,
 		visitSibling,
+		openPDF,
 	};
     return reactive({
         ...toRefs(oDom),

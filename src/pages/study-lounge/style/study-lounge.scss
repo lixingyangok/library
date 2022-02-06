@@ -15,9 +15,44 @@
 .left{
     flex: none;
     margin-right: 10px;
+    min-width: 400px;
+    width: 45%;
+    height: 100%;
+    resize: both;
+    position: relative;
+    border: solid 1px skyblue;
+    iframe{
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+    textarea{
+        display: block;
+        resize: horizontal;
+        height: 50%;
+        width: 100%;
+        width: calc(100% + 5px);
+        pointer-events: none;
+        transform: translateY(-200%);
+        background: rgba($color: #000000, $alpha: 0);
+        border: none;
+    }
+    .handler{
+        position: absolute;
+        top: 40%;
+        right: -6px;
+        display: block;
+        width: 4px;
+        height: 60px;
+        background: blue;
+        border-radius: 9px;
+        cursor: e-resize;
+    }
 }
 
+
 .right{
+    resize: both;
     flex: auto;
     max-width: 100%;
     overflow-x: hidden;

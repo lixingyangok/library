@@ -2,13 +2,16 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-05 18:00:54
+ * @LastEditTime: 2022-02-06 11:51:47
  * @Description: 
 -->
 <template>
     <div class="outer" >
-        <section class="left" v-show="0">
-            <h1>study-lounge</h1>
+        <section class="left" v-show="isShowPDF" >
+            <iframe ref="oIframe"
+                src="./static/pdf-viewer/web/viewer.html"
+            ></iframe>
+            <span class="handler" ></span>
         </section>
         <!-- 左右分界 -->
         <section class="right">
@@ -34,6 +37,12 @@
                 </button>
                 <button @click="isShowNewWords = true">
                     单词表：{{aFullWords.length}}个
+                </button>
+                <button @click="isShowPDF = !isShowPDF">
+                    {{isShowPDF ? '关闭': '显示'}}左侧
+                </button>
+                <button @click="openPDF">
+                    打开PDF
                 </button>
             </article>
             <!-- ▼输入 -->

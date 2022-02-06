@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 15:18:43
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-08 15:11:08
+ * @LastEditTime: 2022-02-06 11:46:01
  * @Description: 
 -->
 <template>
@@ -14,13 +14,12 @@
                 </router-link>
             </li>
         </ul>
-        <br/>
         <button @click="toF5()">
-            页面刷新
+            刷新1
         </button>
         <br/>
         <button @click="toF5(true)">
-            刷新清空
+            刷新2
         </button>
     </div>
 </template>

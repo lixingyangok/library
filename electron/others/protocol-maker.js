@@ -2,13 +2,15 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:23:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-16 20:05:48
+ * @LastEditTime: 2022-02-06 10:36:47
  * @Description: 
  */
 const fs = require('fs');
 const urlib = require("url");
 const { protocol } = require('electron');
 
+// 官方文档：
+// https://www.electronjs.org/docs/latest/api/protocol#protocolregisterhttpprotocolscheme-handler-completion
 
 module.exports.protocolRegister = function(){
     // 本方法要在 app.whenReady 之前执行，只能执行一次
@@ -22,10 +24,13 @@ module.exports.protocolRegister = function(){
     };
     protocol.registerSchemesAsPrivileged([
         { scheme: 'tube', privileges },
+        { scheme: 'tb02', privileges },
         { scheme: 'pipe', privileges },
+        { scheme: 'filepipe', privileges },
+        { scheme: 'filehttp', privileges },
+        { scheme: 'filestream', privileges },
     ]);
 };
-
 
 module.exports.protocolFnSetter = function(){
     protocol.registerFileProtocol('tube', function (req, callback){
@@ -34,13 +39,62 @@ module.exports.protocolFnSetter = function(){
         // toLog('触发 registerFileProtocol 请求路径 ■■\n' + pathVal);
         callback({ path: pathVal });
     });
-    protocol.interceptBufferProtocol('pipe', (request, callback) => {
-        toLog('触发 interceptBufferProtocol');
-        const filePath = 'D:/天翼云盘同步盘/English dictation/NCEE/2019年高考(上海II卷)英语听力真题 短对话.mp3';
-        fs.readFile(filePath, (err, data) => {
+    // ▼以下都是停用的，
+    protocol.registerFileProtocol('tb02', function (req, callback){
+        const myobj = urlib.parse(req.url, true);
+        const pathVal = 'D:/github/my-library/public/static/pdf-viewer/web/viewer.html';
+        // const pathVal = "D:/天翼云盘同步盘/English dictation/小学生英文幽默故事.pdf"; //myobj.query.path;
+        toLog('触发 registerFileProtocol 请求路径 ■■\n', myobj);
+        callback({ path: pathVal });
+    });
+    // ▼无效（弹出 windowStore提示）
+    protocol.registerBufferProtocol('pipe', (req, callback) => {
+        const myobj = urlib.parse(req.url, true);
+        toLog('触发 registerBufferProtocol', myobj);
+        // const filePath = 'D:/天翼云盘同步盘/English dictation/小学生英文幽默故事.pdf';
+        const filePath = 'D:/github/my-library/public/static/pdf-viewer/web/viewer.html';
+        fs.readFile(filePath, 'utf-8', (err, data) => {
             if (err) return callback();
             // mimeType 值可以这样取得：getMimeType(filePath),
-            callback({ data, mimeType: 'audio/mpeg' });
+            callback({ data, mimeType: 'text/html' });
+        });
+    });
+    // ▼无效（弹出 windowStore提示）
+    protocol.registerFileProtocol('filepipe', function(req, callback, next){
+        let fPath = req.url.substr(8+4);  // 截取file:///之后的内容，也就是我们需要的
+        fPath = 'D:/github/my-library/public/static/pdf-viewer/web/viewer.html';
+        const myobj = urlib.parse(req.url, true);
+        // fPath = path.normalize(fPath);
+        toLog('触发 registerFileProtocol', myobj, fPath);
+        callback({
+            // path: fPath,
+            statusCode: 200,
+            headers: {'content-type': 'text/html' },
+            data: fs.createReadStream('D:/github/my-library/public/static/pdf-viewer/web/viewer.html'),
+        });
+        return true;
+    });
+    protocol.registerHttpProtocol('filehttp', function(req, callback, next){
+        let fPath = req.url.substr(8+4);  // 截取file:///之后的内容，也就是我们需要的
+        fPath = 'D:/github/my-library/public/static/pdf-viewer/web/viewer.html';
+        const myobj = urlib.parse(req.url, true);
+        // fPath = path.normalize(fPath);
+        toLog('触发 registerHttpProtocol', myobj, fPath);
+        callback({
+            // path: fPath
+            statusCode: 200,
+            headers: {'content-type': 'text/html' },
+            data: fs.createReadStream('D:/github/my-library/public/static/pdf-viewer/web/viewer.html'),
+        });
+        return true;
+    });
+    protocol.registerStreamProtocol('filestream', function(req, callback, next){
+        callback({
+            statusCode: 200,
+            headers: {'content-type': 'text/html' },
+            // data: createStream('<h5>Response</h5>'),
+            data: fs.createReadStream('D:/github/my-library/public/static/pdf-viewer/web/viewer.html'),
+            // 
         });
     });
 };
