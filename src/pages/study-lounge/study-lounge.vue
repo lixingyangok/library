@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-06 19:05:49
+ * @LastEditTime: 2022-02-06 19:32:47
  * @Description: 
 -->
 <template>
@@ -125,7 +125,7 @@
                 <h3 class="title">
                     ◆ {{['新词汇', '专有名词'][i01]}}
                 </h3>
-                <ul class="one-ul">
+                <ul class="one-type-word-ul">
                     <li class="word"
                         v-for="(oneWord,i02) of oneList" :key="i02"
                     >

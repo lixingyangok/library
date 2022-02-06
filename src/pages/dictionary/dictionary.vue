@@ -2,11 +2,11 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-04 21:00:24
+ * @LastEditTime: 2022-02-06 20:15:28
  * @Description: 
 -->
 <template>
-    <article class="outer-dom" v-show="isShowSelf">
+    <article class="outer-dom" v-show="!beDialog || isShowSelf">
         <component :is="beDialog ? 'el-dialog' : 'div'"
             v-model="isShowSelf"
         >
@@ -22,10 +22,10 @@
             <ul class="result-list" >
                 <li v-for="(cur,idx) of aResult.rows" :key="idx">
                     ◆{{idx+1}}
-                    <span v-for="(sWord, i02) of cur.text.split(/\s+/g)" :key="i02"
-                        :class="splitSentence(sWord, sKey || word)"
+                    <span v-for="(sWord, i02) of splitSentence(cur.text, sKey || word)" :key="i02"
+                        :class="{'matched': sWord.word}"
                     >
-                        {{sWord}}
+                        {{sWord.word || sWord}}
                     </span>
                 </li>
             </ul>
@@ -51,7 +51,7 @@ const isShowSelf = computed({
         emit('update:dialogVisible', val);
     },
 });
-const sKey = ref('');
+const sKey = ref('house');
 const aResult = ref({});
 let iSearchingQ = 0;
 // ▼方法

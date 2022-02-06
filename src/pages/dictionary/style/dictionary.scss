@@ -10,7 +10,10 @@
         line-height: 2.5;
     }
     span{
-        margin-left: 6px;
+        &[class~=matched]{
+            // color: red;
+            background: rgb(255, 255, 150);
+        }
         &[class~=l-01]{
             color: red;
             background: rgb(255, 255, 100);

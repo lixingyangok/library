@@ -9,7 +9,7 @@
 	}
 }
 
-.one-ul{
+.one-type-word-ul{
 	display: flex;
 	flex-flow: row wrap;
 	li{
@@ -41,6 +41,7 @@
 	li{
 		line-height: 1.8;
 		cursor: pointer;
+		margin: 2px 0 0;
 		&:hover,
 		&[class~=cur-file]{
 			background-color: #eee;
