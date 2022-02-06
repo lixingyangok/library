@@ -1,4 +1,4 @@
-import {toRefs, reactive, computed, onMounted} from 'vue';
+import {toRefs, reactive, computed, onMounted, getCurrentInstance} from 'vue';
 import {SubtitlesStr2Arr, fixTime, copyString} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
@@ -49,6 +49,7 @@ export function mainPart(){
 		iLineHeight: 35, // 行高xxPx
 		isShowPDF: !!false,
 	});
+	const oInstance = getCurrentInstance();
 	// ▼当前行
 	const oCurLine = computed(()=>{
 		return oData.aLineArr[ oData.iCurLineIdx ];
@@ -70,7 +71,10 @@ export function mainPart(){
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
 	async function init(){
+		oDom?.oMyWave?.cleanCanvas(true);
 		oData.iCurLineIdx = 0;
+		oData.aLineArr = [];
+		await vm.$nextTick();
 		const hash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!hash) throw '没有hash';
 		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});

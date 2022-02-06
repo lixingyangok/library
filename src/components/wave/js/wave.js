@@ -156,9 +156,11 @@ export default function(){
         toDraw();
 	}
     // ▼清空画布
-	function cleanCanvas() {
+	function cleanCanvas(deep) {
+        if (deep) oData.oMediaBuffer = {};
 		const Context = oDom.oCanvasDom.getContext('2d');
 		Context.clearRect(0, 0, 5_000, 200);
+        // console.log('画面已被清空');
 	}
     // ▼播放
 	function toPlay(isFromHalf=false) {
@@ -365,6 +367,7 @@ export default function(){
         zoomWave,
         changeWaveHeigh,
         goOneLine,
+        cleanCanvas,
     };
     return { oDom, oData, oFn };
 }
