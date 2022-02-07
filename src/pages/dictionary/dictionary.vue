@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-06 20:15:28
+ * @LastEditTime: 2022-02-07 12:24:05
  * @Description: 
 -->
 <template>
@@ -51,7 +51,7 @@ const isShowSelf = computed({
         emit('update:dialogVisible', val);
     },
 });
-const sKey = ref('house');
+const sKey = ref('');
 const aResult = ref({});
 let iSearchingQ = 0;
 // ▼方法

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-06 19:06:52
+ * @LastEditTime: 2022-02-07 20:14:55
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -84,7 +84,7 @@ export function fnAllKeydownFn() {
         const { oMediaBuffer, aLineArr, iCurLineIdx } = This;
         const iCurLineNew = iCurLineIdx + iDirection;
         if (iCurLineNew < 0) {
-            return this.$message.warning('没有上一行');
+            return This.$message.warning('没有上一行');
         }
         const oNewLine = (() => {
             if (aLineArr[iCurLineNew]) return false; //有数据，不新增
@@ -95,7 +95,7 @@ export function fnAllKeydownFn() {
             return figureOut(oMediaBuffer, end); // 要新增一行，返回下行数据
         })();
         if (oNewLine === null) {
-            return this.$message.warning('后面没有了');
+            return This.$message.warning('后面没有了');
         }
         goLine(iCurLineNew, oNewLine, true);
     }
@@ -106,13 +106,19 @@ export function fnAllKeydownFn() {
         else iAimLine = This.iCurLineIdx;
         setLinePosition(iAimLine);
         if (toRecord) recordHistory();
+        let iCount = 0;
+        for (const cur of This.aLineArr){
+            This.checkIfChanged(cur) && iCount++;
+            if (iCount < 3) continue;
+            return This.saveLines(); // 保存
+        }
     }
-    // ▼跳行后定位
+    // ▼跳行后定位（oSententList => oSententWrap）
     function setLinePosition(iAimLine) {
-        const { oSententList, iLineHeight } = This;
-        const { scrollTop: sTop, offsetHeight: oHeight } = oSententList;
-        const abloveCurLine = iAimLine * iLineHeight; // 当前行以上高度
-        oSententList.scrollTop = (() => {
+        const { oSententWrap, iLineHeight } = This;
+        const { scrollTop: sTop, offsetHeight: oHeight } = oSententWrap;
+        const abloveCurLine = iAimLine * iLineHeight; // 当前行上方的高度
+        oSententWrap.scrollTop = (() => {
             if (abloveCurLine < sTop + iLineHeight) {
                 return abloveCurLine - iLineHeight;
             }
@@ -221,12 +227,12 @@ export function fnAllKeydownFn() {
     function putTogether(iType) {
         const { iCurLineIdx, aLineArr } = This;
         const isMergeNext = iType === 1;
+        const oCur = aLineArr[iCurLineIdx]; // 当前自己行
         const oTarget = ({
-            '-1': aLineArr[iCurLineIdx - 1], // 要合并上一条
-            '1': aLineArr[iCurLineIdx + 1], // 要合并下一条
+            '-1': aLineArr[iCurLineIdx - 1], // 要贴付到上一条
+            '1': aLineArr[iCurLineIdx + 1], // 要兼并下一条
         }[iType]);
         if (!oTarget) return; //没有邻居不再执行
-        const oCur = aLineArr[iCurLineIdx];
         oTarget.start = Math.min(oTarget.start, oCur.start);
         oTarget.end = Math.max(oTarget.end, oCur.end);
         oTarget.text = (() => {
@@ -235,11 +241,13 @@ export function fnAllKeydownFn() {
             return aResult.join(' ').replace(/\s{2,}/g, ' ');
         })();
         fixTime(oTarget);
+        const {id} = isMergeNext ? oTarget : oCur;
+        if (id >= 0) This.deletedSet.add(id);
         aLineArr.splice(iCurLineIdx, 1);
         if (!isMergeNext) This.iCurLineIdx--;
         recordHistory();
     }
-    // ▼一刀两段 todo，要修改
+    // ▼一刀两段
     function split() {
         goLine();
         const { aLineArr, iCurLineIdx, oCurLine } = This;
@@ -258,6 +266,7 @@ export function fnAllKeydownFn() {
                 text: text.slice(selectionStart).trim(),
             }),
         ];
+        Reflect.deleteProperty(aNewItems[1], 'id');
         aLineArr.splice(iCurLineIdx, 1, ...aNewItems);
         recordHistory();
     }
@@ -278,14 +287,14 @@ export function fnAllKeydownFn() {
         const lengthOK = word.length >= 2 && word.length <= 30;
         if (!lengthOK || bExist) {
             const sTips = `已经保存不可重复添加，或单词长度不在合法范围（2-30字母）`;
-            return this.$message.error(sTips);
+            return This.$message.error(sTips);
         }
         const res = await fnInvoke('db', 'saveOneNewWord', {
             word, mediaId: This.oMediaInfo.id,
         });
-        if (!res) return this.$message.error('保存未成功');
+        if (!res) return This.$message.error('保存未成功');
         console.log('res\n', res);
-        this.$message.success('保存成功');
+        This.$message.success('保存成功');
         This.getNewWords();
     }
     let inputTimer = null;
@@ -294,7 +303,6 @@ export function fnAllKeydownFn() {
     function inputHandler(ev) {
         clearTimeout(inputTimer);
         clearTimeout(candidateTimer);
-        This.oCurLine.changed = true; // 有此标记才提交
         const Backspace = ev.inputType == "deleteContentBackward";
         if (ev.data == ' ') {
             recordHistory();
@@ -350,7 +358,10 @@ export function fnAllKeydownFn() {
         start = start || This.oCurLine.end;
         const { oMediaBuffer } = This;
         const oNextLine = figureOut(oMediaBuffer, start); //返回下一行的数据
-        This.aLineArr[This.iCurLineIdx] = oNextLine;
+        This.aLineArr[This.iCurLineIdx] = {
+            ...This.aLineArr[This.iCurLineIdx], // 保留旧的ID
+            ...oNextLine,
+        };
         recordHistory();
         This.oMyWave.goOneLine(oNextLine);
     }
@@ -358,23 +369,18 @@ export function fnAllKeydownFn() {
     async function saveLines() {
         const toSaveArr = [];
         This.aLineArr.forEach(cur => {
-            if (cur.id) {
-                This.deletedSet.delete(cur.id);
-                if (This.oIdStore[cur.id] && !cur.changed) return;
-            }
+            cur.id && This.deletedSet.delete(cur.id);
+            if (!This.checkIfChanged(cur)) return;
             toSaveArr.push({ ...cur, mediaId: This.oMediaInfo.id });
         });
         const toDelArr = [...This.deletedSet];
-        if (toSaveArr.length == 0 && toDelArr.length == 0) {
+        if (!toSaveArr.length && !toDelArr.length) {
             return This.$message.warning(`没有修改，无法保存`);
         }
         const [res0, res1] = await fnInvoke('db', 'updateLine', {
             toSaveArr, toDelArr,
         });
         This.getLinesFromDB();
-        res0.length && This.aLineArr.forEach(cur => {
-            cur.changed = false;
-        });
         console.log('保存字幕\n', toSaveArr, toDelArr);
         // console.log('保存结果\n', res);
         const sTips = `成功：修改 ${res0.length} 条，删除 ${res1} 条`;

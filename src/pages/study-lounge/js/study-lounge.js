@@ -10,11 +10,12 @@ export function mainPart(){
 		oMyWave: null, // 波
 		oTextArea: null, // 输入框
 		oSententList: null, // 字幕列表
+		oSententWrap: null, // 字幕外套
 	});
 	const oOperation = { // 编辑功能
-		aLineFromDB: [], // 查出来立即存在这
 		oIdStore: {}, // 查出来立即存在这
 		aLineArr: [],
+		oAllLine: {}, // 查出来就保存上，备份
 		iCurLineIdx: 0,
 		aHistory: [{ sLineArr: '[]', iCurLineIdx: 0 }],
 		iCurStep: 0,
@@ -100,9 +101,12 @@ export function mainPart(){
 		const aLineArr = fixTime(aRes);
 		const sLineArr = JSON.stringify(aLineArr);
 		oData.aHistory[0].sLineArr = sLineArr;
-		oData.aLineFromDB = JSON.parse(sLineArr);
 		oData.iSubtitle = 1;
 		oData.aLineArr = aLineArr; // 正式使用的数据
+		oData.oAllLine = JSON.parse(sLineArr).reduce((oResult, cur)=>{
+			oResult[cur.id] = cur;
+			return oResult;
+		}, {});
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
@@ -247,6 +251,14 @@ export function mainPart(){
 		if (!btn) return;
 		btn.click();
 	}
+	// ▼查询是否修改过
+	function checkIfChanged(oOneLine){
+		if (!oOneLine.id) return true;
+		const oOldOne = oData.oAllLine[oOneLine.id];
+		return ['start', 'end', 'text'].some(key => {
+			return oOneLine[key] != oOldOne[key];
+		});
+	}
 	// ============================================================================
 	init();
 	onMounted(()=>{
@@ -267,6 +279,7 @@ export function mainPart(){
 		visitSibling,
 		openPDF,
 		showLeftColumn,
+		checkIfChanged,
 	};
     return reactive({
         ...toRefs(oDom),

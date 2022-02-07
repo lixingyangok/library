@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-06 19:32:47
+ * @LastEditTime: 2022-02-07 19:35:47
  * @Description: 
 -->
 <template>
@@ -83,7 +83,9 @@
                 </ul>
             </div>
             <!-- ▼字幕大列表 -->
-            <article class="last-part" @scroll="lineScroll" >
+            <article class="last-part" ref="oSententWrap"
+                @scroll="lineScroll"
+            >
                 <ul class="sentence-wrap" ref="oSententList" 
                     :style="{
                         '--height': `${iLineHeight}px`,
@@ -100,7 +102,7 @@
                         <time className="time">
                             {{cur.start_}} - {{cur.end_}}
                         </time>
-                        <p class="text" :class="{changed: !cur.id || cur.changed}">
+                        <p class="text" :class="{changed: checkIfChanged(cur)}">
                             <template v-for="word of splitSentence(cur.text, cur.ii)">
                                 <span v-if="word.sClassName" :class="word.sClassName">
                                     {{word.word}}
