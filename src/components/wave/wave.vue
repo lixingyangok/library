@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-06 18:25:49
+ * @LastEditTime: 2022-02-07 20:50:11
  * @Description: 
 -->
 <template>
@@ -20,7 +20,7 @@
             @scroll="waveWrapScroll"
         >
             <div class="long-bar" ref="oLongBar"
-                :style="{width: `${(oMediaBuffer.duration + 0.5) * fPerSecPx}px`}"
+                :style="{width: `${(oMediaBuffer.duration + 0.6) * fPerSecPx}px`}"
             >
                 <ul class="scale-ul">
                     <li v-for="(cur) of aGapMarks" :key="cur" v-show="cur"

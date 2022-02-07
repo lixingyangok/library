@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-07 20:14:55
+ * @LastEditTime: 2022-02-07 20:53:55
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -88,7 +88,7 @@ export function fnAllKeydownFn() {
         }
         const oNewLine = (() => {
             if (aLineArr[iCurLineNew]) return false; //有数据，不新增
-            if ((oMediaBuffer.duration - aLineArr[iCurLineIdx].end) < 0.1) {
+            if ((oMediaBuffer.duration - aLineArr[iCurLineIdx].end) < 0.3) {
                 return null; //临近终点，不新增
             }
             const { end } = aLineArr[aLineArr.length - 1];
@@ -102,14 +102,20 @@ export function fnAllKeydownFn() {
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine, toRecord) {
         if (oNewLine) This.aLineArr.push(oNewLine);
-        if (iAimLine >= 0) This.iCurLineIdx = iAimLine;
-        else iAimLine = This.iCurLineIdx;
+        let goBack;
+        if (iAimLine >= 0) {
+            goBack = iAimLine < This.iCurLineIdx;
+            This.iCurLineIdx = iAimLine;
+        } else {
+            iAimLine = This.iCurLineIdx;
+        }
         setLinePosition(iAimLine);
         if (toRecord) recordHistory();
+        if (goBack) return; // 到来就建行，不保存
         let iCount = 0;
         for (const cur of This.aLineArr){
             This.checkIfChanged(cur) && iCount++;
-            if (iCount < 3) continue;
+            if (iCount <= 3) continue;
             return This.saveLines(); // 保存
         }
     }
@@ -141,6 +147,9 @@ export function fnAllKeydownFn() {
         }
         if (next && fNewVal > next.start) {
             fNewVal = next.start;
+        }
+        if (fNewVal > This.oMediaBuffer.duration + 0.5){
+            return This.$message.error('超出太多了');
         }
         setTime(sKey, fNewVal);
         recordHistory();

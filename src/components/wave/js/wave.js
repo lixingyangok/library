@@ -236,7 +236,11 @@ export default function(){
             return console.log('有效防抖'); 
         }
 		const {iPerSecPx: perSecPxOld, oMediaBuffer} = oData;
-		let {deltaY, clientX = window.innerWidth / 2} = ev; //. clientX 确实需要替补值
+		let {deltaY, clientX} = ev; 
+        if (clientX >= 0 == false) { // 用键盘缩放时 clientX 为空
+            const {width, left} = oDom.oCanvasDom.getBoundingClientRect();
+            clientX = left + width / 2;
+        }
 		const [min, max, iStep] = [45, 260, 25]; // 每秒最小/大宽度（px），缩放步幅
         // ▼小到头了就不要再缩小了，大到头了也就要放大了
 		if (deltaY > 0 ? (perSecPxOld <= min) : (perSecPxOld >= max)){

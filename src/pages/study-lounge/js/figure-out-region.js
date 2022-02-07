@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-15 21:57:34
+ * @LastEditTime: 2022-02-07 21:34:19
  * @Description: 这是智能断句的模块
  */
 import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
@@ -33,10 +33,13 @@ export function figureOut(oMediaBuffer, fEndSec, fLong = 2.5) {
         return { start, end };
     })();
     start = (fEndSec + start / iPerSecPx).toFixed(2) * 1;
-    end = Math.min(
-        fEndSec + end / iPerSecPx, 
-        oMediaBuffer.duration + 0.5
-    ).toFixed(2) * 1;
+    const farthest = oMediaBuffer.duration - 0.1;
+    const fLastRegion = 0.3; // 最后一行宽0.3秒
+    end = Math.min(fEndSec + end / iPerSecPx, farthest); //
+    if (end == farthest && end - fEndSec < fLastRegion) {
+        end = fLastRegion;
+    }
+    end = end.toFixed(2) * 1;
     return fixTime({start, end});
 }
 
