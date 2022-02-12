@@ -13,6 +13,40 @@ import 'element-plus/dist/index.css';
 
 // ▼ require
 const { ipcRenderer } = require('electron');
+const sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database(':memory:', (err) => {
+    console.log('创建db成功？', !err);
+    db.loadExtension(
+        'D:/github/my-library/src/regexp.c',
+        function(err, res){
+            console.log('一参：\n', err);
+            console.log('二参：\n', res);
+        }
+    );
+    console.log(db);
+    console.log(Reflect.ownKeys(db.__proto__));
+    // db.close();
+    window.db = db;
+});
+
+db.serialize(function() {
+    db.addListener('regexp', function(v1, v2){
+        console.log('v1', v1, v2);
+        return true;
+    });
+    console.log('加载扩展');
+    console.log('建表了');
+    db.run("CREATE TABLE lorem (info TEXT)");
+    var stmt = db.prepare("INSERT INTO lorem VALUES (?)");
+    for (var i = 0; i < 10; i++) {
+        stmt.run("Ipsum " + i);
+    }
+    stmt.finalize();
+    console.log("开始查询");
+    db.each("SELECT rowid AS id, info FROM lorem", function(err, row) {
+        console.log(row.id + ": " + row.info);
+    });
+});
 
 
 // ▼ 其它声明，全局声明一定前置

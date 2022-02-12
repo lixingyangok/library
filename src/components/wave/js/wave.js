@@ -81,6 +81,9 @@ export default function(){
         }else{
             oMediaBuffer = await getAudioData(sPath);
         }
+        if (!oMediaBuffer) {
+            return vm.$message.error('读取媒体文件未成功');
+        }
         oData.oMediaBuffer = oMediaBuffer;
         setCanvasWidthAndDraw();
         moveToFirstLine();
@@ -96,14 +99,19 @@ export default function(){
     }
     // ▼加载【媒体】数据
     async function getAudioData(sPath){
-        const oMediaBuffer = await fetch(sPath).then(res => {
+        let err;
+        const oMediaBuffer = await fetch(encodeURIComponent(sPath)).then(res => {
             return res.blob();
         }).then(res=>{
             return fileToBuffer(res, true);
         }).catch(res=>{
+            err = res;
             console.log('读取媒体buffer未成功\n', res);
         });
-        if (!oMediaBuffer) return;
+        if (!oMediaBuffer || err) {
+            console.log('媒体地址\n', sPath);
+            return;
+        }
         // console.log('解析耗时：', oMediaBuffer.fElapsedSec);
         return oMediaBuffer;
     }
