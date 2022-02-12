@@ -11,7 +11,9 @@ export function mainPart(){
 		oTextArea: null, // 输入框
 		oSententList: null, // 字幕列表
 		oSententWrap: null, // 字幕外套
-		oTxtInput: null, // 文本字幕的DOM容器
+		oTxtInput: null, // 文本字幕的Input
+		oLeftTxt: null, // 文本字幕的DOM容器
+		oLeftTxtWrap: null, // 文本字幕的DOM容器
 	});
 	const oOperation = { // 编辑功能
 		oIdStore: {}, // 查出来立即存在这
@@ -20,7 +22,11 @@ export function mainPart(){
 		iCurLineIdx: 0,
 		aHistory: [{ sLineArr: '[]', iCurLineIdx: 0 }],
 		iCurStep: 0,
-		deletedSet: new Set(), // 已删除的行id
+		deletedSet: new Set(), // 已删除的行id.
+		iWriting: 0,
+		iMatchStart: 0,
+		iMatchEnd: 0,
+		oRightToLeft: {}, // 对照表
 	};
 	const oInputMethod = { // 输入法
 		sTyped: '',
@@ -52,6 +58,7 @@ export function mainPart(){
 		isShowLeft: !!false,
 		leftType: '',
 		sArticle: '',
+		aArticle: [],
 	});
 	const oInstance = getCurrentInstance();
 	// ▼当前行
@@ -256,22 +263,22 @@ export function mainPart(){
 	}
 	// ▼打开txt
 	async function getFile(ev){
+		const [oFile] = ev.target.files;
 		oData.leftType = 'txt';
 		oData.sArticle = '';
-		const [oFile] = ev.target.files;
-		console.log('target\n', oFile);
 		oData.isShowLeft = true;
-		const reader = new FileReader();//这是核心！！读取操作都是由它完成的
-		reader.readAsText(oFile, 'utf-8');
-		reader.onload = function(oFREvent){//读取完毕从中取值
-			const fileTxt = oFREvent.target.result;
-			console.log('fileTxt', fileTxt);
-			oData.sArticle = fileTxt;
-		}
-	}
-	function openTxt(){
-		console.log('oTxtInput', oDom.oTxtInput);
-		oDom?.oTxtInput?.click();
+		const {oPromise, fnResolve, fnReject} = newPromise();
+		Object.assign(new FileReader(), {
+			onload(loadEvent){
+				fnResolve(loadEvent.target.result);
+			},
+		}).readAsText(oFile, 'utf-8');
+		const fileTxt = await oPromise;
+		if (!fileTxt) return;
+		ev.target.value = '';
+		console.log('字符数量', fileTxt.length);
+		oData.sArticle = fileTxt;
+		oData.aArticle = fileTxt.split('\n');
 	}
 	// ▼查询是否修改过
 	function checkIfChanged(oOneLine){
@@ -303,7 +310,6 @@ export function mainPart(){
 		showLeftColumn,
 		checkIfChanged,
 		getFile,
-		openTxt,
 	};
     return reactive({
         ...toRefs(oDom),

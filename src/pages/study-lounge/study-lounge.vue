@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 12:28:14
+ * @LastEditTime: 2022-02-12 17:13:49
  * @Description: 
 -->
 <template>
@@ -12,8 +12,33 @@
                 v-if="leftType=='pdf'"
                 src="./static/pdf-viewer/web/viewer.html"
             ></iframe>
-            <div class="txt-box" v-else="leftType=='txt'">
-                {{sArticle}}
+            <div class="txt-box" ref="oLeftTxtWrap" v-else="leftType=='txt'">
+                <ul ref="oLeftTxt" >
+                    <li v-for="(curLine,idx) of aArticle" :key="idx"
+                        :class="{
+                            'writing-line': idx == iWriting || idx == mayWritingLine,
+                            'top-line': idx != iWriting && idx == oRightToLeft[iCurLineIdx-1]?.iLeftLine,
+                        }"
+                    >
+                        <template v-if="idx==iWriting && idx != oRightToLeft[iCurLineIdx-1]?.iLeftLine">
+                            {{curLine.slice(0, iMatchStart)}}<em>{{curLine.slice(iMatchStart, iMatchEnd)}}</em>{{curLine.slice(iMatchEnd)}}
+                        </template>
+                        <template v-else-if="idx==iWriting && idx == oRightToLeft[iCurLineIdx-1]?.iLeftLine">
+                            {{
+                                curLine.slice(0, oRightToLeft[iCurLineIdx-1].iMatchStart)
+                            }}<span class="cur-line-top">{{
+                                curLine.slice(oRightToLeft[iCurLineIdx-1].iMatchStart, iMatchStart)
+                            }}</span><em>{{
+                                curLine.slice(iMatchStart, iMatchEnd)
+                            }}</em>{{
+                                curLine.slice(iMatchEnd)
+                            }}
+                        </template>
+                        <template v-else>
+                            {{curLine}}
+                        </template>
+                    </li>
+                </ul>
             </div>
             <span class="handler" ></span>
         </section>
@@ -48,10 +73,14 @@
                 <el-button type="primary" size="small" @click="openPDF">
                     打开PDF
                 </el-button>
-                <el-button type="primary" size="small" @click="openTxt">
+                <el-button type="primary" size="small"
+                    @click="() => oTxtInput.click()"
+                >
                     打开TXT
                 </el-button>
-                <input type="file" ref="oTxtInput" @change="getFile" v-show="0"/>
+                <input type="file" ref="oTxtInput" accept="text/plain"
+                    @change="getFile" v-show="0"
+                />
             </article>
             <!-- ▼输入 -->
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
@@ -196,10 +225,22 @@ export default {
                 return cur;
             });
         });
+        const mayWritingLine = computed(() => {
+            if (oData.iWriting > -1) return oData.iWriting; // 有明确的当前行
+            const topLine = oData.oRightToLeft[oData.iCurLineIdx - 1];
+            if (!topLine) return -1;
+            if (oData.aArticle[topLine.iLeftLine + 1].trim()) {
+                return topLine.iLeftLine + 1;
+            }else if(oData.aArticle[topLine.iLeftLine + 2].trim()){
+                return topLine.iLeftLine + 2;
+            }
+            return -1;
+        });
         return {
             ...toRefs(oData),
             ...fnAllKeydownFn(),
             aLineForShow,
+            mayWritingLine,
         };
     },
     mounted(){

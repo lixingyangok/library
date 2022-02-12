@@ -24,9 +24,28 @@
     .txt-box{
         padding: 30px;
         white-space: break-spaces;
-        overflow-y: auto;
         font-size: 16px;
-        line-height:1.8;
+        line-height:1.5;
+        overflow-y: auto;
+        ul{
+            opacity: 1;
+        }
+        li{
+            min-height: 1em;
+            margin: 0 0 0.2em;
+        }
+    }
+    .writing-line{
+        background-color: #f1f1f1;
+        .cur-line-top{
+            background-color: skyblue;
+        }
+        em{
+            background: rgb(255, 255, 100);
+        }
+    }
+    .top-line{
+        background-color:skyblue;
     }
     .txt-box,
     iframe{

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-07 20:53:55
+ * @LastEditTime: 2022-02-12 16:39:47
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -110,6 +110,7 @@ export function fnAllKeydownFn() {
             iAimLine = This.iCurLineIdx;
         }
         setLinePosition(iAimLine);
+        This.aArticle.length && getLeftLine();
         if (toRecord) recordHistory();
         if (goBack) return; // 到来就建行，不保存
         let iCount = 0;
@@ -118,6 +119,68 @@ export function fnAllKeydownFn() {
             if (iCount <= 3) continue;
             return This.saveLines(); // 保存
         }
+    }
+    async function getLeftLine(){
+        This.iWriting = -1;
+        const {iCurLineIdx, oCurLine, oRightToLeft} = This;
+        const {text} = oCurLine;
+        if (text.includes(' ') == false) return;
+        const aPieces = text.match(/[a-z ']+/ig);
+        if (!aPieces?.length) return;
+        console.log('左侧定位');
+        let iMatchStart = -1;
+        let iMatchEnd = 0;
+        const iLeftStart = (()=>{
+            const aKeys = Object.keys(oRightToLeft);
+            if (!aKeys.length) return 0;
+            let iMax = 0;
+            for (const curIdx of aKeys){
+                if (curIdx*1 > iMax && curIdx*1 < iCurLineIdx) {
+                    iMax = curIdx;
+                }
+            }
+            const iLeftStart = oRightToLeft[iMax].iLeftLine;
+            console.log(`\n\n我行号：${iCurLineIdx}\n我上行号：${iMax}\n我上行的左行号：${iLeftStart}`);
+            return iLeftStart - 2;
+        })();
+        let iAim = -1;
+        for (let idx = iLeftStart; idx < This.aArticle.length; idx++ ){
+            const sLeftFull = This.aArticle[idx];
+            if (sLeftFull.includes(' ') == false) continue;
+            let iLastMatch = 0;
+            let beLongToIt = aPieces.every(onePiece => {
+                const sLeftPiece = sLeftFull.slice(iLastMatch);
+                const oMatchInfo = sLeftPiece.match(new RegExp(onePiece, 'i'));
+                if (!oMatchInfo) return;
+                if (iMatchStart == -1) iMatchStart = oMatchInfo.index;
+                iLastMatch = iLastMatch + oMatchInfo.index + onePiece.length;
+                return true;
+            });
+            if (!beLongToIt) continue;
+            iMatchEnd = iLastMatch;
+            iAim = idx;
+            break;
+        }
+        if (iAim == -1) return;
+        console.log('当前句左号：', iAim);
+        This.oRightToLeft[iCurLineIdx] = {
+            iLeftLine: iAim,
+            iMatchStart: iMatchStart,
+            iMatchEnd: iMatchEnd,
+        };
+        This.iWriting = iAim;
+        This.iMatchStart = iMatchStart;
+        This.iMatchEnd = iMatchEnd;
+        setLeftTxtTop();
+    }
+    function setLeftTxtTop(){
+        const aLi = This.oLeftTxt.children;
+        let iSum = 0;
+        for (let ii = 0; ii < This.iWriting; ii++){
+            iSum += aLi[ii].offsetHeight;
+        }
+        This.oLeftTxtWrap.scrollTop = iSum - 200;
+        console.log();
     }
     // ▼跳行后定位（oSententList => oSententWrap）
     function setLinePosition(iAimLine) {
