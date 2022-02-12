@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-24 19:50:21
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 10:53:48
+ * @LastEditTime: 2022-02-12 22:05:25
  * @Description: 开发历史
  */
 // const fsp = require('fs').promises;
@@ -24,7 +24,7 @@ const oDict = module.exports.line = sqlize.define('dictionary', {
     ],
 });
 
-oDict.sync({ alter: true });
+oDict.sync();
 
 module.exports.oFn = {
     // ▼批量保存（停用）

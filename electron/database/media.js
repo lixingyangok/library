@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-05 10:47:12
+ * @LastEditTime: 2022-02-12 22:05:33
  * @Description: 
  */
 
@@ -29,7 +29,7 @@ const oMedia = module.exports.media = sqlize.define('media', {
         defaultValue: 1,  // 修改时应改一片，需要思考
     },
 });
-oMedia.sync({ alter: true });
+oMedia.sync();
 
 module.exports.oFn = {
     // ▼保存一个媒体信息

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 14:42:22
+ * @LastEditTime: 2022-02-12 22:05:38
  * @Description: 
  */
 
@@ -29,7 +29,7 @@ const oNewWord = module.exports.line = sqlize.define('new_word', {
     },
 });
 
-oNewWord.sync({ alter: true });
+oNewWord.sync();
 
 module.exports.oFn = {
     // ▼保存

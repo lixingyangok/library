@@ -17,7 +17,7 @@ const oHistory = ( module.exports.history ) = sqlize.define('dev_history', {
     // freezeTableName: true,
 });
 
-oHistory.sync({ alter: true });
+oHistory.sync();
 
 
 module.exports.oFn = {

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 20:42:42
+ * @LastEditTime: 2022-02-12 21:58:12
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -212,7 +212,7 @@ export function fnAllKeydownFn() {
         const oOld = aLineArr[iCurLineIdx];
         const previous = aLineArr[iCurLineIdx - 1];
         const next = aLineArr[iCurLineIdx + 1];
-        const fNewVal = Math.max(0, oOld[sKey] + iDirection);
+        let fNewVal = Math.max(0, oOld[sKey] + iDirection);
         if (previous && fNewVal < previous.end) {
             fNewVal = previous.end;
         }

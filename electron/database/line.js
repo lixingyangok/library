@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-31 20:51:20
+ * @LastEditTime: 2022-02-12 22:05:29
  * @Description: 
  */
 
@@ -27,7 +27,7 @@ const oLine = module.exports.line = sqlize.define('line', {
     // 笔记内容？
 });
 
-oLine.sync({ alter: true });
+oLine.sync();
 
 const oFn = module.exports.oFn = {
     // ▼批量保存（导入用）
