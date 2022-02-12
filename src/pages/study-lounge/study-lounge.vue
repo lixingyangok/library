@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 17:13:49
+ * @LastEditTime: 2022-02-12 20:51:29
  * @Description: 
 -->
 <template>
@@ -13,25 +13,33 @@
                 src="./static/pdf-viewer/web/viewer.html"
             ></iframe>
             <div class="txt-box" ref="oLeftTxtWrap" v-else="leftType=='txt'">
-                <ul ref="oLeftTxt" >
-                    <li v-for="(curLine,idx) of aArticle" :key="idx"
-                        :class="{
-                            'writing-line': idx == iWriting || idx == mayWritingLine,
-                            'top-line': idx != iWriting && idx == oRightToLeft[iCurLineIdx-1]?.iLeftLine,
-                        }"
+                <ul ref="oLeftTxt">
+                    <li v-for="(curLine, idx) of aArticle" :key="idx"
+                        :class="{'writing-line': idx == iWriting}"
                     >
-                        <template v-if="idx==iWriting && idx != oRightToLeft[iCurLineIdx-1]?.iLeftLine">
-                            {{curLine.slice(0, iMatchStart)}}<em>{{curLine.slice(iMatchStart, iMatchEnd)}}</em>{{curLine.slice(iMatchEnd)}}
+                        <!-- {{curLine.trim() ? idx==iWriting : ''}} -->
+                        <template v-if="idx == iWriting">
+                            <template v-if="idx == oTopLineMatch?.iLeftLine">
+                                {{
+                                    curLine.slice(0, oTopLineMatch.iMatchStart)
+                                }}<span class="just-wrote">{{
+                                    curLine.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
+                                }}</span>{{
+                                    curLine.slice(oTopLineMatch.iMatchEnd, iMatchStart)
+                                }}
+                            </template>
+                            <template v-else>
+                                {{curLine.slice(0, iMatchStart)}}
+                            </template>
+                            <em class="writing">{{curLine.slice(iMatchStart, iMatchEnd)}}</em>{{curLine.slice(iMatchEnd)}}
                         </template>
-                        <template v-else-if="idx==iWriting && idx == oRightToLeft[iCurLineIdx-1]?.iLeftLine">
+                        <template v-else-if="idx == oTopLineMatch?.iLeftLine">
                             {{
-                                curLine.slice(0, oRightToLeft[iCurLineIdx-1].iMatchStart)
-                            }}<span class="cur-line-top">{{
-                                curLine.slice(oRightToLeft[iCurLineIdx-1].iMatchStart, iMatchStart)
-                            }}</span><em>{{
-                                curLine.slice(iMatchStart, iMatchEnd)
-                            }}</em>{{
-                                curLine.slice(iMatchEnd)
+                                curLine.slice(0, oTopLineMatch.iMatchStart)
+                            }}<span class="just-wrote">{{
+                                curLine.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
+                            }}</span>{{
+                                curLine.slice(oTopLineMatch.iMatchEnd)
                             }}
                         </template>
                         <template v-else>
@@ -131,7 +139,7 @@
                         'padding-top': `calc(${iShowStart} * var(--height))`,
                     }"
                 >
-                    <li v-for="(cur, idx) of aLineForShow" :key="idx"
+                    <li v-for="(cur, idx) of aLineForShow" :key="cur.start"
                         class="one-line" :class="{cur: iCurLineIdx == cur.ii}"
                         @click="goLine(cur.ii, null, true)"
                     >
@@ -225,14 +233,17 @@ export default {
                 return cur;
             });
         });
+        // ▼上一行的匹配信息
+        const oTopLineMatch = computed(() => {
+            return oData.oRightToLeft[oData.iCurLineIdx - 1];
+        });
         const mayWritingLine = computed(() => {
             if (oData.iWriting > -1) return oData.iWriting; // 有明确的当前行
-            const topLine = oData.oRightToLeft[oData.iCurLineIdx - 1];
-            if (!topLine) return -1;
-            if (oData.aArticle[topLine.iLeftLine + 1].trim()) {
-                return topLine.iLeftLine + 1;
-            }else if(oData.aArticle[topLine.iLeftLine + 2].trim()){
-                return topLine.iLeftLine + 2;
+            if (!oTopLineMatch.v) return -1;
+            if (oData.aArticle[oTopLineMatch.v.iLeftLine + 1].trim()) {
+                return oTopLineMatch.v.iLeftLine + 1;
+            }else if(oData.aArticle[oTopLineMatch.v.iLeftLine + 2].trim()){
+                return oTopLineMatch.v.iLeftLine + 2;
             }
             return -1;
         });
@@ -241,6 +252,7 @@ export default {
             ...fnAllKeydownFn(),
             aLineForShow,
             mayWritingLine,
+            oTopLineMatch,
         };
     },
     mounted(){

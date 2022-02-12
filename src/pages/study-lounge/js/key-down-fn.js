@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 16:39:47
+ * @LastEditTime: 2022-02-12 20:42:42
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -18,9 +18,13 @@ let iSearchingQ = 0;
 
 export function getKeyDownFnMap(This, sType) {
     const { oMyWave } = This;
+    function playAndCheck(){
+        oMyWave.toPlay();
+        This.setLeftLine();
+    }
     const withNothing = [
         { key: '`', name: '播放后半句', fn: () => oMyWave.toPlay(true) },
-        { key: 'Tab', name: '播放当前句', fn: () => oMyWave.toPlay() },
+        { key: 'Tab', name: '播放当前句', fn: () => playAndCheck() },
         { key: 'Prior', name: '上一句', fn: () => This.previousAndNext(-1) },
         { key: 'Next', name: '下一句', fn: () => This.previousAndNext(1) },
         { key: 'F1', name: '设定起点', fn: () => This.cutHere('start') },
@@ -57,6 +61,7 @@ export function getKeyDownFnMap(This, sType) {
         { key: 'alt + j', name: '', fn: () => This.previousAndNext(-1) },
         { key: 'alt + k', name: '', fn: () => This.previousAndNext(1) },
         { key: 'alt + l', name: '跳到最后一句', fn: () => This.goLastLine() },
+        // { key: 'alt + q', name: '左侧定位', fn: () => This.setLeftLine() },
         // alt + shift
         { key: 'alt + shift + j', name: '向【左】插入一句', fn: () => This.toInsert(-1) },
         { key: 'alt + shift + k', name: '向【右】插入一句', fn: () => This.toInsert(1) },
@@ -110,7 +115,7 @@ export function fnAllKeydownFn() {
             iAimLine = This.iCurLineIdx;
         }
         setLinePosition(iAimLine);
-        This.aArticle.length && getLeftLine();
+        setLeftLine();
         if (toRecord) recordHistory();
         if (goBack) return; // 到来就建行，不保存
         let iCount = 0;
@@ -120,35 +125,37 @@ export function fnAllKeydownFn() {
             return This.saveLines(); // 保存
         }
     }
-    async function getLeftLine(){
+    function getLeftStartIdx() {
+        const {iCurLineIdx, oRightToLeft} = This;
+        const aKeys = Object.keys(oRightToLeft);
+        if (!aKeys.length) return 0;
+        let iMax = 0;
+        for (const curIdx of aKeys){
+            if (curIdx*1 > iMax && curIdx*1 < iCurLineIdx) {
+                iMax = curIdx;
+            }
+        }
+        if (!iMax) return 0;
+        const iLeftStart = oRightToLeft[iMax].iLeftLine;
+        console.log(`\n我行号：${iCurLineIdx}\n我上行号：${iMax}\n我上行的左行号：${iLeftStart}`);
+        return iLeftStart - 1;
+    }
+    // ▼设定左侧位置
+    async function setLeftLine(){
+        if (!This.aArticle.length) return;
         This.iWriting = -1;
-        const {iCurLineIdx, oCurLine, oRightToLeft} = This;
-        const {text} = oCurLine;
+        const text = This.oCurLine.text.trim();
         if (text.includes(' ') == false) return;
         const aPieces = text.match(/[a-z ']+/ig);
         if (!aPieces?.length) return;
-        console.log('左侧定位');
-        let iMatchStart = -1;
-        let iMatchEnd = 0;
-        const iLeftStart = (()=>{
-            const aKeys = Object.keys(oRightToLeft);
-            if (!aKeys.length) return 0;
-            let iMax = 0;
-            for (const curIdx of aKeys){
-                if (curIdx*1 > iMax && curIdx*1 < iCurLineIdx) {
-                    iMax = curIdx;
-                }
-            }
-            const iLeftStart = oRightToLeft[iMax].iLeftLine;
-            console.log(`\n\n我行号：${iCurLineIdx}\n我上行号：${iMax}\n我上行的左行号：${iLeftStart}`);
-            return iLeftStart - 2;
-        })();
+        console.time('左侧句子定位');
+        let [iMatchStart, iMatchEnd] = [-1, 0];
         let iAim = -1;
-        for (let idx = iLeftStart; idx < This.aArticle.length; idx++ ){
+        for (let idx = getLeftStartIdx(); idx < This.aArticle.length; idx++ ){
             const sLeftFull = This.aArticle[idx];
             if (sLeftFull.includes(' ') == false) continue;
             let iLastMatch = 0;
-            let beLongToIt = aPieces.every(onePiece => {
+            const isInLine = aPieces.every(onePiece => {
                 const sLeftPiece = sLeftFull.slice(iLastMatch);
                 const oMatchInfo = sLeftPiece.match(new RegExp(onePiece, 'i'));
                 if (!oMatchInfo) return;
@@ -156,14 +163,15 @@ export function fnAllKeydownFn() {
                 iLastMatch = iLastMatch + oMatchInfo.index + onePiece.length;
                 return true;
             });
-            if (!beLongToIt) continue;
+            if (!isInLine) continue;
             iMatchEnd = iLastMatch;
             iAim = idx;
             break;
         }
+        console.timeEnd('左侧句子定位');
         if (iAim == -1) return;
         console.log('当前句左号：', iAim);
-        This.oRightToLeft[iCurLineIdx] = {
+        This.oRightToLeft[This.iCurLineIdx] = {
             iLeftLine: iAim,
             iMatchStart: iMatchStart,
             iMatchEnd: iMatchEnd,
@@ -176,10 +184,10 @@ export function fnAllKeydownFn() {
     function setLeftTxtTop(){
         const aLi = This.oLeftTxt.children;
         let iSum = 0;
-        for (let ii = 0; ii < This.iWriting; ii++){
+        for (let ii = 0; ii < This.iWriting - 1; ii++){
             iSum += aLi[ii].offsetHeight;
         }
-        This.oLeftTxtWrap.scrollTop = iSum - 200;
+        This.oLeftTxtWrap.scrollTop = iSum + 50;
         console.log();
     }
     // ▼跳行后定位（oSententList => oSententWrap）
@@ -376,11 +384,11 @@ export function fnAllKeydownFn() {
         clearTimeout(inputTimer);
         clearTimeout(candidateTimer);
         const Backspace = ev.inputType == "deleteContentBackward";
-        if (ev.data == ' ') {
+        const iTimes = ev.data == ' ' ? 0 : 1_200;
+        inputTimer = setTimeout(()=>{
             recordHistory();
-        } else {
-            inputTimer = setTimeout(recordHistory, 1_200);
-        }
+            setLeftLine();
+        }, iTimes);
         if (!oAlphabetObj[ev.data] && !Backspace) return;
         const sText = ev.target.value; // 当前文字
         const idx = ev.target.selectionStart; // 光标位置
@@ -509,6 +517,7 @@ export function fnAllKeydownFn() {
         giveUpThisOne,
         saveLines,
         setHistory,
+        setLeftLine,
     };
 }
 

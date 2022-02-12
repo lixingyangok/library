@@ -35,17 +35,14 @@
             margin: 0 0 0.2em;
         }
     }
+    .just-wrote{
+        background-color: rgb(255, 255, 150);
+    }
     .writing-line{
         background-color: #f1f1f1;
-        .cur-line-top{
-            background-color: skyblue;
-        }
-        em{
-            background: rgb(255, 255, 100);
-        }
     }
-    .top-line{
-        background-color:skyblue;
+    .writing{
+        background: rgba(100, 255, 100, 1);
     }
     .txt-box,
     iframe{
