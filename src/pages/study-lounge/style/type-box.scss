@@ -1,7 +1,7 @@
 .wave-below{
 	margin: 10px 0 0;
-	button{
-		margin-right: 5px;
+	.el-button+.el-button {
+		margin-left: 6px;
 	}
 }
 

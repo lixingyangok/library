@@ -16,11 +16,19 @@
     flex: none;
     margin-right: 10px;
     min-width: 400px;
-    width: 45%;
+    width: calc(50% - 150px);
     height: 100%;
     resize: both;
     position: relative;
     border: solid 1px skyblue;
+    .txt-box{
+        padding: 30px;
+        white-space: break-spaces;
+        overflow-y: auto;
+        font-size: 16px;
+        line-height:1.8;
+    }
+    .txt-box,
     iframe{
         display: block;
         width: 100%;
@@ -39,7 +47,7 @@
     }
     .handler{
         position: absolute;
-        top: 40%;
+        top: 38%;
         right: -6px;
         display: block;
         width: 4px;

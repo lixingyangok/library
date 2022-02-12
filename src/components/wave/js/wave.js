@@ -100,7 +100,8 @@ export default function(){
     // ▼加载【媒体】数据
     async function getAudioData(sPath){
         let err;
-        const oMediaBuffer = await fetch(encodeURIComponent(sPath)).then(res => {
+        // sPath = encodeURIComponent(sPath)
+        const oMediaBuffer = await fetch(sPath).then(res => {
             return res.blob();
         }).then(res=>{
             return fileToBuffer(res, true);
@@ -249,7 +250,7 @@ export default function(){
             const {width, left} = oDom.oCanvasDom.getBoundingClientRect();
             clientX = left + width / 2;
         }
-		const [min, max, iStep] = [45, 260, 25]; // 每秒最小/大宽度（px），缩放步幅
+		const [min, max, iStep] = [45, 260, 15]; // 每秒最小/大宽度（px），缩放步幅
         // ▼小到头了就不要再缩小了，大到头了也就要放大了
 		if (deltaY > 0 ? (perSecPxOld <= min) : (perSecPxOld >= max)){
 			return oData.drawing = false;

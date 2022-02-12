@@ -11,6 +11,7 @@ export function mainPart(){
 		oTextArea: null, // 输入框
 		oSententList: null, // 字幕列表
 		oSententWrap: null, // 字幕外套
+		oTxtInput: null, // 文本字幕的DOM容器
 	});
 	const oOperation = { // 编辑功能
 		oIdStore: {}, // 查出来立即存在这
@@ -48,7 +49,9 @@ export function mainPart(){
 		aSiblings: [], // 当前媒体的邻居文件
 		iHisMax: 30, // 最多历史记录数量
 		iLineHeight: 35, // 行高xxPx
-		isShowPDF: !!false,
+		isShowLeft: !!false,
+		leftType: '',
+		sArticle: '',
 	});
 	const oInstance = getCurrentInstance();
 	// ▼当前行
@@ -237,19 +240,38 @@ export function mainPart(){
 	}
 	// ▼显示左侧
 	function showLeftColumn(){
-
-		oData.isShowPDF = !oData.isShowPDF;
+		oData.isShowLeft = !oData.isShowLeft;
 	}
 	// ▼打开PDF
 	function openPDF(){
 		console.log('oMediaInfo\n', oData.oMediaInfo.$dc());
-		oData.isShowPDF = true;
+		oData.isShowLeft = true;
+		oData.leftType = 'pdf';
 		const dir = oData.oMediaInfo.dir.replaceAll('/', '\\');
 		const bCopy = copyString(dir);
 		if (bCopy) this.$message.success('已复制路径');
 		const btn = oDom?.oIframe?.contentDocument?.querySelector('#openFile');
 		if (!btn) return;
 		btn.click();
+	}
+	// ▼打开txt
+	async function getFile(ev){
+		oData.leftType = 'txt';
+		oData.sArticle = '';
+		const [oFile] = ev.target.files;
+		console.log('target\n', oFile);
+		oData.isShowLeft = true;
+		const reader = new FileReader();//这是核心！！读取操作都是由它完成的
+		reader.readAsText(oFile, 'utf-8');
+		reader.onload = function(oFREvent){//读取完毕从中取值
+			const fileTxt = oFREvent.target.result;
+			console.log('fileTxt', fileTxt);
+			oData.sArticle = fileTxt;
+		}
+	}
+	function openTxt(){
+		console.log('oTxtInput', oDom.oTxtInput);
+		oDom?.oTxtInput?.click();
 	}
 	// ▼查询是否修改过
 	function checkIfChanged(oOneLine){
@@ -280,6 +302,8 @@ export function mainPart(){
 		openPDF,
 		showLeftColumn,
 		checkIfChanged,
+		getFile,
+		openTxt,
 	};
     return reactive({
         ...toRefs(oDom),

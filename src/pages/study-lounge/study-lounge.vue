@@ -2,15 +2,19 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-07 19:35:47
+ * @LastEditTime: 2022-02-12 12:28:14
  * @Description: 
 -->
 <template>
     <div class="outer" >
-        <section class="left" v-show="isShowPDF" >
+        <section class="left" v-show="isShowLeft" >
             <iframe ref="oIframe"
+                v-if="leftType=='pdf'"
                 src="./static/pdf-viewer/web/viewer.html"
             ></iframe>
+            <div class="txt-box" v-else="leftType=='txt'">
+                {{sArticle}}
+            </div>
             <span class="handler" ></span>
         </section>
         <!-- 左右分界 -->
@@ -23,27 +27,31 @@
             />
             <article class="wave-below">
                 时长：{{oMediaBuffer.sDuration_}}&emsp;
-                <button @click="oMyWave.toSaveTemp">
+                <el-button type="primary" size="small" @click="()=>oMyWave.toSaveTemp">
                     保存波形缓存
-                </button>
-                <button @click="saveMedia">
+                </el-button>
+                <el-button type="primary" size="small" @click="saveMedia">
                     保存媒体
-                </button>
-                <button @click="showMediaDialog">
+                </el-button>
+                <el-button type="primary" size="small" @click="showMediaDialog">
                     信息与列表
-                </button>
-                <button @click="toCheckDict">
+                </el-button>
+                <el-button type="primary" size="small" @click="toCheckDict">
                     查字典
-                </button>
-                <button @click="isShowNewWords = true">
+                </el-button>
+                <el-button type="primary" size="small" @click="isShowNewWords = true">
                     单词表：{{aFullWords.length}}个
-                </button>
-                <button @click="showLeftColumn">
-                    {{isShowPDF ? '关闭': '显示'}}左侧
-                </button>
-                <button @click="openPDF">
+                </el-button>
+                <el-button type="primary" size="small" @click="showLeftColumn">
+                    {{isShowLeft ? '关闭': '显示'}}左侧
+                </el-button>
+                <el-button type="primary" size="small" @click="openPDF">
                     打开PDF
-                </button>
+                </el-button>
+                <el-button type="primary" size="small" @click="openTxt">
+                    打开TXT
+                </el-button>
+                <input type="file" ref="oTxtInput" @change="getFile" v-show="0"/>
             </article>
             <!-- ▼输入 -->
             <div class="type-box" v-if="aLineArr[iCurLineIdx]">
