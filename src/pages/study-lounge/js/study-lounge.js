@@ -256,7 +256,7 @@ export function mainPart(){
 		oData.leftType = 'pdf';
 		const dir = oData.oMediaInfo.dir.replaceAll('/', '\\');
 		const bCopy = copyString(dir);
-		if (bCopy) this.$message.success('已复制路径');
+		if (bCopy) vm.$message.success('已复制路径');
 		const btn = oDom?.oIframe?.contentDocument?.querySelector('#openFile');
 		if (!btn) return;
 		btn.click();

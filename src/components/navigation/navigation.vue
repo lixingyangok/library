@@ -2,25 +2,21 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 15:18:43
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-06 11:46:01
+ * @LastEditTime: 2022-02-13 10:34:00
  * @Description: 
 -->
 <template>
     <div class="outter" >
         <ul class="nav-ul" >
             <li v-for="(cur,idx) of aRoutes" :key="idx" >
-                <router-link :to="cur.path" >
-                    {{cur.name_}}    
+                <router-link class="link" :to="cur.path">
+                    <i class="icon" :class="cur.icon_"/>
+                    <span class="name" >{{cur.name_}}</span>
                 </router-link>
             </li>
         </ul>
-        <button @click="toF5()">
-            刷新1
-        </button>
-        <br/>
-        <button @click="toF5(true)">
-            刷新2
-        </button>
+        <button @click="$root.f5()">刷新</button><br/>
+        <button @click="toF5()">刷新</button>
     </div>
 </template>
 
@@ -37,13 +33,11 @@ export default {
     created(){
 
     },
-    methods:{
-        async toF5(willClear){
-            if (willClear) console.clear();
-            else console.log('\n刷新========================');
-            this.$root.show = false;
-            await this.$nextTick();
-            this.$root.show = true;
+    methods: {
+        async toF5(){
+            console.clear();
+            console.log('\n\n已刷新========================');
+            this.$root.f5()
         },
     },
 };

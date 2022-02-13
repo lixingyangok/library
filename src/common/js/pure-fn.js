@@ -207,14 +207,7 @@ export function fileToStrings(oFile) {
 }
 
 
-// ▲ 被使用的方法
-// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-// ▼ 没有被使用的方法
-// ▼有后台功能之后的新方法---------------------------
-
-
-// ▼数组转 Blob，用于上传字幕
+// ▼数组转 Blob，之前用于上传字幕（可能在停用中）
 export function arrToblob(arr){
 	const newArr = arr.map(cur=>({ // 净化
 		start: cur.start.toFixed(2) * 1,
@@ -226,28 +219,5 @@ export function arrToblob(arr){
 		{type: 'application/json;charset=utf-8'},
 	);
 	return file;
-}
-
-
-// ▼可能是上传字幕用的
-export async function fileToBlob(oFile){
-	const res = await fileToTimeLines(oFile);
-	const oBlob = arrToblob(res || []);
-	return oBlob;
-}
-
-// ▼得到时间信息
-export function getTimeInfo(oTime, sType, oAim){
-	if (sType !=='f' && sType!=='s') return {};
-	const [key1, key2] = ({
-		f: ['fileModifyStr', 'fileModifyTs'],
-		s: ['subtitleFileModifyStr', 'subtitleFileModifyTs'],
-	}[sType]);
-	const oResult = {
-		[key1]: oTime.toString(),
-		[key2]: oTime.getTime(),
-	};
-	if (oAim) Object.assign(oAim, oResult)
-	return oResult;
 }
 

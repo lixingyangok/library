@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-13 09:44:28
+ * @LastEditTime: 2022-02-13 10:09:12
  * @Description: 
 -->
 <template>
@@ -17,7 +17,6 @@
                     <li v-for="(curLine, idx) of aArticle" :key="idx"
                         :class="{'writing-line': idx == iWriting}"
                     >
-                        <!-- {{curLine.trim() ? idx==iWriting : ''}} -->
                         <template v-if="idx == iWriting">
                             <template v-if="idx == oTopLineMatch?.iLeftLine">
                                 {{
@@ -48,7 +47,7 @@
                     </li>
                 </ul>
             </div>
-            <span class="handler" ></span>
+            <span class="handler"></span>
         </section>
         <!-- 左右分界 -->
         <section class="right">
