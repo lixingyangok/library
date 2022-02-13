@@ -173,13 +173,30 @@ export const aAlphabet = [...Array(26).keys()].map(cur=>{
 	return String.fromCharCode(97 + cur);
 });
 
-// ▲ 被使用的方法
-// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-// ▼ 没有被使用的方法
-// ▼有后台功能之后的新方法---------------------------
 
-// ▼【文件】转字符（旧版的）
+// ▼将收到的数组转换为【字幕文件】并下载
+export function downloadSrt(aLines, fileName='字幕文件'){
+	const aStr = aLines.map(({start, end, text}, idx) => {
+		const [t01, t02] = [secToStr(start), secToStr(end)];
+		return `${idx + 1}\n${t01} --> ${t02}\n${text}\n`;
+	}).join('\n');
+	// console.log('aStr', aStr);
+	downloadString(aStr, fileName, 'srt');
+}
+
+
+// ▼将收到的数组转换为【文本文件】并下载
+// 将来下载文本时会用到
+export function downloadString(aStr, fileName='文本文件', suffix='txt'){
+	const blob = new Blob([aStr]);
+	Object.assign(document.createElement('a'), {
+		download: `${fileName}.${suffix}`,
+		href: URL.createObjectURL(blob),
+	}).click();
+}
+
+
+// ▼【文件】转字符
 export function fileToStrings(oFile) {
 	let resolveFn = xx => xx;
 	const oPromise = new Promise(fn => resolveFn = fn);
@@ -188,6 +205,14 @@ export function fileToStrings(oFile) {
 	}).readAsText(oFile);
 	return oPromise;
 }
+
+
+// ▲ 被使用的方法
+// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// ▼ 没有被使用的方法
+// ▼有后台功能之后的新方法---------------------------
+
 
 // ▼数组转 Blob，用于上传字幕
 export function arrToblob(arr){
@@ -211,16 +236,6 @@ export async function fileToBlob(oFile){
 	return oBlob;
 }
 
-
-// ▼将收到的数组转换为【字幕文件】并下载
-export function downloadSrt(aLines, fileName='字幕文件'){
-	const aStr = aLines.map(({start, end, text}, idx) => {
-		const [t01, t02] = [secToStr(start), secToStr(end)];
-		return `${idx + 1}\n${t01} --> ${t02}\n${text}\n`;
-	}).join('\n');
-	downloadString(aStr, fileName, 'srt');
-}
-
 // ▼得到时间信息
 export function getTimeInfo(oTime, sType, oAim){
 	if (sType !=='f' && sType!=='s') return {};
@@ -234,15 +249,5 @@ export function getTimeInfo(oTime, sType, oAim){
 	};
 	if (oAim) Object.assign(oAim, oResult)
 	return oResult;
-}
-
-// ▼将收到的数组转换为【文本文件】并下载
-// 将来下载文本时会用到
-export function downloadString(aStr, fileName='文本文件', suffix='txt'){
-	const blob = new Blob([aStr]);
-	Object.assign(document.createElement('a'), {
-		download: `${fileName}.${suffix}`,
-		href: URL.createObjectURL(blob),
-	}).click();
 }
 

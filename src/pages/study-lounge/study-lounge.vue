@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 20:51:29
+ * @LastEditTime: 2022-02-13 09:44:28
  * @Description: 
 -->
 <template>
@@ -59,13 +59,18 @@
                 @pipe="bufferReceiver"
             />
             <article class="wave-below">
-                时长：{{oMediaBuffer.sDuration_}}&emsp;
-                <el-button type="primary" size="small" @click="()=>oMyWave.toSaveTemp">
-                    保存波形缓存
-                </el-button>
-                <el-button type="primary" size="small" @click="saveMedia">
-                    保存媒体
-                </el-button>
+                ◆文件：{{(oMediaInfo.dir||'').split('/').slice(-3).join('/') + oMediaInfo.name}}&emsp;
+                ◆时长：{{oMediaBuffer.sDuration_}}&emsp;
+            </article>
+            <article class="wave-below">
+                <el-button-group size="small">
+                    <el-button type="primary" @click="()=>oMyWave.toSaveTemp">
+                        保存波形
+                    </el-button>
+                    <el-button type="primary" @click="saveMedia">
+                        保存媒体
+                    </el-button>
+                </el-button-group>
                 <el-button type="primary" size="small" @click="showMediaDialog">
                     信息与列表
                 </el-button>
@@ -75,16 +80,21 @@
                 <el-button type="primary" size="small" @click="isShowNewWords = true">
                     单词表：{{aFullWords.length}}个
                 </el-button>
-                <el-button type="primary" size="small" @click="showLeftColumn">
-                    {{isShowLeft ? '关闭': '显示'}}左侧
-                </el-button>
-                <el-button type="primary" size="small" @click="openPDF">
-                    打开PDF
-                </el-button>
-                <el-button type="primary" size="small"
-                    @click="() => oTxtInput.click()"
-                >
-                    打开TXT
+                <el-button-group size="small">
+                    <el-button type="primary"  @click="showLeftColumn">
+                        {{isShowLeft ? '关闭': '显示'}}左侧
+                    </el-button>
+                    <el-button type="primary" @click="openPDF">
+                        打开PDF
+                    </el-button>
+                    <el-button type="primary"
+                        @click="() => oTxtInput.click()"
+                    >
+                        打开TXT
+                    </el-button>
+                </el-button-group>
+                <el-button type="primary" size="small" @click="saveSrt">
+                    保存为srt
                 </el-button>
                 <input type="file" ref="oTxtInput" accept="text/plain"
                     @change="getFile" v-show="0"

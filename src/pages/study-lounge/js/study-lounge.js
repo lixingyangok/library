@@ -1,5 +1,5 @@
 import {toRefs, reactive, computed, onMounted, getCurrentInstance} from 'vue';
-import {SubtitlesStr2Arr, fixTime, copyString} from '../../../common/js/pure-fn.js';
+import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
 
@@ -205,7 +205,7 @@ export function mainPart(){
 	}
 	// ▼显示一批媒体信息
 	async function showMediaDialog(){
-		this.isShowMediaInfo = true;
+		oData.isShowMediaInfo = true;
 		const aRes = await fnInvoke('db', 'getMediaInfo', {
 			dir: oData.oMediaInfo.dir
 		});
@@ -263,20 +263,13 @@ export function mainPart(){
 	}
 	// ▼打开txt
 	async function getFile(ev){
-		const [oFile] = ev.target.files;
 		oData.leftType = 'txt';
 		oData.sArticle = '';
 		oData.isShowLeft = true;
-		const {oPromise, fnResolve, fnReject} = newPromise();
-		Object.assign(new FileReader(), {
-			onload(loadEvent){
-				fnResolve(loadEvent.target.result);
-			},
-		}).readAsText(oFile, 'utf-8');
-		const fileTxt = await oPromise;
+		const fileTxt = await fileToStrings(ev.target.files[0]);
 		if (!fileTxt) return;
 		ev.target.value = '';
-		console.log('字符数量', fileTxt.length);
+		console.log('文本行', fileTxt.match(/\n/g).length);
 		oData.sArticle = fileTxt;
 		oData.aArticle = fileTxt.split('\n');
 	}
@@ -287,6 +280,17 @@ export function mainPart(){
 		return ['start', 'end', 'text'].some(key => {
 			return oOneLine[key] != oOldOne[key];
 		});
+	}
+	// ▼保存字幕文件
+	function saveSrt(){
+		console.log('保存');
+		const {dir, name} = oData.oMediaInfo;
+		const aName = name.split('.');
+		aName[aName.length-1] = 'srt';
+		const sName = aName.join('.');
+		const bCopy = copyString(dir);
+		if (bCopy) vm.$message.success('已复制路径');
+		downloadSrt(oData.aLineArr, sName);
 	}
 	// ============================================================================
 	init();
@@ -310,6 +314,7 @@ export function mainPart(){
 		showLeftColumn,
 		checkIfChanged,
 		getFile,
+		saveSrt,
 	};
     return reactive({
         ...toRefs(oDom),

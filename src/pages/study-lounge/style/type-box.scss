@@ -1,10 +1,10 @@
 .wave-below{
 	margin: 10px 0 0;
-	.el-button+.el-button {
-		margin-left: 6px;
+	& > * + .el-button,
+	& > * + .el-button-group{
+		margin-left: 5px;
 	}
 }
-
 
 .type-box{
 	margin: 10px 0 0;

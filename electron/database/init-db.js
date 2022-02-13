@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-12 19:32:20
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 11:56:03
+ * @LastEditTime: 2022-02-13 09:36:12
  * @Description: 
  */
 const sqlite3 = require('sqlite3').verbose();
@@ -34,6 +34,7 @@ setTimeout(()=>{
 }, 1*1000);
 
 console.log('\n\n\n-----');
+// console.log('loadEnvironment', db.loadEnvironment);
 // console.log(sqlite3.create_function);
 // console.log(sqlite3.createFunction);
 // console.log(sqlite3.sqlite3_create_function);
@@ -41,7 +42,7 @@ console.log('\n\n\n-----');
 // console.log(sqlite3.registerFunction);
 // console.log(sqlite3.RegisterFunction);
 // console.log(sqlite3.RegisterFunctions);
-
+// ----------------------------------------------------
 // console.log(db.create_function);
 // console.log(db.createFunction);
 // console.log(db.sqlite3_create_function);
