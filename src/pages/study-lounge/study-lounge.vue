@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-16 18:57:27
+ * @LastEditTime: 2022-02-16 21:07:14
  * @Description: 
 -->
 <template>
@@ -55,11 +55,18 @@
                     <li v-if="iShowUntil > 0 && (aArticle[iShowUntil - 1].trim() == '' || iShowUntil + 1 < oTopLineMatch?.iLeftLine)"></li>
                     <template v-if="oTopLineMatch?.iLeftLine >= 0 && oTopLineMatch?.iLeftLine < iWriting">
                         <li>
-                            {{aArticle[oTopLineMatch?.iLeftLine]}}
+                            {{
+                                aArticle[oTopLineMatch.iLeftLine].slice(0, oTopLineMatch.iMatchStart)
+                            }}<span class="just-wrote">{{
+                                aArticle[oTopLineMatch.iLeftLine].slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
+                            }}</span>{{
+                                aArticle[oTopLineMatch.iLeftLine].slice(oTopLineMatch.iMatchEnd)
+                            }}
                         </li>
                         <li v-if="oTopLineMatch?.iLeftLine + 1 != iWriting"></li>
                     </template>
-                    <li class="writing-line" v-if="iWriting >= 0">
+                    <!-- ▼ writing-line ▼ -->
+                    <li class="writing-line" v-if="iWriting >= 0" ref="oWritingLine" >
                         <template v-if="oTopLineMatch?.iLeftLine == iWriting">
                             {{
                                 sWriting.slice(0, oTopLineMatch.iMatchStart)
@@ -76,6 +83,9 @@
                     </li>
                     <li v-if="iWriting >= 0">
                         {{aArticle.slice(iWriting + 1).join('\n')}}
+                    </li>
+                    <li v-else>
+                        {{aArticle.slice(Math.max(iShowUntil, oTopLineMatch?.iLeftLine - 1)).join('\n')}}
                     </li>
                 </ul>
             </div>
@@ -286,8 +296,10 @@ export default {
                 if (oData.iWriting >= 0){
                     if (oTopLineMatch.value.iLeftLine == oData.iWriting){
                         return oTopLineMatch.value.iLeftLine;
+                    }else if (oData.iWriting - oTopLineMatch.value.iLeftLine < 10){
+                        return oTopLineMatch.value.iLeftLine - 0;
                     }
-                    return oTopLineMatch.value.iLeftLine - 0;
+                    return oData.iWriting;
                 }
                 return oTopLineMatch.value.iLeftLine;
             }else if (oData.iWriting >= 0){

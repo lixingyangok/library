@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-13 21:41:18
+ * @LastEditTime: 2022-02-16 21:06:41
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -143,18 +143,19 @@ export function fnAllKeydownFn() {
         if (!iLeftLines) return;
         This.iWriting = -1;
         const text = This.oCurLine.text.trim();
-        if (text.includes(' ') == false) return;
+        if (!text.length) return;
         const aPieces = text.match(/[a-z ']+/ig);
         if (!aPieces?.length) return;
         console.time('左侧句子定位');
         const {iLeftLine = -1, iMatchEnd: iLastMatchEnd} = This.oTopLineMatch || {};
         for (let idx = getLeftStartIdx(); idx < iLeftLines; idx++ ){
             const sLeftFull = This.aArticle[idx];
+            // if (sLeftFull.includes('oomed!')) debugger;
             let iMatchStart = -1;
             let iLastMatch = idx == iLeftLine ? iLastMatchEnd : 0;
             const isInLine = aPieces.every(onePiece => {
                 const sLeftPiece = sLeftFull.slice(iLastMatch);
-                const oMatchInfo = sLeftPiece.match(new RegExp(onePiece, 'i'));
+                const oMatchInfo = sLeftPiece.match(new RegExp(onePiece.trim(), 'i'));
                 if (!oMatchInfo) return;
                 if (iMatchStart == -1) iMatchStart = oMatchInfo.index + (iLeftLine == idx ? iLastMatchEnd : 0);
                 iLastMatch += oMatchInfo.index + onePiece.length;
@@ -173,17 +174,19 @@ export function fnAllKeydownFn() {
         console.log(`左侧句子定位-没成功`);
     }
     // ▼跳转到目标行
-    function setLeftTxtTop( obj ){
+    async function setLeftTxtTop( obj ){
         Object.assign(This, obj);
         This.oRightToLeft[This.iCurLineIdx] = {
             ...obj, iLeftLine: obj.iWriting,
         };
         console.log('当前句左行号：', obj.iWriting);
-        const {oLeftTxt, oLeftTxtWrap} = This;
-        const oLi = oLeftTxt.children[obj.iWriting];
-        const dom = document.querySelector('.writing-line');
-        dom?.scrollIntoView();
-        oLeftTxtWrap.scrollTop -= 190;
+        // const {oLeftTxt, oLeftTxtWrap} = This;
+        // const oLi = oLeftTxt.children[obj.iWriting];
+        // const dom = document.querySelector('.writing-line');
+        await This.$nextTick();
+        if (!This.oWritingLine) return;
+        This.oWritingLine.scrollIntoView();
+        This.oLeftTxtWrap.scrollTop -= 190;
     }
     // ▼跳行后定位（oSententList => oSententWrap）
     function setLinePosition(iAimLine) {
@@ -387,14 +390,15 @@ export function fnAllKeydownFn() {
         if (!oAlphabetObj[ev.data] && !Backspace) return;
         const sText = ev.target.value; // 当前文字
         const idx = ev.target.selectionStart; // 光标位置
-        const sLeft = (sText.slice(0, idx) || '').split(' ').pop().trim();
+        // const sLeft = (sText.slice(0, idx) || '').split(' ').pop().trim();
+        const sLeft = ((sText.slice(0, idx) || '').match(/[a-z]+/ig) || ['']).pop();
         This.sTyped = sLeft;
         // console.log('左侧文本：', sLeft);
         if (!sLeft) return;
         This.aCandidate = [];
         candidateTimer = setTimeout(() => {
             setCandidate(sLeft.toLowerCase(), ++iSearchingQ);
-        }, 200);
+        }, 250);
     }
     // ▼查询候选词
     async function setCandidate(sWord, iCurQs) {
@@ -483,15 +487,21 @@ export function fnAllKeydownFn() {
         This.oMyWave.goOneLine(This.oCurLine);
     }
     // ▼保存一条历史记录
+    let isSaving = false;
     function recordHistory() {
-        // console.log('保存历史');
+        if (isSaving) return console.log('★保存历史-防抖成功★');
+        isSaving = true;
+        const sLineArr = JSON.stringify(This.aLineArr);
         This.aHistory.splice(This.iCurStep + 1, Infinity, {
-            sLineArr: JSON.stringify(This.aLineArr),
+            sLineArr,
             iCurLineIdx: This.iCurLineIdx,
         });
         This.iCurStep = Math.min(This.iCurStep + 1, This.iHisMax - 1);
-        if (This.aHistory.length <= This.iHisMax) return;
+        if (This.aHistory.length <= This.iHisMax) {
+            return (isSaving = false);
+        }
         This.aHistory.shift();
+        isSaving = false;
     }
     // ▼最终返回
     return {

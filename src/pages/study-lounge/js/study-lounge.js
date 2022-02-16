@@ -14,6 +14,7 @@ export function mainPart(){
 		oTxtInput: null, // 文本字幕的Input
 		oLeftTxt: null, // 文本字幕的DOM容器
 		oLeftTxtWrap: null, // 文本字幕的DOM容器
+		oWritingLine: null,
 	});
 	const oOperation = { // 编辑功能
 		oIdStore: {}, // 查出来立即存在这
