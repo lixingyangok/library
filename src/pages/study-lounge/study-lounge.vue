@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-13 10:09:12
+ * @LastEditTime: 2022-02-16 18:57:27
  * @Description: 
 -->
 <template>
@@ -12,9 +12,13 @@
                 v-if="leftType=='pdf'"
                 src="./static/pdf-viewer/web/viewer.html"
             ></iframe>
-            <div class="txt-box" ref="oLeftTxtWrap" v-else="leftType=='txt'">
+            <!--  -->
+            <div class="txt-box" ref="oLeftTxtWrap" v-else="leftType == 'txt'">
+                <!-- iShowUntil：{{iShowUntil}}<br/>
+                oTopLineMatch?.iLeftLine：{{oTopLineMatch?.iLeftLine}}<br/>
+                iWriting：{{iWriting}}<br/> -->
                 <ul ref="oLeftTxt">
-                    <li v-for="(curLine, idx) of aArticle" :key="idx"
+                    <!-- <li v-for="(curLine, idx) of aArticle" :key="idx"
                         :class="{'writing-line': idx == iWriting}"
                     >
                         <template v-if="idx == iWriting">
@@ -44,6 +48,34 @@
                         <template v-else>
                             {{curLine}}
                         </template>
+                    </li> -->
+                    <li>
+                        {{'\n' + aArticle.slice(0, iShowUntil).join('\n')}}
+                    </li>
+                    <li v-if="iShowUntil > 0 && (aArticle[iShowUntil - 1].trim() == '' || iShowUntil + 1 < oTopLineMatch?.iLeftLine)"></li>
+                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && oTopLineMatch?.iLeftLine < iWriting">
+                        <li>
+                            {{aArticle[oTopLineMatch?.iLeftLine]}}
+                        </li>
+                        <li v-if="oTopLineMatch?.iLeftLine + 1 != iWriting"></li>
+                    </template>
+                    <li class="writing-line" v-if="iWriting >= 0">
+                        <template v-if="oTopLineMatch?.iLeftLine == iWriting">
+                            {{
+                                sWriting.slice(0, oTopLineMatch.iMatchStart)
+                            }}<span class="just-wrote">{{
+                                sWriting.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
+                            }}</span>{{
+                                sWriting.slice(oTopLineMatch.iMatchEnd, iMatchStart)
+                            }}
+                        </template>
+                        <template v-else>
+                            {{sWriting.slice(0, iMatchStart)}}
+                        </template>
+                        <em class="writing">{{sWriting.slice(iMatchStart, iMatchEnd)}}</em>{{sWriting.slice(iMatchEnd)}}
+                    </li>
+                    <li v-if="iWriting >= 0">
+                        {{aArticle.slice(iWriting + 1).join('\n')}}
                     </li>
                 </ul>
             </div>
@@ -70,7 +102,7 @@
                         保存媒体
                     </el-button>
                 </el-button-group>
-                <el-button type="primary" size="small" @click="showMediaDialog">
+                <el-button type="primary" size="small" @click="showMediaDialog()">
                     信息与列表
                 </el-button>
                 <el-button type="primary" size="small" @click="toCheckDict">
@@ -246,22 +278,30 @@ export default {
         const oTopLineMatch = computed(() => {
             return oData.oRightToLeft[oData.iCurLineIdx - 1];
         });
-        const mayWritingLine = computed(() => {
-            if (oData.iWriting > -1) return oData.iWriting; // 有明确的当前行
-            if (!oTopLineMatch.v) return -1;
-            if (oData.aArticle[oTopLineMatch.v.iLeftLine + 1].trim()) {
-                return oTopLineMatch.v.iLeftLine + 1;
-            }else if(oData.aArticle[oTopLineMatch.v.iLeftLine + 2].trim()){
-                return oTopLineMatch.v.iLeftLine + 2;
+        const sWriting = computed(() => {
+            return oData.aArticle[oData.iWriting];
+        });
+        const iShowUntil = computed(() => {
+            if (oTopLineMatch.value){
+                if (oData.iWriting >= 0){
+                    if (oTopLineMatch.value.iLeftLine == oData.iWriting){
+                        return oTopLineMatch.value.iLeftLine;
+                    }
+                    return oTopLineMatch.value.iLeftLine - 0;
+                }
+                return oTopLineMatch.value.iLeftLine;
+            }else if (oData.iWriting >= 0){
+                return oData.iWriting;
             }
-            return -1;
+            return oData.aArticle.length;
         });
         return {
             ...toRefs(oData),
             ...fnAllKeydownFn(),
             aLineForShow,
-            mayWritingLine,
+            sWriting,
             oTopLineMatch,
+            iShowUntil,
         };
     },
     mounted(){
