@@ -240,10 +240,9 @@ export default function(){
         ls('aTemp', aTemp);
     }
     // ▼横向缩放波形
-    function zoomWave(ev){
-        if (oData.drawing) { // 防抖（很重要）
-            return console.log('有效防抖'); 
-        }
+    async function zoomWave(ev){
+        // ▼ 防抖（很重要）
+        if (oData.drawing) return console.log('有效防抖'); 
 		const {iPerSecPx: perSecPxOld, oMediaBuffer} = oData;
 		let {deltaY, clientX} = ev; 
         if (clientX >= 0 == false) { // 用键盘缩放时 clientX 为空
@@ -269,14 +268,16 @@ export default function(){
         const iNewLeftPx = getPointSec(clientX) * fPerSecPx - (clientX - offsetLeft);
         oData.drawing = true;
         oData.iPerSecPx = iPerSecPx;
+        oData.fPerSecPx = iPerSecPx;
 		oDom.oPointer.style.left = `${oDom.oAudio.currentTime * fPerSecPx}px`;
+        await this.$nextTick(); // 重要！等待总宽变长再滚动
 		oDom.oViewport.scrollLeft = iNewLeftPx; // 在此触发了缩放
 		if (iNewLeftPx <= 0) { // 这里情况不明
-			// console.log('小于0 =', iNewLeftPx);
+			console.log('注意 <= 0', iNewLeftPx);
 			waveWrapScroll();
 		}
 	}
-    // ▼得到鼠标位置的的秒数，收受一个事件对象
+    // ▼得到鼠标位置的的秒数
 	function getPointSec(clientX) {
 		const {scrollLeft, parentElement: {offsetLeft}} = oDom.oViewport;
 		const iLeftPx = clientX - offsetLeft + scrollLeft; //鼠标距左边缘的px长度
@@ -346,10 +347,11 @@ export default function(){
     // 旧版本监听 oDom.oViewport 但有时滚动条会触发监听，就改为了监听 oDom.oMyWaveBar 结果还是照旧
     watch(() => oDom.oViewport, (oNew)=>{
         if (!oNew) return;
+        console.log('触发监听：', oDom.oViewport);
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
             const {width} = entryArr[0].contentRect;
-            if (0) console.log('宽度变成了：', width);
+            if (1) console.log('宽度变成了：', width);
         });
         myObserver.observe(oNew);
     });
