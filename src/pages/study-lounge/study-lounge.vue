@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-16 21:07:14
+ * @LastEditTime: 2022-02-19 14:05:10
  * @Description: 
 -->
 <template>
@@ -53,7 +53,8 @@
                         {{'\n' + aArticle.slice(0, iShowUntil).join('\n')}}
                     </li>
                     <li v-if="iShowUntil > 0 && (aArticle[iShowUntil - 1].trim() == '' || iShowUntil + 1 < oTopLineMatch?.iLeftLine)"></li>
-                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && oTopLineMatch?.iLeftLine < iWriting">
+                    <!-- <template v-if="oTopLineMatch?.iLeftLine >= 0 && oTopLineMatch?.iLeftLine < iWriting"> -->
+                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (oTopLineMatch?.iLeftLine < iWriting))">
                         <li>
                             {{
                                 aArticle[oTopLineMatch.iLeftLine].slice(0, oTopLineMatch.iMatchStart)
@@ -76,6 +77,7 @@
                                 sWriting.slice(oTopLineMatch.iMatchEnd, iMatchStart)
                             }}
                         </template>
+                        <!-- ▲同一行的上一句话 -->
                         <template v-else>
                             {{sWriting.slice(0, iMatchStart)}}
                         </template>
@@ -85,7 +87,11 @@
                         {{aArticle.slice(iWriting + 1).join('\n')}}
                     </li>
                     <li v-else>
-                        {{aArticle.slice(Math.max(iShowUntil, oTopLineMatch?.iLeftLine - 1)).join('\n')}}
+                        {{
+                            aArticle.slice(
+                                Math.max(iShowUntil + 1, oTopLineMatch?.iLeftLine - 1)
+                            ).join('\n')
+                        }}
                     </li>
                 </ul>
             </div>
