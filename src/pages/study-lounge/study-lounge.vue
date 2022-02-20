@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-19 14:05:10
+ * @LastEditTime: 2022-02-20 17:19:54
  * @Description: 
 -->
 <template>
@@ -228,11 +228,10 @@
             >
                 <h3 class="title">
                     ◆ {{['新词汇', '专有名词'][i01]}}
+                    <small>{{oneList.length}}个</small>
                 </h3>
                 <ul class="one-type-word-ul">
-                    <li class="word"
-                        v-for="(oneWord,i02) of oneList" :key="i02"
-                    >
+                    <li class="word" v-for="(oneWord,i02) of oneList" :key="i02" >
                         <span @click="changeWordType(oneWord)">
                             {{oneWord.word}}
                         </span>

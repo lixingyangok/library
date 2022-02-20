@@ -72,7 +72,7 @@ export function mainPart(){
 		const arr = oData.aFullWords.concat().sort((aa,bb)=>{
 			return bb.length - aa.length;
 		});
-		return new RegExp(`\\b(${arr.join('|')})\\b`, 'gi');
+		return new RegExp(`\\b(${arr.join('|')})`, 'gi'); // \\b
 	});
 	// ▼ 字幕文件位置（todo 用tube管道取
 	const sSubtitleSrc = (()=>{

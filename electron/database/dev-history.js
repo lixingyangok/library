@@ -38,20 +38,20 @@ module.exports.oFn = {
         }).catch(err=>{
             console.log('插入出错', err);
         });
-        db.get("SELECT count(*), REGEXP() as bb FROM dev_history", function(err, row) {
-            toLog('开发记录数量01：', err, row);
-        });
-        try{
-            db.get("SELECT count(*) FROM dev_history where note REGEXP '[0-9]{1,3}'", function(err, row) {
-                toLog('开发记录数量01.5：', err, row);
-            });
-            db.get("SELECT count(*) FROM dev_history where note regexp '[0-9]{1,3}'", function(err, row) {
-                toLog('开发记录数量01.6：', err, row);
-            });
-        }catch(e2){
-            console.log('正则03\n\n');
-            toLog('开发记录数量03：', e2);
-        }
+        // db.get("SELECT count(*), REGEXP() as bb FROM dev_history", function(err, row) {
+        //     toLog('开发记录数量01：', err, row);
+        // });
+        // try{
+        //     db.get("SELECT count(*) FROM dev_history where note REGEXP '[0-9]{1,3}'", function(err, row) {
+        //         toLog('开发记录数量01.5：', err, row);
+        //     });
+        //     db.get("SELECT count(*) FROM dev_history where note regexp '[0-9]{1,3}'", function(err, row) {
+        //         toLog('开发记录数量01.6：', err, row);
+        //     });
+        // }catch(e2){
+        //     console.log('正则03\n\n');
+        //     toLog('开发记录数量03：', e2);
+        // }
     },
 };
 

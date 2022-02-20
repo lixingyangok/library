@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-16 21:06:41
+ * @LastEditTime: 2022-02-20 16:59:18
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -142,6 +142,7 @@ export function fnAllKeydownFn() {
         const iLeftLines = This.aArticle.length;
         if (!iLeftLines) return;
         This.iWriting = -1;
+        Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         const text = This.oCurLine.text.trim();
         if (!text.length) return;
         const aPieces = text.match(/[a-z ']+/ig);
@@ -396,9 +397,11 @@ export function fnAllKeydownFn() {
         // console.log('左侧文本：', sLeft);
         if (!sLeft) return;
         This.aCandidate = [];
+        const sLeftLower = sLeft.toLowerCase();
+        setCandidate(sLeftLower);
         candidateTimer = setTimeout(() => {
-            setCandidate(sLeft.toLowerCase(), ++iSearchingQ);
-        }, 250);
+            setCandidate(sLeftLower, ++iSearchingQ);
+        }, 300);
     }
     // ▼查询候选词
     async function setCandidate(sWord, iCurQs) {
@@ -409,7 +412,9 @@ export function fnAllKeydownFn() {
             }
             if (aResult.length >= 4) break;
         }
+        // console.log('候选词：', aResult.$dc());
         This.aCandidate = aResult;
+        if (typeof iCurQs != 'number') return;
         const aWords = await fnInvoke('db', 'getCandidate', {
             sWord, limit: 9 - aResult.length,
         });
@@ -559,34 +564,6 @@ class keyDownFn {
             sTyped, sCurLineTxt: sText,
         });
         this.getMatchedWords(sTyped);
-    }
-    // ▼搜索匹配的单词
-    getMatchedWords(sTyped = '') {
-        console.time('本地查找★★');
-        sTyped = sTyped.toLocaleLowerCase().trim();
-        const iMax = 8;
-        const aMatched = (() => {
-            const { aWords, aNames } = this.state;
-            const allWords = aWords.concat(aNames);
-            if (!sTyped) return allWords;
-            const aFiltered = [];
-            // ▼遍历耗时 ≈ 0.0x 毫秒
-            for (let idx = allWords.length; idx--;) {
-                if (allWords[idx].toLocaleLowerCase().startsWith(sTyped)) {
-                    aFiltered.push(allWords[idx]);
-                    if (aFiltered.length === iMax) break; // 最多x个，再多也没法按数字键去选取
-                }
-            }
-            return aFiltered;
-        })();
-        this.setState({ aMatched });
-        const isNeedReplenish = sTyped && aMatched.length < iMax;
-        if (isNeedReplenish) {
-            this.typeingTimer = setTimeout(() => {
-                this.checkDict(sTyped, aMatched, iMax);
-            }, 280);
-        }
-        console.timeEnd('本地查找★★');
     }
 }
 
