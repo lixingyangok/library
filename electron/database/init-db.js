@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-12 19:32:20
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-13 09:36:12
+ * @LastEditTime: 2022-02-19 12:01:50
  * @Description: 
  */
 const sqlite3 = require('sqlite3').verbose();
@@ -20,20 +20,25 @@ db.addListener('regexp', function(v1, v2){
 db.get("SELECT count(*), REGEXP() as bb FROM dev_history", function(err, row) {
     toLog('开发记录数量000：', err, row);
 });
+console.log('\n\n\n-----');
 setTimeout(()=>{
     toLog('5秒之后加载');
-    // const obj = require('./dbExtension');
     db.loadExtension(
-        'D:/github/my-library/src/regexp.c',
+        './sqlite-pcre.c',
         function(err, res){
-            console.log('xyz 001\n\n', err);
-            console.log('xyz 001\n\n', res);
-            console.log('\n\n\n\n\n\n');
+            console.log('\nxyz 002', err);
+            console.log('\nxyz 002', res);
         }
     );
-}, 1*1000);
+    db.loadExtension(
+        'D:/github/my-library/electron/database/sqlite-pcre.c',
+        function(err, res){
+            console.log('\nxyz 003', err);
+            console.log('\nxyz 003', res);
+        }
+    );
+}, 5 *1000);
 
-console.log('\n\n\n-----');
 // console.log('loadEnvironment', db.loadEnvironment);
 // console.log(sqlite3.create_function);
 // console.log(sqlite3.createFunction);
@@ -85,3 +90,4 @@ module.exports.sqlize = sqlize;
     'each',                'map',
     'backup'
 */
+
