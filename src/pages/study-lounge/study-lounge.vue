@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-20 17:19:54
+ * @LastEditTime: 2022-02-27 21:22:43
  * @Description: 
 -->
 <template>
@@ -162,8 +162,8 @@
                         <template v-else>{{word}}</template>
                     </template>
                 </div>
-                <textarea ref="oTextArea"
-                    class="textarea textarea-real"
+                <textarea ref="oTextArea" class="textarea textarea-real"
+                    :class="{'space-ahead': ' ' == aLineArr[iCurLineIdx].text[0]}"
                     v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
