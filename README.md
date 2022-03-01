@@ -22,6 +22,7 @@
 
 2022年2月6日 ★ 手工触发候选词
 
+2022年3月1日 ★ 打开文本原文时应复制到剪贴板（再补充自动打开文本原文功能）
 
 
 ★ Run `yarn electron:dev` to work with electron in development mode.
