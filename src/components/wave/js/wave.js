@@ -315,9 +315,9 @@ export default function(){
         const {oViewport} = oDom;
 		const iOldVal = oViewport['scrollLeft'];
 		if (~~iOldVal === ~~iNewLeft) return;
-		if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
-		const [iTakeTime, iTimes] = [200, 50]; // 走完全程耗时, x毫秒走一步
-		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes));
+		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
+		const [iTakeTime, iTimes] = [400, 35]; // 走完全程耗时, x毫秒走一步
+		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes)); // 步长
 		oData.scrollTimer = setInterval(()=>{
 			let iAimTo = oViewport['scrollLeft'] + iOneStep;
             const needStop = iNewLeft > iOldVal ? (iAimTo >= iNewLeft) : (iAimTo <= iNewLeft);
