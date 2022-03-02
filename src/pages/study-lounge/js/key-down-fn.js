@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-20 16:59:18
+ * @LastEditTime: 2022-03-02 13:36:19
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -102,6 +102,7 @@ export function fnAllKeydownFn() {
         if (oNewLine === null) {
             return This.$message.warning('后面没有了');
         }
+        setLeftLine();
         goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行
@@ -181,12 +182,12 @@ export function fnAllKeydownFn() {
             ...obj, iLeftLine: obj.iWriting,
         };
         console.log('当前句左行号：', obj.iWriting);
-        // const {oLeftTxt, oLeftTxtWrap} = This;
-        // const oLi = oLeftTxt.children[obj.iWriting];
-        // const dom = document.querySelector('.writing-line');
         await This.$nextTick();
         if (!This.oWritingLine) return;
         This.oWritingLine.scrollIntoView();
+        const maxVal = This.oLeftTxtWrap.scrollHeight - This.oLeftTxtWrap.offsetHeight;
+        // console.log('不动？', This.oLeftTxtWrap.scrollTop == maxVal);
+        if (This.oLeftTxtWrap.scrollTop == maxVal) return;
         This.oLeftTxtWrap.scrollTop -= 190;
     }
     // ▼跳行后定位（oSententList => oSententWrap）
@@ -383,7 +384,7 @@ export function fnAllKeydownFn() {
         clearTimeout(inputTimer);
         clearTimeout(candidateTimer);
         const Backspace = ev.inputType == "deleteContentBackward";
-        const iTimes = ev.data == ' ' ? 0 : 1_200;
+        const iTimes = ev.data == ' ' ? 0 : 800;
         inputTimer = setTimeout(()=>{
             recordHistory();
             setLeftLine();

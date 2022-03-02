@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-27 21:22:43
+ * @LastEditTime: 2022-03-02 13:44:51
  * @Description: 
 -->
 <template>
@@ -196,7 +196,7 @@
                         'padding-top': `calc(${iShowStart} * var(--height))`,
                     }"
                 >
-                    <li v-for="(cur, idx) of aLineForShow" :key="cur.start"
+                    <li v-for="(cur) of aLineForShow" :key="cur.ii"
                         class="one-line" :class="{cur: iCurLineIdx == cur.ii}"
                         @click="goLine(cur.ii, null, true)"
                     >
