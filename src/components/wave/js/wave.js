@@ -183,7 +183,7 @@ export default function(){
 		oDom.oAudio.play();
         style.opacity = 1;
 		const playing = setInterval(() => {
-            if (!oDom.oAudio) {
+            if (!oDom.oAudio || !oCurLine.value) {
                 return clearInterval(oData.playing);
             }
 			const { currentTime: cTime } = oDom.oAudio;

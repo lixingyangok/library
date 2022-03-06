@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-03-02 13:44:51
+ * @LastEditTime: 2022-03-06 19:44:35
  * @Description: 
 -->
 <template>
@@ -117,6 +117,9 @@
                     <el-button type="primary" @click="saveMedia">
                         保存媒体
                     </el-button>
+                    <el-button type="primary" @click="() => oSrtInput.click()">
+                        导入Srt
+                    </el-button>
                 </el-button-group>
                 <el-button type="primary" size="small" @click="showMediaDialog()">
                     信息与列表
@@ -134,17 +137,18 @@
                     <el-button type="primary" @click="openPDF">
                         打开PDF
                     </el-button>
-                    <el-button type="primary"
-                        @click="() => oTxtInput.click()"
-                    >
+                    <el-button type="primary" @click="() => oTxtInput.click()">
                         打开TXT
                     </el-button>
                 </el-button-group>
                 <el-button type="primary" size="small" @click="saveSrt">
-                    保存为srt
+                    保存为Srt
                 </el-button>
                 <input type="file" ref="oTxtInput" accept="text/plain"
-                    @change="getFile" v-show="0"
+                    @change="getArticleFile" v-show="0"
+                />
+                <input type="file" ref="oSrtInput"
+                    @change="importSrt" v-show="0"
                 />
             </article>
             <!-- ▼输入 -->

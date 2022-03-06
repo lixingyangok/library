@@ -11,7 +11,8 @@ export function mainPart(){
 		oTextArea: null, // 输入框
 		oSententList: null, // 字幕列表
 		oSententWrap: null, // 字幕外套
-		oTxtInput: null, // 文本字幕的Input
+		oTxtInput: null, // 故事文本的Input
+		oSrtInput: null, // srt字幕的Input
 		oLeftTxt: null, // 文本字幕的DOM容器
 		oLeftTxtWrap: null, // 文本字幕的DOM容器
 		oWritingLine: null,
@@ -106,7 +107,7 @@ export function mainPart(){
 			oData.iSubtitle = -1; // -1 表示文件不存在 
 			return;
 		}
-		oData.oIdStore = aRes.reduce((oResult, cur)=>{ // 保存所有id
+		oData.oIdStore = aRes.reduce((oResult, cur) => { // 保存所有id
 			oResult[cur.id] = true;
 			return oResult;
 		}, {});
@@ -268,8 +269,8 @@ export function mainPart(){
 		if (!btn) return;
 		btn.click();
 	}
-	// ▼打开txt
-	async function getFile(ev){
+	// ▼ 打开 txt
+	async function getArticleFile(ev){
 		oData.leftType = 'txt';
 		oData.sArticle = '';
 		oData.isShowLeft = true;
@@ -280,6 +281,23 @@ export function mainPart(){
 		vm.$message.success(`取得文本 ${aArticle.length} 行`);
 		oData.sArticle = fileTxt;
 		oData.aArticle = aArticle;
+	}
+	// ▼ 导入 Srt 字幕
+	async function importSrt(ev){
+		const fileTxt = await fileToStrings(ev.target.files[0]);
+		if (!fileTxt) return;
+		ev.target.value = '';
+		const arr = SubtitlesStr2Arr(fileTxt);
+		if (!arr) return console.log('文本转为数据未成功\n');
+		const sMsg = `解析到 ${arr.length} 行字幕，是否覆盖当前字幕？`;
+		const isSure = await this.$confirm(sMsg, 'Warning', {
+			confirmButtonText: '确认覆盖',
+			cancelButtonText: '取消',
+			type: 'warning',
+		}).catch(()=>false);
+		if (!isSure) return;
+		oData.iCurLineIdx = 0;
+		oData.aLineArr = arr;
 	}
 	// ▼查询是否修改过
 	function checkIfChanged(oOneLine){
@@ -321,8 +339,9 @@ export function mainPart(){
 		openPDF,
 		showLeftColumn,
 		checkIfChanged,
-		getFile,
+		getArticleFile,
 		saveSrt,
+		importSrt,
 	};
     return reactive({
         ...toRefs(oDom),
