@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-03-02 13:36:19
+ * @LastEditTime: 2022-03-13 11:19:43
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -318,7 +318,7 @@ export function fnAllKeydownFn() {
         oTarget.text = (() => {
             const aResult = [oTarget.text, oCur.text];
             if (isMergeNext) aResult.reverse();
-            return aResult.join(' ').replace(/\s{2,}/g, ' ');
+            return aResult.join(' ').replace(/\s{2,}/g, ' ').trim();
         })();
         fixTime(oTarget);
         const {id} = isMergeNext ? oTarget : oCur;

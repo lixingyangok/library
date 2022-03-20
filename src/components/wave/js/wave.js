@@ -1,17 +1,6 @@
-import {
-    reactive,
-    getCurrentInstance,
-    watch,
-    computed,
-    onMounted,
-} from 'vue';
-import {
-    fileToBuffer,
-    getPeaks,
-    getChannelArr,
-} from '../../../common/js/pure-fn.js';
-import {getTubePath} from '../../../common/js/common-fn.js';
-
+import { reactive, getCurrentInstance, watch, computed, onMounted, } from 'vue';
+import { fileToBuffer, getPeaks, getChannelArr, } from '../../../common/js/pure-fn.js';
+import { getTubePath } from '../../../common/js/common-fn.js';
 
 export default function(){
     let aPeaksData = []; // 波形数据
@@ -270,9 +259,9 @@ export default function(){
         oData.iPerSecPx = iPerSecPx;
         oData.fPerSecPx = iPerSecPx;
 		oDom.oPointer.style.left = `${oDom.oAudio.currentTime * fPerSecPx}px`;
-        await this.$nextTick(); // 重要！等待总宽变长再滚动
+        await vm.$nextTick(); // 重要！等待总宽变长再滚动
 		oDom.oViewport.scrollLeft = iNewLeftPx; // 在此触发了缩放
-		if (iNewLeftPx <= 0) { // 这里情况不明
+		if (iNewLeftPx <= 0) { // 在滚动条位于左侧原点并收缩波形时会触发
 			console.log('注意 <= 0', iNewLeftPx);
 			waveWrapScroll();
 		}
