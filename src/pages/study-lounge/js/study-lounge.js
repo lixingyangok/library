@@ -1,7 +1,7 @@
 import {toRefs, reactive, computed, onMounted, getCurrentInstance} from 'vue';
 import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
-import {getTubePath} from '../../../common/js/common-fn.js';
+import {getTubePath, mySort} from '../../../common/js/common-fn.js';
 
 
 export function mainPart(){
@@ -218,6 +218,7 @@ export function mainPart(){
 			dir: oData.oMediaInfo.dir
 		});
 		if (!aRes) return;
+		mySort(aRes, 'name');
 		oData.aSiblings = aRes;
 	}
 	// ▼跳转到邻居

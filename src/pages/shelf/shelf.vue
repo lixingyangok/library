@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-13 17:57:30
+ * @LastEditTime: 2022-04-13 20:26:17
  * @Description: 
 -->
 
@@ -11,7 +11,7 @@
         <h2>{{aDisks}}</h2>
         <ul class="path-list" >
             <li v-for="(cur, idx) of oConfig.aRoot" :key="idx"
-                :class="{active: cur == aPath.join('/')}"
+                :class="{active: aPath.join('/').startsWith(cur)}"
             >
                 <span @click="choseRoot(cur)">
                     {{cur}}
@@ -22,18 +22,21 @@
                 </el-button>
             </li>
         </ul>
+        <p>
+            当前：{{aPath.join('/')}}
+        </p>
         <div class="legend" >
             图标含义：
             文件夹 <i class="folder-mark fas fa-folder"/>
             &emsp;
             包含媒体 <i class="folder-mark fas fa-folder has-media"/>
             &emsp;
-            媒体已收录 <i class="folder-mark fas fa-folder has-media"/>
+            已收录所含媒体 <i class="folder-mark fas fa-folder has-media"/>
             <i class="fas fa-check fa-xs small-check" />
             &emsp;
-            媒体文件 <i class="fas fa-circle" />
+            媒体文件 <i class="fas fa-play-circle meida-icon" />
             &emsp;
-            字幕 <i class="fas fa-circle no-match" />
+            媒体+字幕 <i class="fas fa-play-circle meida-icon done" />
         </div>
         <!-- ▼大列表 -->
         <article class="directory-list" >
@@ -50,8 +53,11 @@
                             v-if="oMediaHomes[cur.sPath]"
                         />
                     </template>
+                    <!-- fas fa-check-circle -->
+                    <!-- :class="{recorded: cur.infoAtDb}" -->
                     <i v-else-if="cur.isMedia" 
-                        class="fas fa-circle"
+                        class="fas fa-play-circle meida-icon"
+                        :class="{done: (cur.infoAtDb || {}).finishedAt}"
                     />
                     {{cur.sItem}}
                 </li>
@@ -78,7 +84,7 @@
                             {{`${oMediaHomes[data.sPath] || 0}/${data.hasMedia}`}}
                         </span>
                         <el-button type="text" @click="checkFolder(data)">
-                            入库
+                            实施入库
                         </el-button>
                     </span>
                 </span>
@@ -101,9 +107,7 @@
     <el-dialog title="初始化" width="550px"
         v-model="bMediaDialog"
     >
-        <h3>
-            {{fucousFolder}}
-        </h3>
+        <h3> {{fucousFolder}} </h3>
         <br/>
         <ul class="media-list-in-dialog" >
             <li v-for="(cur,idx) of aFolderMedia" :key="idx"

@@ -55,6 +55,7 @@ const fnAboutDB = {
         const aFolderMedia = await getFolderKids(oInfo.sPath);
         mySort(aFolderMedia, 'name');
         this.aFolderMedia = aFolderMedia;
+        // console.log('aFolderMedia\n', aFolderMedia.$dc());
         for (const [idx, oMedia] of this.aFolderMedia.entries()) {
             if (idx % 3) this.getOneMediaInfoFromDB(oMedia);
             else await this.getOneMediaInfoFromDB(oMedia);
@@ -138,16 +139,11 @@ const oAboutTree = {
                 oItem.hasMedia = await findMedia(sCurPath);
                 return a01.push(oItem);
             }
-            const isMedia = await checkFile(sCurPath, oConfig.oMedia);
-            if (isMedia) {
-                oItem.isMedia = true;
-                const sSrtFile = sCurPath.split('.').slice(0, -1).join('.') + '.srt';
-                const oStat = fs.statSync(sSrtFile, {throwIfNoEntry: false});
-                if (oStat) {
-                    oItem.srt = sSrtFile;
-                    oSrtFiles[sSrtFile] = true;
-                }
-                return a02.push(oItem);
+            oItem.isMedia = await checkFile(sCurPath, oConfig.oMedia);
+            if (oItem.isMedia) {
+                const oMeidaItem = await this.addMediaInfo01(oItem);
+                oSrtFiles[oMeidaItem.srt] = !!oMeidaItem.srt;
+                return a02.push(oMeidaItem);
             }
             await checkFile(sCurPath) && a03.push(oItem);
         });
@@ -160,6 +156,22 @@ const oAboutTree = {
         });
         const arr = [...a01, ...a02, ...a03];
         this.aTree.splice(idx, 1, arr);
+        this.addMediaInfo02(this.aTree[idx]);
+    },
+    async addMediaInfo02(arr){
+        for (const [idx, oMedia] of arr.entries()) {
+            if (!oMedia.isMedia) continue;
+            if (idx % 3) this.getOneMediaInfoFromDB(oMedia);
+            else await this.getOneMediaInfoFromDB(oMedia);
+        }
+    },
+    // ▼将媒体补充一些信息上去
+    async addMediaInfo01(oItem){
+        oItem.infoAtDb = false;
+        const sSrtFile = oItem.sPath.split('.').slice(0, -1).join('.') + '.srt';
+        const oStat = await fsp.stat(sSrtFile, {throwIfNoEntry: false}).catch(()=>false);
+        if (oStat) oItem.srt = sSrtFile;
+        return oItem;
     },
     // ▼点击文件夹
     async ckickTree(i1, i2) {
@@ -185,6 +197,7 @@ export default {
     ...oAboutTree,
 };
 
+// ▼查询是否为媒体文件
 async function checkFile(sFilePath, oFileType=oConfig.oFileType) {
     const sTail = path.extname(sFilePath).toLowerCase();
     if (!oFileType[sTail]) return;

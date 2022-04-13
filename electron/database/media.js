@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 22:05:33
+ * @LastEditTime: 2022-04-13 20:03:15
  * @Description: 
  */
 
@@ -15,14 +15,15 @@ const oMedia = module.exports.media = sqlize.define('media', {
         type: DataTypes.STRING,
         unique: true,
     },
-    dir: DataTypes.STRING, // 所以位置
+    dir: DataTypes.STRING, // 所在位置
     name: DataTypes.STRING, // 文件名
-    size: DataTypes.INTEGER, // 体积（比特）
-    sizeStr: DataTypes.STRING, // 体积（MB）
-    duration: DataTypes.FLOAT, // 时长（秒）
-    durationStr: DataTypes.STRING, // 时长（时分秒）
+    size: DataTypes.INTEGER, // i体积（比特）
+    sizeStr: DataTypes.STRING, // s体积（MB）
+    duration: DataTypes.FLOAT, // i时长（秒）
+    durationStr: DataTypes.STRING, // s时长（时分秒）
     finishedAt: DataTypes.DATE, // 完成时间
     // xxxx: DataTypes.STRING, // 类型，故事，教材，似乎应该按目录解析，不记在媒体文件上
+    // status: DataTypes.INTEGER, // 0默认，1进行中
     type: {
         type: DataTypes.INTEGER,
         // 1默认独生子，2有同胞(同级文件)，3有同胞(范围包含堂亲)
