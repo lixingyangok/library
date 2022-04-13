@@ -2,15 +2,17 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 14:44:11
+ * @LastEditTime: 2022-04-13 17:57:30
  * @Description: 
 -->
 
 <template>
     <section class="outer" >
         <h2>{{aDisks}}</h2>
-        <ul>
-            <li v-for="(cur, idx) of oConfig.aRoot" :key="idx">
+        <ul class="path-list" >
+            <li v-for="(cur, idx) of oConfig.aRoot" :key="idx"
+                :class="{active: cur == aPath.join('/')}"
+            >
                 <span @click="choseRoot(cur)">
                     {{cur}}
                 </span>
@@ -20,10 +22,20 @@
                 </el-button>
             </li>
         </ul>
-        <br/>
-        <h2>当前浏览：{{aPath.join('/')}}</h2>
-        <br/>
-        <!-- ▼宝库 -->
+        <div class="legend" >
+            图标含义：
+            文件夹 <i class="folder-mark fas fa-folder"/>
+            &emsp;
+            包含媒体 <i class="folder-mark fas fa-folder has-media"/>
+            &emsp;
+            媒体已收录 <i class="folder-mark fas fa-folder has-media"/>
+            <i class="fas fa-check fa-xs small-check" />
+            &emsp;
+            媒体文件 <i class="fas fa-circle" />
+            &emsp;
+            字幕 <i class="fas fa-circle no-match" />
+        </div>
+        <!-- ▼大列表 -->
         <article class="directory-list" >
             <ul v-for="(aColumn, i1) of aTree" :key="i1">
                 <li v-for="(cur, i2) of aColumn" :key="i2"
@@ -40,14 +52,13 @@
                     </template>
                     <i v-else-if="cur.isMedia" 
                         class="fas fa-circle"
-                        :class="cur.srt ? '' : 'no-match'"
                     />
                     {{cur.sItem}}
                 </li>
             </ul>
         </article>
     </section>
-    <!--  -->
+    <!-- ▼弹窗 -->
     <el-dialog title="初始化" width="960px"
         v-model="dialogVisible"
     >
@@ -85,6 +96,7 @@
             </span>
         </template>
     </el-dialog>
+    <!-- ▼弹窗 -->
     <!-- ▼文件夹的【媒体列表】 -->
     <el-dialog title="初始化" width="550px"
         v-model="bMediaDialog"
@@ -167,7 +179,7 @@ export default {
         aPath: {
             deep: true,
             immediate: true,
-            handler(aNewVal){
+            handler(aNewVal){ // 页面加载时会执行
                 this.getDirChildren();
             },
         },

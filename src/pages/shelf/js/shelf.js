@@ -14,8 +14,8 @@ const fnAboutDB = {
     // ▼查询所有媒体文件夹数据
     async getMediaHomesArr(){
         const aRes = await Promise.all([
-            fnInvoke('db', 'getMediaHomes'),
-            fnInvoke('db', 'getLineInfo'),
+            fnInvoke('db', 'getMediaHomes'), // 查询所有包含媒体的目录
+            fnInvoke('db', 'getLineInfo'), // 查询所有媒体的字幕行数
         ]);
         if (!aRes[0] && !aRes[1]) return;
         this.oMediaHomes = aRes[0].reduce((oResult, oCur)=>{
@@ -26,6 +26,7 @@ const fnAboutDB = {
             oResult[oCur.mediaId] = oCur.count;
             return oResult;
         }, {});
+        return aRes;
     },
     // ▼弹出1级窗口-树
     showDialog(sPath){
@@ -115,15 +116,16 @@ const oAboutTree = {
     getDirChildren() {
         const { setFileList } = this;
         console.log('路径变化了：加载目录');
-        this.aTree.splice(this.aPath.length, Infinity);
+        this.aTree.splice(this.aPath.length, Infinity); // 清空
         for (const [idx] of this.aPath.entries()) {
             const sPath = this.aPath.slice(0, idx + 1).join('/');
             const aItems = fs.readdirSync(sPath);
             if (!aItems) return;
+            // console.log('目录列表\n', aItems.$dc());
             setFileList(idx, sPath, aItems);
         }
     },
-    // ▼
+    // ▼ 将某个目录下的文件(夹)都显示出来
     async setFileList(idx, sDir, aItems) {
         let [a01, a02, a03] = [[], [], []];
         const oSrtFiles = {};
@@ -140,7 +142,7 @@ const oAboutTree = {
             if (isMedia) {
                 oItem.isMedia = true;
                 const sSrtFile = sCurPath.split('.').slice(0, -1).join('.') + '.srt';
-                const oStat = fs.statSync(sSrtFile, { throwIfNoEntry: false });
+                const oStat = fs.statSync(sSrtFile, {throwIfNoEntry: false});
                 if (oStat) {
                     oItem.srt = sSrtFile;
                     oSrtFiles[sSrtFile] = true;
