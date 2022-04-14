@@ -3,8 +3,45 @@ var child_process = require("child_process");
 const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
 const ffmpeg = createFFmpeg({ log: true });
 
+const oMyFn01 = {
+    async getPendingList(){
+        const aList = await fnInvoke('db', 'getMediaInfo', {
+            finishedAt: null,
+        });
+        if (!aList) return;
+        const obj = this.sortThem(aList);
+        this.aPending = Object.entries(obj).map(([key,val])=>{
+            return {
+                name: key,
+                nameShort: key.split('/').slice(-3).join('/'),
+                len: val.length,
+            };
+        });
+        this.oPending = obj;
+    },
+    sortThem(aList){
+        const obj = aList.reduce((oResult, cur)=>{
+            oResult[cur.dir] ||= [];
+            oResult[cur.dir].push(cur);
+            return oResult;
+        }, {});
+        console.log('obj\n', obj);
+        return obj;
+    },
+    goFolder(oTarget){
+        // console.log('oTarget', oTarget.$dc());
+        this.$router.push({
+            path: '/shelf',
+            query: {
+                sPath: oTarget.name,
+            },
+        });
+    },
+};
+
 
 export default {
+    ...oMyFn01,
     // ▼给主进程送信
     logFn() {
         oRenderer.send('channel01', '张三');

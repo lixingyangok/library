@@ -114,16 +114,16 @@ const fnAboutDB = {
 
 const oAboutTree = {
     // ▼处理用户变更目录
-    getDirChildren() {
-        const { setFileList } = this;
+    async getDirChildren() {
+        const { setFileList, aAimTo } = this;
         console.log('路径变化了：加载目录');
-        this.aTree.splice(this.aPath.length, Infinity); // 清空
+        this.aTree.splice(this.aPath.length, Infinity); // 清空某步之后的内容
         for (const [idx] of this.aPath.entries()) {
             const sPath = this.aPath.slice(0, idx + 1).join('/');
             const aItems = fs.readdirSync(sPath);
             if (!aItems) return;
-            // console.log('目录列表\n', aItems.$dc());
-            setFileList(idx, sPath, aItems);
+            await setFileList(idx, sPath, aItems);
+            aAimTo.length && this.aPath.push(aAimTo.shift());
         }
     },
     // ▼ 将某个目录下的文件(夹)都显示出来
@@ -151,14 +151,13 @@ const oAboutTree = {
         a03 = a03.filter(cur => {
             return !oSrtFiles[`${sDir}/${cur.sItem}`];
         });
-        [a01, a02, a03].forEach(curArr => {
-            mySort(curArr, 'sItem');
-        });
+        [a01, a02, a03].forEach(curArr => mySort(curArr, 'sItem'));
         const arr = [...a01, ...a02, ...a03];
         this.aTree.splice(idx, 1, arr);
         this.addMediaInfo02(this.aTree[idx]);
     },
     async addMediaInfo02(arr){
+        if (!arr) return;
         for (const [idx, oMedia] of arr.entries()) {
             if (!oMedia.isMedia) continue;
             if (idx % 3) this.getOneMediaInfoFromDB(oMedia);

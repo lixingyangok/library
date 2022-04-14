@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-13 20:26:17
+ * @LastEditTime: 2022-04-14 13:28:55
  * @Description: 
 -->
 
@@ -23,23 +23,19 @@
             </li>
         </ul>
         <p>
-            当前：{{aPath.join('/')}}
+            当前：{{aPath.join('/')}}<br/>
+            目标：{{this.$route.query.sPath}}
         </p>
         <div class="legend" >
             图标含义：
-            文件夹 <i class="folder-mark fas fa-folder"/>
-            &emsp;
-            包含媒体 <i class="folder-mark fas fa-folder has-media"/>
-            &emsp;
-            已收录所含媒体 <i class="folder-mark fas fa-folder has-media"/>
-            <i class="fas fa-check fa-xs small-check" />
-            &emsp;
-            媒体文件 <i class="fas fa-play-circle meida-icon" />
-            &emsp;
+            文件夹 <i class="folder-mark fas fa-folder"/> &emsp;
+            包含媒体 <i class="folder-mark fas fa-folder has-media"/> &emsp;
+            已收录所含媒体 <i class="folder-mark fas fa-folder has-media"/><i class="fas fa-check fa-xs small-check" /> &emsp;
+            媒体文件 <i class="fas fa-play-circle meida-icon" /> &emsp;
             媒体+字幕 <i class="fas fa-play-circle meida-icon done" />
         </div>
         <!-- ▼大列表 -->
-        <article class="directory-list" >
+        <article class="directory-list">
             <ul v-for="(aColumn, i1) of aTree" :key="i1">
                 <li v-for="(cur, i2) of aColumn" :key="i2"
                     @click="ckickTree(i1, i2, cur)"
@@ -155,12 +151,23 @@ import oMethods from './js/shelf.js';
 export default {
     name: "shelf",
     data(){
+        // console.log('vm.$route;\n', this.$route);
+        const {aRoot} = window.oConfig;
+        const {sPath=''} = this.$route.query;
+        let aPath = [aRoot[0]];
+        let aAimTo = [];
+        for (const cur of aRoot){
+            if (!sPath.startsWith(cur)) continue
+            aPath = [cur];
+            aAimTo = sPath.slice(cur.length + 1).split('/');
+        }
         return {
             aFolders: [],
             aFolderMedia: [],
             aDisks: document.body.disks,
             oConfig: window.oConfig,
-            aPath: [window.oConfig.aRoot[0]],
+            aPath,
+            aAimTo,
             aTree: [],
             dialogVisible: false, // 用于导入的1级窗口
             bMediaDialog: false,
@@ -170,11 +177,6 @@ export default {
             oLineMap: {},
             fucousFolder: '', // 当前入库的目录
         };
-    },
-    computed:{
-        aMarkedTree(){
-            return this.aTree;
-        },
     },
     created(){
         this.getMediaHomesArr();
