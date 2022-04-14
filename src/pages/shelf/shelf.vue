@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-14 13:28:55
+ * @LastEditTime: 2022-04-14 15:27:08
  * @Description: 
 -->
 
@@ -39,7 +39,10 @@
             <ul v-for="(aColumn, i1) of aTree" :key="i1">
                 <li v-for="(cur, i2) of aColumn" :key="i2"
                     @click="ckickTree(i1, i2, cur)"
-                    :class="{active: cur.sItem == aPath[i1+1]}"
+                    :class="{
+                        active: cur.sItem == aPath[i1+1],
+                        'name-wrong': cur.isMedia && !cur.bNameRight,
+                    }"
                 >
                     <template v-if="cur.isDirectory">
                         <i class="folder-mark fas fa-folder"

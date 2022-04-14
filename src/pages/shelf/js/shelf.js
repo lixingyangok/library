@@ -1,6 +1,12 @@
-import { getFolderKids } from '../../../common/js/fs-fn';
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
 import {mySort} from '../../../common/js/common-fn.js';
+import {
+    getFolderKids,
+    getFolderChildren,
+    addAllMediaDbInfo,
+    checkFile,
+    findMedia,
+} from '../../../common/js/fs-fn.js';
 
 const fs = require('fs');
 const fsp = require('fs').promises;
@@ -49,25 +55,16 @@ const fnAboutDB = {
         this.aFolders = treeArr;
     },
     // ▼打开2级窗口————查询某个目录
+    // TODO 应该把 getFolderKids 改为 getFolderChildren
     async checkFolder(oInfo){
         this.fucousFolder = oInfo.sPath;
         this.bMediaDialog = true;
         const aFolderMedia = await getFolderKids(oInfo.sPath);
-        mySort(aFolderMedia, 'name');
-        this.aFolderMedia = aFolderMedia;
         // console.log('aFolderMedia\n', aFolderMedia.$dc());
-        for (const [idx, oMedia] of this.aFolderMedia.entries()) {
-            if (idx % 3) this.getOneMediaInfoFromDB(oMedia);
-            else await this.getOneMediaInfoFromDB(oMedia);
-        }
+        this.aFolderMedia = aFolderMedia;
+        addAllMediaDbInfo(this.aFolderMedia);
     },
-    // ▼查询【某1个媒体】在DB中的信息
-    async getOneMediaInfoFromDB(oMedia){
-        const hash = await fnInvoke('getHash', oMedia.sPath);
-        const res = await fnInvoke('db', 'getMediaInfo', {hash});
-        oMedia.hash = hash;
-        oMedia.infoAtDb = res[0];
-    },
+
     // ▼将某个文件夹内的媒体逐个保存媒体到DB
     async saveOneByOne(){
         const allHasHash = this.aFolderMedia.every(cur=>cur.hash);
@@ -115,62 +112,18 @@ const fnAboutDB = {
 const oAboutTree = {
     // ▼处理用户变更目录
     async getDirChildren() {
-        const { setFileList, aAimTo } = this;
+        const { aAimTo } = this;
         console.log('路径变化了：加载目录');
         this.aTree.splice(this.aPath.length, Infinity); // 清空某步之后的内容
         for (const [idx] of this.aPath.entries()) {
             const sPath = this.aPath.slice(0, idx + 1).join('/');
-            const aItems = fs.readdirSync(sPath);
-            if (!aItems) return;
-            await setFileList(idx, sPath, aItems);
+            // console.log('sPath\n', sPath);
+            const aItems = await getFolderChildren(sPath);
+            if (!aItems) continue;
+            this.aTree.splice(idx, 1, aItems);
+            addAllMediaDbInfo(this.aTree[idx])
             aAimTo.length && this.aPath.push(aAimTo.shift());
         }
-    },
-    // ▼ 将某个目录下的文件(夹)都显示出来
-    async setFileList(idx, sDir, aItems) {
-        let [a01, a02, a03] = [[], [], []];
-        const oSrtFiles = {};
-        const aPromises = aItems.map(async (sItem, idx) => {
-            const sCurPath = `${sDir}/${sItem}`;
-            const oStat = await fsp.stat(sCurPath);;
-            const isDirectory = oStat.isDirectory();
-            const oItem = { sItem, isDirectory, sPath: sCurPath };
-            if (isDirectory) {
-                oItem.hasMedia = await findMedia(sCurPath);
-                return a01.push(oItem);
-            }
-            oItem.isMedia = await checkFile(sCurPath, oConfig.oMedia);
-            if (oItem.isMedia) {
-                const oMeidaItem = await this.addMediaInfo01(oItem);
-                oSrtFiles[oMeidaItem.srt] = !!oMeidaItem.srt;
-                return a02.push(oMeidaItem);
-            }
-            await checkFile(sCurPath) && a03.push(oItem);
-        });
-        await Promise.all(aPromises);
-        a03 = a03.filter(cur => {
-            return !oSrtFiles[`${sDir}/${cur.sItem}`];
-        });
-        [a01, a02, a03].forEach(curArr => mySort(curArr, 'sItem'));
-        const arr = [...a01, ...a02, ...a03];
-        this.aTree.splice(idx, 1, arr);
-        this.addMediaInfo02(this.aTree[idx]);
-    },
-    async addMediaInfo02(arr){
-        if (!arr) return;
-        for (const [idx, oMedia] of arr.entries()) {
-            if (!oMedia.isMedia) continue;
-            if (idx % 3) this.getOneMediaInfoFromDB(oMedia);
-            else await this.getOneMediaInfoFromDB(oMedia);
-        }
-    },
-    // ▼将媒体补充一些信息上去
-    async addMediaInfo01(oItem){
-        oItem.infoAtDb = false;
-        const sSrtFile = oItem.sPath.split('.').slice(0, -1).join('.') + '.srt';
-        const oStat = await fsp.stat(sSrtFile, {throwIfNoEntry: false}).catch(()=>false);
-        if (oStat) oItem.srt = sSrtFile;
-        return oItem;
     },
     // ▼点击文件夹
     async ckickTree(i1, i2) {
@@ -195,28 +148,6 @@ export default {
     ...fnAboutDB,
     ...oAboutTree,
 };
-
-// ▼查询是否为媒体文件
-async function checkFile(sFilePath, oFileType=oConfig.oFileType) {
-    const sTail = path.extname(sFilePath).toLowerCase();
-    if (!oFileType[sTail]) return;
-    const oStat = await fsp.stat(sFilePath);
-    return !oStat.isDirectory();
-}
-
-// ▼查询目录是否为【媒体文件夹】
-async function findMedia(sPath, oTarget) {
-    const oStat = await fsp.stat(sPath);
-    if (!oStat.isDirectory()) return 0;
-    let iSum = 0;
-    const aDirKids = await fsp.readdir(sPath);
-    const arr = aDirKids.map(async sCur=>{
-        const isMedia = await checkFile(`${sPath}/${sCur}`, oConfig.oMedia);
-        if (isMedia) iSum++;
-    });
-    await Promise.all(arr);
-    return iSum;
-}
 
 async function getTree(sPath) {
     const oStat = await fsp.stat(sPath);
@@ -252,3 +183,82 @@ function treeObj2Arr(obj){
     }
     return arr;
 }
+
+// ▼ 将某个目录下的文件(夹)都显示出来
+// async setFileList(idx, sDir, aItems) {
+//     let [a01, a02, a03] = [[], [], []];
+//     const oSrtFiles = {};
+//     const aPromises = aItems.map(async (sItem, idx) => {
+//         const sCurPath = `${sDir}/${sItem}`;
+//         const oStat = await fsp.stat(sCurPath);;
+//         const isDirectory = oStat.isDirectory();
+//         const oItem = { sItem, isDirectory, sPath: sCurPath };
+//         if (isDirectory) {
+//             oItem.hasMedia = await findMedia(sCurPath);
+//             return a01.push(oItem);
+//         }
+//         oItem.isMedia = await checkFile(sCurPath, oConfig.oMedia);
+//         if (oItem.isMedia) {
+//             const oMeidaItem = await this.addMediaInfo01(oItem);
+//             oSrtFiles[oMeidaItem.srt] = !!oMeidaItem.srt;
+//             return a02.push(oMeidaItem);
+//         }
+//         await checkFile(sCurPath) && a03.push(oItem);
+//     });
+//     await Promise.all(aPromises);
+//     a03 = a03.filter(cur => {
+//         return !oSrtFiles[`${sDir}/${cur.sItem}`];
+//     });
+//     [a01, a02, a03].forEach(curArr => mySort(curArr, 'sItem'));
+//     const arr = [...a01, ...a02, ...a03];
+//     this.aTree.splice(idx, 1, arr);
+//     // this.addMediaInfo02(this.aTree[idx]);
+// },
+
+// async addMediaInfo02(arr){
+//     if (!arr) return;
+//     for (const [idx, oMedia] of arr.entries()) {
+//         if (!oMedia.isMedia) continue;
+//         if (idx % 3) this.getOneMediaInfoFromDB(oMedia);
+//         else await this.getOneMediaInfoFromDB(oMedia);
+//     }
+// },
+
+// ▼将媒体补充一些信息上去
+// async addMediaInfo01(oItem){
+//     oItem.infoAtDb = false;
+//     const sSrtFile = oItem.sPath.split('.').slice(0, -1).join('.') + '.srt';
+//     const oStat = await fsp.stat(sSrtFile).catch(()=>false);
+//     if (oStat) oItem.srt = sSrtFile;
+//     return oItem;
+// },
+
+// // ▼查询是否为媒体文件
+// async function checkFile(sFilePath, oFileType=oConfig.oFileType) {
+//     const sTail = path.extname(sFilePath).toLowerCase();
+//     if (!oFileType[sTail]) return;
+//     const oStat = await fsp.stat(sFilePath);
+//     return !oStat.isDirectory();
+// }
+
+// ▼查询目录是否为【媒体文件夹】
+// async function findMedia(sPath, oTarget) {
+//     const oStat = await fsp.stat(sPath);
+//     if (!oStat.isDirectory()) return 0;
+//     let iSum = 0;
+//     const aDirKids = await fsp.readdir(sPath);
+//     const arr = aDirKids.map(async sCur=>{
+//         const isMedia = await checkFile(`${sPath}/${sCur}`, oConfig.oMedia);
+//         if (isMedia) iSum++;
+//     });
+//     await Promise.all(arr);
+//     return iSum;
+// }
+
+// ▼查询【某1个媒体】在DB中的信息
+// async getOneMediaInfoFromDB(oMedia){
+//     const hash = await fnInvoke('getHash', oMedia.sPath);
+//     const res = await fnInvoke('db', 'getMediaInfo', {hash});
+//     oMedia.hash = hash;
+//     oMedia.infoAtDb = res[0];
+// },
