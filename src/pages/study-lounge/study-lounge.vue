@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 12:50:48
+ * @LastEditTime: 2022-04-15 13:34:30
  * @Description: 
 -->
 <template>
@@ -106,9 +106,9 @@
                 @pipe="bufferReceiver"
             />
             <article class="wave-below">
-                ◆文件：{{(oMediaInfo.dir||'').split('/').slice(-3).join('/') + oMediaInfo.name}}&emsp;
+                ◆文件：{{(oMediaInfo.dir||'').split('/').slice(-2).join('/') + `/${oMediaInfo.name}`}}&emsp;
                 ◆时长：{{oMediaBuffer.sDuration_}}&emsp;
-                ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString() || 进行中}}&emsp;
+                ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString() || '进行中'}}&emsp;
             </article>
             <article class="wave-below">
                 <el-button-group size="small">
@@ -116,15 +116,27 @@
                         保存波形
                     </el-button>
                     <el-button type="primary" @click="saveMedia">
-                        保存媒体
+                        媒体入库
                     </el-button>
                     <el-button type="primary" @click="() => oSrtInput.click()">
                         导入Srt
                     </el-button>
+                    <el-button type="primary" size="small" @click="saveSrt">
+                        导出Srt
+                    </el-button>
                 </el-button-group>
-                <el-button type="primary" size="small" @click="showMediaDialog()">
-                    信息与列表
-                </el-button>
+                <el-button-group size="small">
+                    <el-button type="primary" size="small" @click="showMediaDialog()">
+                        信息与列表
+                    </el-button>
+                    <el-button type="primary" @click="visitNeighbor(-1)">
+                        上一个
+                    </el-button>
+                    <el-button type="primary" @click="visitNeighbor(1)">
+                        下一个
+                    </el-button>
+                </el-button-group>
+                
                 <el-button type="primary" size="small" @click="toCheckDict">
                     查字典
                 </el-button>
@@ -142,9 +154,7 @@
                         打开TXT
                     </el-button>
                 </el-button-group>
-                <el-button type="primary" size="small" @click="saveSrt">
-                    保存为Srt
-                </el-button>
+
                 <input type="file" ref="oTxtInput" accept="text/plain"
                     @change="getArticleFile" v-show="0"
                 />
@@ -253,8 +263,16 @@
         >
             <div>
                 文件夹：{{oMediaInfo.dir}}<br/>
-                文件名：{{oMediaInfo.name}}<br/>
+                文件名：{{oMediaInfo.name}}
+                <el-button size="small" type="text" @click="visitNeighbor(-1)">
+                    上一个
+                </el-button>
+                <el-button size="small" type="text" @click="visitNeighbor(1)">
+                    下一个
+                </el-button>
+                <br/>
             </div>
+            
             <div class="siblings-list" v-for="(i01, i02) of 2" :key="i02">
                 <!-- style="width: 100%" -->
                 <el-table border
@@ -263,19 +281,21 @@
                     <el-table-column prop="idx_" label="序号" width="60" />
                     <el-table-column prop="sItem" label="名称">
                         <template #default="scope">
-                            <p type="text" :class="{'cur-file': scope.row?.infoAtDb?.hash == sHash}">
+                            <p class="file-name" :class="{'cur-file': scope.row?.infoAtDb?.hash == sHash}"
+                                @click="visitSibling(scope.row)"
+                            >
                                 {{scope.row.sItem}}
                             </p>
                         </template>
                     </el-table-column>
                     <el-table-column prop="finishedAt_" label="完成时间" width="210" />
-                    <el-table-column label="操作" width="130">
+                    <el-table-column label="操作" width="155">
                         <template #default="scope">
                             <el-button type="text" @click="visitSibling(scope.row)" >
                                 跳转
                             </el-button>
                             <el-button type="text" @click="setItFinished(scope.row)" >
-                                设定
+                                切换状态
                             </el-button>
                         </template>
                     </el-table-column>

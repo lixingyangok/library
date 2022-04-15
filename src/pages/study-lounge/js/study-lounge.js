@@ -134,7 +134,7 @@ export function mainPart(){
 		init();
 		console.log('已经保存', oInfo);
 	}
-	// ▼取得【字幕文件】的数据
+	// ▼取得【srt文件】的内容
 	async function getSrtFile(){
 		const res01 = await fetch(sSubtitleSrc).catch((err)=>{
 			oData.iSubtitle = -1; // -1 表示文件不存在
@@ -218,8 +218,10 @@ export function mainPart(){
 		aList = aList.filter(cur => cur.isMedia);
 		await addAllMediaDbInfo(aList);
 		aList.forEach((cur, idx)=>{
+			const {finishedAt, id} = cur.infoAtDb || {};
 			cur.idx_ = idx + 1;
-			cur.done_ = !!cur?.infoAtDb?.finishedAt;
+			cur.done_ = !!finishedAt;
+			cur.active_ = id == oData.oMediaInfo.id;
 			if (cur.done_){
 				cur.finishedAt_ = cur.infoAtDb.finishedAt.toLocaleString();
 			}
@@ -307,12 +309,14 @@ export function mainPart(){
 	// ▼设定某文件为已完成（将来再开发设为未完成功能？）
 	async function setItFinished(oTarget){
 		console.log('oTarget', oTarget.$dc());
+		let {id, finishedAt} = oTarget.infoAtDb;
+		finishedAt = finishedAt ? null : new Date();
 		const res = await fnInvoke("db", 'updateMediaInfo', {
-			id: oTarget.infoAtDb.id,
-			finishedAt: new Date(),
+			id, finishedAt,
 		});
-		console.log('res', res);
-		
+		if (!res) return;
+		vm.$message.success('状态变更成功');
+		getNeighbors();
 	}
 	// ▼查询是否修改过
 	function checkIfChanged(oOneLine){
@@ -332,6 +336,20 @@ export function mainPart(){
 		const bCopy = copyString(dir);
 		if (bCopy) vm.$message.success('已复制路径');
 		downloadSrt(oData.aLineArr, sName);
+	}
+	// ▼访问上/下一个文件
+	function visitNeighbor(iType){
+		console.log('iType', iType);
+		for (const [idx, cur] of oData.aSiblings.entries()){
+			if (!cur.active_) continue;
+			const oAim = oData.aSiblings[idx + iType];
+			if (oAim) {
+				vm.$message.success('开始跳转');
+				return visitSibling(oAim);;
+			}
+			break;
+		}
+		vm.$message.warning('没有上/下一个');
 	}
 	// ============================================================================
 	init();
@@ -358,6 +376,7 @@ export function mainPart(){
 		saveSrt,
 		importSrt,
 		setItFinished,
+		visitNeighbor,
 	};
     return reactive({
         ...toRefs(oDom),
