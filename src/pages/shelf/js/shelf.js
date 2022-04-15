@@ -1,5 +1,5 @@
 import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
-import {mySort} from '../../../common/js/common-fn.js';
+import {mySort, goToLounage} from '../../../common/js/common-fn.js';
 import {
     getFolderKids,
     getFolderChildren,
@@ -138,9 +138,7 @@ const oAboutTree = {
     },
     // ▼跳转到学习页
     goToLearn(sFilePath) {
-        console.log(sFilePath);
-        ls('sFilePath', sFilePath);
-        this.$router.push({ name: 'studyLounge' });
+        goToLounage(sFilePath);
     },
 };
 

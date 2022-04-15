@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-14 15:27:08
+ * @LastEditTime: 2022-04-14 16:11:01
  * @Description: 
 -->
 
@@ -41,7 +41,7 @@
                     @click="ckickTree(i1, i2, cur)"
                     :class="{
                         active: cur.sItem == aPath[i1+1],
-                        'name-wrong': cur.isMedia && !cur.bNameRight,
+                        'name-wrong': cur.isMedia && cur.infoAtDb && !cur.bNameRight,
                     }"
                 >
                     <template v-if="cur.isDirectory">

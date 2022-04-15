@@ -38,25 +38,13 @@
 
 // ▼同级文件
 .siblings-list{
-	li{
-		line-height: 1.8;
-		cursor: pointer;
-		margin: 2px 0 0;
-		&:hover,
-		&[class~=cur-file]{
-			background-color: #eee;
-			color: red;
-		}
-	}
-	.idx{
-		display: inline-block;
-		text-align: right;
-		width: var(--idx-width);
-		opacity: 0.8;
-	}
-	.file-name{
-		margin-left: 8px;
+	margin: 25px 0 0;
+	p:hover,
+	p[class~=cur-file]{
+		background-color: #eee;
+		color: blue;
 	}
 }
+
 
 

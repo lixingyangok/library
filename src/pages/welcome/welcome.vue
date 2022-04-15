@@ -2,23 +2,38 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-14 10:02:27
+ * @LastEditTime: 2022-04-15 12:53:49
  * @Description: 
 -->
 
 <template>
     <section class="welcome-page" >
-        <h1 class="top-one" >
+        <h1 class="big-title" >
             十年大计-{{$store.state.userInfo.name}}
         </h1>
+        <!-- ▲大标题 -->
+        <!-- ▼进行中 -->
         <section class="first-list" >
             <el-table :data="aPending" stripe border>
-                <el-table-column prop="nameShort" label="文件夹" />
-                <el-table-column prop="len" label="数量" width="90" />
-                <el-table-column label="操作" width="130">
+                <el-table-column label="文件夹">
                     <template #default="scope">
+                        <p class="folder-name">{{scope.row.nameShort}} </p>
+                        <p class="the-first">{{scope.row.oFirst.name}} </p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="sRate" label="完成率1" width="100"/>
+                <el-table-column prop="fPercent" label="完成率2" width="230" >
+                    <template #default="scope">
+                        <el-progress :percentage="scope.row.fPercent" />
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="190">
+                    <template #default="scope">
+                        <el-button type="text" @click="goToLounge(scope.row)" >
+                            继续学习
+                        </el-button>
                         <el-button type="text" @click="goFolder(scope.row)" >
-                            跳转
+                            访问目录
                         </el-button>
                     </template>
                 </el-table-column>

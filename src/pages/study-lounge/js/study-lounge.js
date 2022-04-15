@@ -1,8 +1,8 @@
 import {toRefs, reactive, computed, onMounted, getCurrentInstance} from 'vue';
 import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
-import {getTubePath, mySort} from '../../../common/js/common-fn.js';
-
+import {getTubePath} from '../../../common/js/common-fn.js';
+import {getFolderChildren, addAllMediaDbInfo} from '../../../common/js/fs-fn.js';
 
 export function mainPart(){
 	const oDom = reactive({
@@ -190,9 +190,8 @@ export function mainPart(){
 	async function getNewWords(){
 		const aRes = await fnInvoke('db', 'getWordsByMedia', {
 			mediaId: [oData.oMediaInfo.id].concat(
-				oData.aSiblings.map(cur=>cur.id),
+				oData.aSiblings.map(cur => cur?.infoAtDb?.id),
 			),
-			// more: ****
 		});
 		if (!aRes) return;
 		oData.aFullWords = aRes.map(cur => cur.word);
@@ -214,19 +213,24 @@ export function mainPart(){
 	}
 	// ▼ 查询邻居文件列表
 	async function getNeighbors(){
-		const aRes = await fnInvoke('db', 'getMediaInfo', {
-			dir: oData.oMediaInfo.dir
+		let aList = await getFolderChildren(oData.oMediaInfo.dir);
+		if (!aList) return;
+		aList = aList.filter(cur => cur.isMedia);
+		await addAllMediaDbInfo(aList);
+		aList.forEach((cur, idx)=>{
+			cur.idx_ = idx + 1;
+			cur.done_ = !!cur?.infoAtDb?.finishedAt;
+			if (cur.done_){
+				cur.finishedAt_ = cur.infoAtDb.finishedAt.toLocaleString();
+			}
 		});
-		if (!aRes) return;
-		mySort(aRes, 'name');
-		oData.aSiblings = aRes;
+		oData.aSiblings = aList;
 	}
 	// ▼跳转到邻居
 	function visitSibling(oMedia){
 		console.log('oMedia', oMedia.$dc());
-		const sFilePath = `${oMedia.dir}/${oMedia.name}`;
-		ls('sFilePath', sFilePath);
-		oData.sMediaSrc = getTubePath(ls('sFilePath'));
+		ls('sFilePath', oMedia.sPath);
+		oData.sMediaSrc = getTubePath(oMedia.sPath);
 		init();
 	}
 	// ▼切割句子
@@ -300,6 +304,16 @@ export function mainPart(){
 		oData.iCurLineIdx = 0;
 		oData.aLineArr = arr;
 	}
+	// ▼设定某文件为已完成（将来再开发设为未完成功能？）
+	async function setItFinished(oTarget){
+		console.log('oTarget', oTarget.$dc());
+		const res = await fnInvoke("db", 'updateMediaInfo', {
+			id: oTarget.infoAtDb.id,
+			finishedAt: new Date(),
+		});
+		console.log('res', res);
+		
+	}
 	// ▼查询是否修改过
 	function checkIfChanged(oOneLine){
 		if (!oOneLine.id) return true;
@@ -343,6 +357,7 @@ export function mainPart(){
 		getArticleFile,
 		saveSrt,
 		importSrt,
+		setItFinished,
 	};
     return reactive({
         ...toRefs(oDom),

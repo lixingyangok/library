@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-13 20:03:15
+ * @LastEditTime: 2022-04-14 20:01:34
  * @Description: 
  */
 
@@ -33,14 +33,27 @@ const oMedia = module.exports.media = sqlize.define('media', {
 oMedia.sync();
 
 module.exports.oFn = {
-    // ▼保存一个媒体信息
+    // ▼保存：一个媒体信息
     async saveMediaInfo(obj) {
         const oState = await fs.stat(`${obj.dir}/${obj.name}`);
         obj.size = oState.size;
         const res = await oMedia.create(obj);
         return res?.dataValues;
     },
-    // ▼查询库中媒体，一个或多个
+    // ▼修改：一个媒体信息
+    async updateMediaInfo(obj) {
+        const oNewInfo = JSON.parse(
+            JSON.stringify(obj),
+        );
+        Reflect.deleteProperty(oNewInfo, 'id');
+        const res = await oMedia.update(oNewInfo, {
+            where: {
+                id: obj.id,
+            },
+        });
+        return res;
+    },
+    // ▼查询：库中媒体，一个或多个
     async getMediaInfo(obj) {
         // obj: {hash, dir}
         const aRes = await oMedia.findAll({
@@ -49,7 +62,7 @@ module.exports.oFn = {
         });
         return aRes.map(cur => cur.dataValues);
     },
-    // ▼查询所有【媒体文件夹】
+    // ▼查询：所有【媒体文件夹】
     async getMediaHomes() {
         const {oPromise, fnResolve, fnReject} = newPromise();
         const sql = `

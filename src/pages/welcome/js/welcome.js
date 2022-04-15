@@ -1,5 +1,7 @@
 
-var child_process = require("child_process");
+import {mySort, goToLounage} from '../../../common/js/common-fn.js';
+
+const child_process = require("child_process");
 const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
 const ffmpeg = createFFmpeg({ log: true });
 
@@ -9,15 +11,10 @@ const oMyFn01 = {
             finishedAt: null,
         });
         if (!aList) return;
-        const obj = this.sortThem(aList);
-        this.aPending = Object.entries(obj).map(([key,val])=>{
-            return {
-                name: key,
-                nameShort: key.split('/').slice(-3).join('/'),
-                len: val.length,
-            };
-        });
+        const {obj, arr} = this.sortThem(aList);
         this.oPending = obj;
+        this.aPending = arr;
+        this.setPercent();
     },
     sortThem(aList){
         const obj = aList.reduce((oResult, cur)=>{
@@ -25,9 +22,36 @@ const oMyFn01 = {
             oResult[cur.dir].push(cur);
             return oResult;
         }, {});
-        console.log('obj\n', obj);
-        return obj;
+        const arr = Object.entries(obj).map(([sKey, oVal]) => {
+            mySort(oVal, 'name');
+            const oFirst = oVal[0];
+            return {
+                name: sKey,
+                nameShort: sKey.split('/').slice(-3).join('/'),
+                len: oVal.length,
+                oFirst,
+                sRate: '',
+                fPercent: 0,
+            };
+        });
+        return {obj, arr};
     },
+    async setPercent(){
+        for(const cur of this.aPending) {
+            const arr = await fnInvoke('db', 'getMediaInfo', {
+                dir: cur.name,
+            });
+            const iTotal = arr.length;
+            const iDone = iTotal - cur.len;
+            const percentVal = (iDone / iTotal * 100).toFixed(1);
+            cur.sRate = `${iDone}/${iTotal}`;
+            cur.fPercent = percentVal * 1;
+        }
+    },
+};
+
+const oVisitFn = {
+    // ▼访问目录
     goFolder(oTarget){
         // console.log('oTarget', oTarget.$dc());
         this.$router.push({
@@ -37,11 +61,19 @@ const oMyFn01 = {
             },
         });
     },
+    // ▼访问学习页
+    goToLounge(oTarget){
+        const {dir, name} = oTarget.oFirst;
+        const sPath = `${dir}/${name}`;
+        // console.log('oTarget', oTarget.oFirst.$dc());
+        goToLounage(sPath);
+    },
 };
 
 
 export default {
     ...oMyFn01,
+    ...oVisitFn,
     // ▼给主进程送信
     logFn() {
         oRenderer.send('channel01', '张三');

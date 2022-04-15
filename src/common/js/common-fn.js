@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 18:33:22
+ * @LastEditTime: 2022-04-14 20:40:15
  * @Description: 
  */
 
@@ -66,6 +66,13 @@ export function mySort(arr, sKey) {
     });
 }
 
+// ▼跳转到目标页
+export function goToLounage(sFilePath){
+    console.log(sFilePath);
+    ls('sFilePath', sFilePath);
+    vm.$router.push({ name: 'studyLounge' });
+}
+
 // const [a1, a2=0] = (aa?.[sKey] || '').match(/\d+/g) || [];
 // const [b1, b2=0] = (bb?.[sKey] || '').match(/\d+/g) || [];
 // // console.log(a1, b1);
@@ -75,11 +82,9 @@ export function mySort(arr, sKey) {
 // return aa[sKey].localeCompare(bb[sKey]);
 
 export function SortLikeWin(v1, v2) {
-    var a = v1.name;
-    var b = v2.name;
     var reg = /[0-9]+/g;
-    var lista = a.match(reg);
-    var listb = b.match(reg);
+    var [a, b] = [v1.name, v2.name];
+    var [lista, listb] = [a.match(reg), b.match(reg)];
     if (!lista || !listb) return a.localeCompare(b);
     for (var i = 0, minLen = Math.min(lista.length, listb.length); i < minLen; i++) {
         //数字所在位置序号
@@ -88,12 +93,9 @@ export function SortLikeWin(v1, v2) {
         //数字前面的前缀
         var prefixa = a.substring(0, indexa);
         var prefixb = b.substring(0, indexb);
-        //数字的string
-        var stra = lista[i];
-        var strb = listb[i];
-        //数字的值
-        var numa = parseInt(stra);
-        var numb = parseInt(strb);
+
+        var [stra, strb] = [lista[i], listb[i]]; //数字的string
+        var [numa, numb] = [parseInt(stra), parseInt(strb)]; //数字的值
         //如果数字的序号不等或前缀不等，属于前缀不同的情况，直接比较
         if (indexa != indexb || prefixa != prefixb) {
             return a.localeCompare(b);
@@ -116,7 +118,7 @@ export function SortLikeWin(v1, v2) {
         return numa - numb;
     }
 }
-//    使用方法,Array.sort(SortLikeWin);
+// 使用方法,Array.sort(SortLikeWin);
 // 注：localecompare 比较中文的时候有问题，替换为
 
 function commonCompare(v1, v2) {

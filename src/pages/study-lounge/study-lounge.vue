@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-03-06 19:44:35
+ * @LastEditTime: 2022-04-15 12:50:48
  * @Description: 
 -->
 <template>
@@ -108,6 +108,7 @@
             <article class="wave-below">
                 ◆文件：{{(oMediaInfo.dir||'').split('/').slice(-3).join('/') + oMediaInfo.name}}&emsp;
                 ◆时长：{{oMediaBuffer.sDuration_}}&emsp;
+                ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString() || 进行中}}&emsp;
             </article>
             <article class="wave-below">
                 <el-button-group size="small">
@@ -247,23 +248,39 @@
             </div>
         </el-dialog>
         <!-- ▼媒体信息 -->
-        <el-dialog title="媒体信息" width="600px"
+        <el-dialog title="媒体信息" width="900px"
             v-model="isShowMediaInfo"
         >
-            文件位置：{{oMediaInfo.dir}}<br/>
-            文件名称：{{oMediaInfo.name}}<br/>
-            <br/>
-            同级文件：
-            <ul class="siblings-list" >
-                <li v-for="(cur, idx) of aSiblings" :key="idx"
-                    :class="{'cur-file': cur.hash==sHash}"
-                    :style="{'--idx-width': `${String(aSiblings.length).length}em`}"
-                    @click="visitSibling(cur)"
+            <div>
+                文件夹：{{oMediaInfo.dir}}<br/>
+                文件名：{{oMediaInfo.name}}<br/>
+            </div>
+            <div class="siblings-list" v-for="(i01, i02) of 2" :key="i02">
+                <!-- style="width: 100%" -->
+                <el-table border
+                    :data="aSiblings.filter(cur => cur.done_ == !!i02)"
                 >
-                    <i class="idx">{{idx+1}}</i>
-                    <em class="file-name" >{{cur.name}}</em>
-                </li>
-            </ul>
+                    <el-table-column prop="idx_" label="序号" width="60" />
+                    <el-table-column prop="sItem" label="名称">
+                        <template #default="scope">
+                            <p type="text" :class="{'cur-file': scope.row?.infoAtDb?.hash == sHash}">
+                                {{scope.row.sItem}}
+                            </p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="finishedAt_" label="完成时间" width="210" />
+                    <el-table-column label="操作" width="130">
+                        <template #default="scope">
+                            <el-button type="text" @click="visitSibling(scope.row)" >
+                                跳转
+                            </el-button>
+                            <el-button type="text" @click="setItFinished(scope.row)" >
+                                设定
+                            </el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
         </el-dialog>
     </div>
 </template>

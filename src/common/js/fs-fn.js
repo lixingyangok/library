@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-14 15:23:58
+ * @LastEditTime: 2022-04-14 16:09:26
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 
@@ -106,6 +106,7 @@ export async function AaddMediaInfoFromDB(oMedia){
     const hash = await fnInvoke('getHash', oMedia.sPath);
     const res = await fnInvoke('db', 'getMediaInfo', {hash});
     oMedia.hash = hash;
+    if (!res?.[0]) return;
     oMedia.infoAtDb = res[0];
     oMedia.bNameRight = res[0].name == oMedia.sItem;
 }

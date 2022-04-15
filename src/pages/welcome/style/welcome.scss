@@ -2,7 +2,7 @@
     padding: 20px;
 }
 
-.top-one{
+.big-title{
     margin: 20px 0 0;
     font-size: 40px;
 }
@@ -10,6 +10,12 @@
 .first-list{
     margin: 30px 0 20px;
     line-height: 1.8;
+    .folder-name{
+        font-weight: bold;
+    }
+    .the-first{
+        opacity: 0.7;
+    }
 }
 
 .welcome{
