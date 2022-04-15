@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-03-13 11:19:43
+ * @LastEditTime: 2022-04-15 21:12:46
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -454,9 +454,12 @@ export function fnAllKeydownFn() {
     async function saveLines() {
         const toSaveArr = [];
         This.aLineArr.forEach(cur => {
-            cur.id && This.deletedSet.delete(cur.id);
-            if (!This.checkIfChanged(cur)) return;
-            toSaveArr.push({ ...cur, mediaId: This.oMediaInfo.id });
+            cur.id && This.deletedSet.delete(cur.id); // 防止误删
+            if (!This.checkIfChanged(cur)) return; // 没变动不删除
+            ['start', 'end'].forEach(key=>{
+                cur[key] = Number.parseFloat(cur[key].toFixed(2));
+            });
+            toSaveArr.push({ ...cur, mediaId: This.oMediaInfo.id }); 
         });
         const toDelArr = [...This.deletedSet];
         if (!toSaveArr.length && !toDelArr.length) {
@@ -471,6 +474,7 @@ export function fnAllKeydownFn() {
         const sTips = `成功：修改 ${res0.length} 条，删除 ${res1} 条`;
         This.$message.success(sTips);
         This.deletedSet.clear();
+        This.oTodayBar.init();
     }
     // ▼撤销-恢复
     function setHistory(iType) {
@@ -567,4 +571,14 @@ class keyDownFn {
         this.getMatchedWords(sTyped);
     }
 }
+
+// SELECT * 
+// FROM "line" 
+// where id = 100718
+// start 69.1400000000001
+// sqlite 拆分字符，字符分列，分割字符
+// length(substr(start, instr(start, '.') + 1)) > 2
+// substr(start, 0, instr(start, '.')),
+// substr(start, instr(start, '.') + 1)
+// length(substr(start, instr(start, '.') + 1)) as len,
 

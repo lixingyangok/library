@@ -2,18 +2,15 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 15:52:27
+ * @LastEditTime: 2022-04-15 21:07:55
  * @Description: 
 -->
 
 <template>
-    <section class="welcome-page" >
+    <section class="welcome-page">
         <h1 class="big-title" >
-            十年大计-{{$store.state.userInfo.name}}
+            十年大计，十年一剑
         </h1>
-        <p>
-            待办：句子的时间精确到小数后2位即可，
-        </p>
         <!-- ▲大标题 -->
         <!-- ▼进行中 -->
         <section class="first-list" >
@@ -25,24 +22,31 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="sRate" label="完成率1" width="100"/>
-                <el-table-column prop="fPercent" label="完成率2" width="230" >
+                <el-table-column prop="fPercent" label="完成率2" width="250" >
                     <template #default="scope">
                         <el-progress :percentage="scope.row.fPercent" />
                     </template>
                 </el-table-column>
-                <el-table-column label="操作" width="190">
+                <el-table-column label="操作" width="220">
                     <template #default="scope">
                         <el-button type="text" @click="goToLounge(scope.row)" >
-                            继续学习
+                            推进
                         </el-button>
                         <el-button type="text" @click="goFolder(scope.row)" >
                             访问目录
+                        </el-button>
+                        <el-button type="text" @click="putToTop(scope.row)" >
+                            置顶
                         </el-button>
                     </template>
                 </el-table-column>
             </el-table>
         </section>
-        <div class="welcome" >
+        <TodayHistory/>
+        <div class="btn-bar" >
+            <button @click="$root.f5()" >
+                刷新
+            </button>
             <button @click="logFn" >
                 给主进程送信
             </button>
@@ -55,30 +59,52 @@
             <button @click="showScreen" >
                 定时唤醒
             </button>
+            &emsp;Store值：{{$store.state.userInfo.name}}
         </div>
-        <h4>
-            本周新增：xxxx句
-        </h4>
-        <h4>
-            本周录入：xxxx句
-        </h4>
         <myInputing/>
+        <div class="two-columns" >
+            <div>
+                <em>待办：</em>
+                <br/>清晨打卡功能，起床数据可视化
+                <br/>句子的时间精确到小数后2位即可✔
+                <br/>导入的字幕也应控制把时间信息精确到2位小数
+                <br/>本周新增：xxxx句
+                <br/>本周录入：xxxx句
+                <br/>页面调整：首页是数据页，添加打卡功能
+                <br/>页面调整：二页是计划页，
+                <br/>BUG：人为将波形滚动之后被触发的事件有阻挠效果
+                <br/>补充鼠标断句功能
+            </div>
+            <div>
+                <em>长期计划：</em>
+                <br/>格式转化功能（转为ogg）
+                <br/>推至首页功能，待听写，待阅读
+                <br/>开发【计划】功能？？？
+                <em>长期计划：</em>
+                <br/>为媒体文件变化了怎么办？记录更新 hash 值的功能
+                <br/>媒体文件夹更名了怎么办？处理媒体的位置变更后的错乱（文件夹更名）
+            </div>
+        </div>
+
     </section>
     <ul>
         <li v-for="(cur,idx) of aLog" :key="idx" >
             {{cur}}
         </li>
     </ul>
+
 </template>
 
 <script>
 import oMethods from './js/welcome.js';
 import myInputing from '../study-lounge/inputing.vue';
+import TodayHistory from '@/components/today-history/today-history.vue';
 
 export default {
     name: "welcome",
-    components:{
+    components: {
         myInputing,
+        TodayHistory,
     },
     data(){
         return {
@@ -90,7 +116,6 @@ export default {
     },
     created(){
         this.getPendingList();
-        this.getToday();
     },
     methods: {
         ...oMethods,

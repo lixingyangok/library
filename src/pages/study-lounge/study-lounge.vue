@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 13:34:30
+ * @LastEditTime: 2022-04-15 21:12:04
  * @Description: 
 -->
 <template>
@@ -110,6 +110,7 @@
                 ◆时长：{{oMediaBuffer.sDuration_}}&emsp;
                 ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString() || '进行中'}}&emsp;
             </article>
+            <TodayHistory ref="oTodayBar"/>
             <article class="wave-below">
                 <el-button-group size="small">
                     <el-button type="primary" @click="()=>oMyWave.toSaveTemp">
@@ -170,7 +171,7 @@
                     ></li>
                 </ul>
                 <div class="textarea" :key="iCurLineIdx">
-                    <template v-for="word of splitSentence(aLineArr[iCurLineIdx].text)">
+                    <template v-for="word of splitSentence(oCurLine.text)">
                         <span v-if="word.sClassName" :class="word.sClassName">
                             {{word.word}}
                         </span>
@@ -178,7 +179,7 @@
                     </template>
                 </div>
                 <textarea ref="oTextArea" class="textarea textarea-real"
-                    :class="{'space-ahead': ' ' == aLineArr[iCurLineIdx].text[0]}"
+                    :class="{'space-ahead': oCurLine.text.match(/\s{2,}|^\s/g)}"
                     v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
@@ -313,6 +314,7 @@ import MyWave from '../../components/wave/wave.vue';
 import {registerKeydownFn} from '../../common/js/common-fn.js'
 import dictionaryVue from '../dictionary/dictionary.vue';
 import myInputing from './inputing.vue';
+import TodayHistory from '@/components/today-history/today-history.vue';
 
 export default {
     name: 'study-lounge',
@@ -320,6 +322,7 @@ export default {
         MyWave,
         dictionaryVue,
         myInputing,
+        TodayHistory,
     },
     setup(){
         const oData = mainPart();

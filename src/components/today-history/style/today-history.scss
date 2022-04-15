@@ -1,0 +1,13 @@
+.today-bar{
+    & > span{
+        margin: 0 15px 0 0;
+        color: #aaa;
+        em{
+            color: blue;
+            // font-weight: bold;
+        }
+    }
+}
+
+
+

@@ -5,13 +5,14 @@ const child_process = require("child_process");
 const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
 const ffmpeg = createFFmpeg({ log: true });
 
-const oMyFn01 = {
+const oPendingDataFn = {
     async getPendingList(){
         const aList = await fnInvoke('db', 'getMediaInfo', {
             finishedAt: null,
         });
         if (!aList) return;
         const {obj, arr} = this.sortThem(aList);
+        this.setListOrder(arr);
         this.oPending = obj;
         this.aPending = arr;
         this.setPercent();
@@ -36,6 +37,17 @@ const oMyFn01 = {
         });
         return {obj, arr};
     },
+    // ▼排序
+    setListOrder(arr){
+        arr ||= this.aPending;
+        const pendingOrder = ls('pendingOrder') || {};
+        arr.sort((aa, bb)=>{
+            const aNumber = pendingOrder[aa.name] || -1;
+            const bNumber = pendingOrder[bb.name] || -1;
+            return bNumber - aNumber;
+        });
+    },
+    // ▼计算完成率
     async setPercent(){
         for(const cur of this.aPending) {
             const arr = await fnInvoke('db', 'getMediaInfo', {
@@ -48,22 +60,25 @@ const oMyFn01 = {
             cur.fPercent = percentVal * 1;
         }
     },
+    // ▼置顶
+    async putToTop(oTarget){
+        // console.log('oTarget', oTarget.$dc());
+        ls.transact('pendingOrder', obj => {
+            return {
+                ...obj,
+                [oTarget.name]: new Date() * 1,
+            };
+        });
+        this.setListOrder();
+    },
 };
 
 const oRecordFn = {
     async getToday(){
-        const [r01, r02] = await fnInvoke('db', 'doSql', `
-            SELECT *,
-                julianday('now', 'localtime') - julianday(createdAt, 'localtime') as gap
-            FROM "line"
-            where
-                julianday('now') - julianday(date(createdAt, 'localtime')) < 1 or
-                julianday('now') - julianday(date(filledAt, 'localtime')) < 1
-        `);
-        if (!r01) return;
-        console.log('r01\n', r01);
+
     }
 };
+
 
 const oVisitFn = {
     // ▼访问目录
@@ -87,7 +102,7 @@ const oVisitFn = {
 
 
 export default {
-    ...oMyFn01,
+    ...oPendingDataFn,
     ...oRecordFn,
     ...oVisitFn,
     // ▼给主进程送信

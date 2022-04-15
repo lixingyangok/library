@@ -2,12 +2,12 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-14 20:40:15
+ * @LastEditTime: 2022-04-15 21:09:54
  * @Description: 
  */
 
-import { keyMap } from './key-map.js';
 import { onBeforeUnmount } from 'vue';
+import { keyMap } from './key-map.js';
 
 // ▼注册按键监听
 export function registerKeydownFn(oFnList) {
@@ -88,19 +88,16 @@ export function SortLikeWin(v1, v2) {
     if (!lista || !listb) return a.localeCompare(b);
     for (var i = 0, minLen = Math.min(lista.length, listb.length); i < minLen; i++) {
         //数字所在位置序号
-        var indexa = a.indexOf(lista[i]);
-        var indexb = b.indexOf(listb[i]);
+        var [indexa, indexb] = [a.indexOf(lista[i]), b.indexOf(listb[i])];
         //数字前面的前缀
-        var prefixa = a.substring(0, indexa);
-        var prefixb = b.substring(0, indexb);
-
+        var [prefixa, prefixb] = [a.substring(0, indexa), b.substring(0, indexb)];
         var [stra, strb] = [lista[i], listb[i]]; //数字的string
         var [numa, numb] = [parseInt(stra), parseInt(strb)]; //数字的值
-        //如果数字的序号不等或前缀不等，属于前缀不同的情况，直接比较
+        // 如果数字的序号不等或前缀不等，属于前缀不同的情况，直接比较
         if (indexa != indexb || prefixa != prefixb) {
             return a.localeCompare(b);
         }
-        //数字的string全等
+        // 数字的string全等
         if (stra === strb) {
             //如果是最后一个数字，比较数字的后缀
             if (i == minLen - 1) {
@@ -110,11 +107,11 @@ export function SortLikeWin(v1, v2) {
             a = a.substring(indexa + stra.length);
             b = b.substring(indexa + stra.length);
         }
-        //如果数字的string不全等，但值相等
+        // 如果数字的string不全等，但值相等
         else if (numa == numb) { //直接比较数字前缀0的个数，多的更小
             return strb.lastIndexOf(numb + '') - stra.lastIndexOf(numa + '');
         }
-        //如果数字不等，直接比较数字大小
+        // 如果数字不等，直接比较数字大小
         return numa - numb;
     }
 }
