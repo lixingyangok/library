@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 12:53:49
+ * @LastEditTime: 2022-04-15 15:52:27
  * @Description: 
 -->
 
@@ -11,6 +11,9 @@
         <h1 class="big-title" >
             十年大计-{{$store.state.userInfo.name}}
         </h1>
+        <p>
+            待办：句子的时间精确到小数后2位即可，
+        </p>
         <!-- ▲大标题 -->
         <!-- ▼进行中 -->
         <section class="first-list" >
@@ -87,6 +90,7 @@ export default {
     },
     created(){
         this.getPendingList();
+        this.getToday();
     },
     methods: {
         ...oMethods,

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 22:05:29
+ * @LastEditTime: 2022-04-15 15:54:25
  * @Description: 
  */
 
@@ -59,7 +59,7 @@ const oFn = module.exports.oFn = {
         }
         return res;
     },
-    // ▼统计所有【媒体字幕】
+    // ▼查询：统计所有【媒体字幕】
     async getLineInfo() {
         const { oPromise, fnResolve, fnReject } = newPromise();
         const sql = `
@@ -73,7 +73,7 @@ const oFn = module.exports.oFn = {
         });
         return oPromise;
     },
-    // ▼查询某个媒体的字幕
+    // ▼查询：某个媒体的字幕
     async getLineByMedia(mediaId) {
         const res = await oLine.findAll({
             where: {mediaId},
@@ -82,7 +82,7 @@ const oFn = module.exports.oFn = {
         if (!res) return;
         return res.map(cur => cur.dataValues);
     },
-    // ▼按单词搜索字幕
+    // ▼查询：按单词搜索字幕
     async searchLineBybWord(word) {
         const res = await oLine.findAndCountAll({
             where: {

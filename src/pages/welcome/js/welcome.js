@@ -50,6 +50,21 @@ const oMyFn01 = {
     },
 };
 
+const oRecordFn = {
+    async getToday(){
+        const [r01, r02] = await fnInvoke('db', 'doSql', `
+            SELECT *,
+                julianday('now', 'localtime') - julianday(createdAt, 'localtime') as gap
+            FROM "line"
+            where
+                julianday('now') - julianday(date(createdAt, 'localtime')) < 1 or
+                julianday('now') - julianday(date(filledAt, 'localtime')) < 1
+        `);
+        if (!r01) return;
+        console.log('r01\n', r01);
+    }
+};
+
 const oVisitFn = {
     // ▼访问目录
     goFolder(oTarget){
@@ -73,6 +88,7 @@ const oVisitFn = {
 
 export default {
     ...oMyFn01,
+    ...oRecordFn,
     ...oVisitFn,
     // ▼给主进程送信
     logFn() {
