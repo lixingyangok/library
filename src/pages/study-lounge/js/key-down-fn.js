@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 21:12:46
+ * @LastEditTime: 2022-04-16 18:10:01
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -122,7 +122,7 @@ export function fnAllKeydownFn() {
         let iCount = 0;
         for (const cur of This.aLineArr){
             This.checkIfChanged(cur) && iCount++;
-            if (iCount <= 3) continue;
+            if (iCount <= 2) continue;
             return This.saveLines(); // 保存
         }
     }

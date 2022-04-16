@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 21:11:37
+ * @LastEditTime: 2022-04-16 19:00:29
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -134,6 +134,7 @@ export async function findMedia(sPath, oTarget) {
     return iSum;
 }
 
+// 查询：某天/某几天 的学习数据
 export async function getLearningHistory(){
     const [r01, r02] = await fnInvoke('db', 'doSql', `
         SELECT *,
@@ -147,6 +148,7 @@ export async function getLearningHistory(){
     return r01;
 }
 
+// 查询：当天的学习数据
 export async function getTodayHistory(){
     const arr = await getLearningHistory();
     if (!arr) return;
@@ -170,7 +172,11 @@ export async function getTodayHistory(){
             iCrDuration += (end - start);
         }
     });
-    oResult.sCrDuration = secToStr(iCrDuration).slice(0,8);
-    oResult.sFiDuration = secToStr(iFiDuration).slice(0,8);
+    Object.assign(oResult, {
+        sCrDuration: secToStr(iCrDuration).slice(0,8),
+        sFiDuration: secToStr(iFiDuration).slice(0,8),
+        iCrDuration: Number.parseInt(iCrDuration),
+        iFiDuration: Number.parseInt(iFiDuration),
+    });
     return oResult;
 }

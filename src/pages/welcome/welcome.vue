@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 21:07:55
+ * @LastEditTime: 2022-04-16 18:59:32
  * @Description: 
 -->
 
@@ -14,7 +14,7 @@
         <!-- ▲大标题 -->
         <!-- ▼进行中 -->
         <section class="first-list" >
-            <el-table :data="aPending" stripe border>
+            <el-table :data="aPending" stripe border style="width: 100%;">
                 <el-table-column label="文件夹">
                     <template #default="scope">
                         <p class="folder-name">{{scope.row.nameShort}} </p>
@@ -65,15 +65,19 @@
         <div class="two-columns" >
             <div>
                 <em>待办：</em>
-                <br/>清晨打卡功能，起床数据可视化
-                <br/>句子的时间精确到小数后2位即可✔
                 <br/>导入的字幕也应控制把时间信息精确到2位小数
-                <br/>本周新增：xxxx句
-                <br/>本周录入：xxxx句
-                <br/>页面调整：首页是数据页，添加打卡功能
-                <br/>页面调整：二页是计划页，
+                <br/>页面调整：添加计划页，与计划进度页
                 <br/>BUG：人为将波形滚动之后被触发的事件有阻挠效果
                 <br/>补充鼠标断句功能
+                <em>首页：</em>
+                <br/>本周新增：xxxx句
+                <br/>本周录入：xxxx句
+                <br/>页面调整：首页是数据页（成就页），添加起床打卡功能
+                <br/>首页：显示日期（日历）数据
+                <br/>首页：显示倒计时，年剩余，月剩余，周剩余，天剩余，
+                <br/>首页功能：整个词儿（随机词汇）
+                <em>已经完成：</em>
+                <br/>句子的时间精确到小数后2位即可✔
             </div>
             <div>
                 <em>长期计划：</em>
@@ -85,14 +89,15 @@
                 <br/>媒体文件夹更名了怎么办？处理媒体的位置变更后的错乱（文件夹更名）
             </div>
         </div>
-
     </section>
+    <br/>
+    <br/>
+    <br/>
     <ul>
         <li v-for="(cur,idx) of aLog" :key="idx" >
             {{cur}}
         </li>
     </ul>
-
 </template>
 
 <script>

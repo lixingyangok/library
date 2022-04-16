@@ -1,13 +1,42 @@
 .today-bar{
-    & > span{
-        margin: 0 15px 0 0;
-        color: #aaa;
-        em{
-            color: blue;
-            // font-weight: bold;
+    opacity: 1;
+}
+
+.cell{
+    margin: 0 15px 0 0;
+    color: #aaa;
+    position: relative;
+    em{
+        color: blue;
+    }
+    .addition{
+        font-weight: normal;
+        position: absolute;
+        top: 0;
+        right: 0;
+        color: red;
+        animation: go-up 1.5s ease 0.2s 1 normal forwards;
+        z-index: 3;
+        opacity: 1;
+        font-size: 1.2em;
+        font-weight: bold;
+        &::before{
+            content: '+';
         }
     }
 }
 
-
+@keyframes go-up {
+    0%{
+        top: 0;
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        top: -25px;
+        opacity: 0;
+    }
+}
 
