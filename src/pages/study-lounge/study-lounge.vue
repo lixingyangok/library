@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 21:12:04
+ * @LastEditTime: 2022-05-15 17:01:20
  * @Description: 
 -->
 <template>
@@ -328,7 +328,7 @@ export default {
         const oData = mainPart();
         const aLineForShow = computed(() => {
             const {iShowStart} = oData;
-            return oData.aLineArr.slice(iShowStart, iShowStart + 22).map((cur, idx)=>{
+            return oData.aLineArr.slice(iShowStart, iShowStart + 28).map((cur, idx)=>{
                 cur.ii = idx + iShowStart;
                 return cur;
             });
