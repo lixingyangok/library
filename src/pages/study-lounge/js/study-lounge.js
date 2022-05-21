@@ -210,6 +210,7 @@ export function mainPart(){
 	}
 	// ▼显示一批媒体信息
 	async function showMediaDialog(){
+		console.log('打开邻居窗口');
 		oData.isShowMediaInfo = true;
 	}
 	// ▼ 查询邻居文件列表
@@ -217,7 +218,7 @@ export function mainPart(){
 		let aList = await getFolderChildren(oData.oMediaInfo.dir);
 		if (!aList) return;
 		aList = aList.filter(cur => cur.isMedia);
-		await addAllMediaDbInfo(aList);
+		await addAllMediaDbInfo(aList, true);
 		aList.forEach((cur, idx)=>{
 			const {finishedAt, id} = cur.infoAtDb || {};
 			cur.idx_ = idx + 1;
