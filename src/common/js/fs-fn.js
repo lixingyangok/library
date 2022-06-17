@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-05-21 14:56:42
+ * @LastEditTime: 2022-06-14 21:44:54
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -28,6 +28,7 @@ export async function getFolderKids(sPath){
         const oItem = {
             name: sFile,
             sPath: sCurFile,
+            isMedia: true,
         };
         const spouse = sFile.split('.').slice(0, -1).join('.') + '.srt';
         if (aKids.includes(spouse)) oItem.srt = `${sPath}/${spouse}`;

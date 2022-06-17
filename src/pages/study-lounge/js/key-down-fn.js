@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-16 18:10:01
+ * @LastEditTime: 2022-06-15 21:44:26
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -402,7 +402,7 @@ export function fnAllKeydownFn() {
         setCandidate(sLeftLower);
         candidateTimer = setTimeout(() => {
             setCandidate(sLeftLower, ++iSearchingQ);
-        }, 300);
+        }, 600);
     }
     // ▼查询候选词
     async function setCandidate(sWord, iCurQs) {
