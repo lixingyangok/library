@@ -329,15 +329,21 @@ export function mainPart(){
 		});
 	}
 	// ▼保存字幕文件
-	function saveSrt(){
-		console.log('保存');
+	function saveSrt(sType){
 		const {dir, name} = oData.oMediaInfo;
-		const aName = name.split('.');
-		aName[aName.length-1] = 'srt';
-		const sName = aName.join('.');
+		// console.log(`保存 ${sType}`, dir);
 		const bCopy = copyString(dir);
 		if (bCopy) vm.$message.success('已复制路径');
-		downloadSrt(oData.aLineArr, sName);
+		const aName = name.split('.');
+		if (aName.length > 1) aName.pop(); // 不需要后缀
+		const sName = aName.join('.');
+		const theArray = oData.aLineArr.$dc();
+		if (sType == 'fill') {
+			theArray.forEach((cur, idx)=>{
+				cur.text ||= `Line No. ${idx+1}`; 
+			});
+		}
+		downloadSrt(theArray, sName);
 	}
 	// ▼访问上/下一个文件
 	function visitNeighbor(iType){
@@ -352,6 +358,18 @@ export function mainPart(){
 			break;
 		}
 		vm.$message.warning('没有上/下一个');
+	}
+	const fnLib = {
+		'保存波形': () => oDom?.oMyWave?.toSaveTemp(),
+		'媒体入库': saveMedia,
+		'导入Srt': () => oDom?.oSrtInput?.click(),
+		'导出Srt': saveSrt,
+		'导出Srt(补空行)': () => saveSrt('fill'),
+	};
+	// ▼ 处理菜单点击事件
+	function handleCommand(command){
+		console.log('指令：', command);
+		fnLib[command]?.();
 	}
 	// ============================================================================
 	init();
@@ -379,6 +397,7 @@ export function mainPart(){
 		importSrt,
 		setItFinished,
 		visitNeighbor,
+		handleCommand,
 	};
     return reactive({
         ...toRefs(oDom),

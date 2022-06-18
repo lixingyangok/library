@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-05-15 17:01:20
+ * @LastEditTime: 2022-06-18 17:40:05
  * @Description: 
 -->
 <template>
@@ -18,37 +18,6 @@
                 oTopLineMatch?.iLeftLine：{{oTopLineMatch?.iLeftLine}}<br/>
                 iWriting：{{iWriting}}<br/> -->
                 <ul ref="oLeftTxt">
-                    <!-- <li v-for="(curLine, idx) of aArticle" :key="idx"
-                        :class="{'writing-line': idx == iWriting}"
-                    >
-                        <template v-if="idx == iWriting">
-                            <template v-if="idx == oTopLineMatch?.iLeftLine">
-                                {{
-                                    curLine.slice(0, oTopLineMatch.iMatchStart)
-                                }}<span class="just-wrote">{{
-                                    curLine.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
-                                }}</span>{{
-                                    curLine.slice(oTopLineMatch.iMatchEnd, iMatchStart)
-                                }}
-                            </template>
-                            <template v-else>
-                                {{curLine.slice(0, iMatchStart)}}
-                            </template>
-                            <em class="writing">{{curLine.slice(iMatchStart, iMatchEnd)}}</em>{{curLine.slice(iMatchEnd)}}
-                        </template>
-                        <template v-else-if="idx == oTopLineMatch?.iLeftLine">
-                            {{
-                                curLine.slice(0, oTopLineMatch.iMatchStart)
-                            }}<span class="just-wrote">{{
-                                curLine.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
-                            }}</span>{{
-                                curLine.slice(oTopLineMatch.iMatchEnd)
-                            }}
-                        </template>
-                        <template v-else>
-                            {{curLine}}
-                        </template>
-                    </li> -->
                     <li>
                         {{'\n' + aArticle.slice(0, iShowUntil).join('\n')}}
                     </li>
@@ -112,20 +81,18 @@
             </article>
             <TodayHistory ref="oTodayBar"/>
             <article class="wave-below">
-                <el-button-group size="small">
-                    <el-button type="primary" @click="()=>oMyWave.toSaveTemp">
-                        保存波形
+                <el-dropdown size="small" @command="handleCommand" >
+                    <el-button type="primary" size="small">
+                        字幕&nbsp;<i class="fas fa-angle-down"/>
                     </el-button>
-                    <el-button type="primary" @click="saveMedia">
-                        媒体入库
-                    </el-button>
-                    <el-button type="primary" @click="() => oSrtInput.click()">
-                        导入Srt
-                    </el-button>
-                    <el-button type="primary" size="small" @click="saveSrt">
-                        导出Srt
-                    </el-button>
-                </el-button-group>
+                    <template #dropdown size="small">
+                        <el-dropdown-menu>
+                            <el-dropdown-item command="导入Srt">导入Srt</el-dropdown-item>
+                            <el-dropdown-item command="导出Srt">导出Srt</el-dropdown-item>
+                            <el-dropdown-item command="导出Srt(补空行)">导出Srt(补空行)</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
                 <el-button-group size="small">
                     <el-button type="primary" size="small" @click="showMediaDialog()">
                         信息与列表
@@ -275,7 +242,6 @@
             </div>
             
             <div class="siblings-list" v-for="(i01, i02) of 2" :key="i02">
-                <!-- style="width: 100%" -->
                 <el-table border
                     :data="aSiblings.filter(cur => cur.done_ == !!i02)"
                 >
@@ -377,4 +343,59 @@ export default {
 <style scoped src="./style/type-box.scss"></style>
 <style scoped src="./style/line-list.scss"></style>
 <style scoped src="./style/dialog.scss"></style>
+
+
+<!-- <el-button-group size="small">
+    <el-button type="primary" @click="() => oSrtInput.click()">
+        导入Srt
+    </el-button>
+    <el-button type="primary" size="small" @click="saveSrt">
+        导出Srt
+    </el-button>
+</el-button-group> -->
+
+<!-- <el-dropdown size="small" @command="handleCommand" >
+    <el-button type="primary" size="small">
+        菜单&nbsp;<i class="fas fa-angle-down"/>
+    </el-button>
+    <template #dropdown size="small">
+        <el-dropdown-menu>
+            <el-dropdown-item command="保存波形">保存波形</el-dropdown-item>
+            <el-dropdown-item command="媒体入库">媒体入库</el-dropdown-item>
+        </el-dropdown-menu>
+    </template>
+</el-dropdown> -->
+
+<!-- <ul ref="oLeftTxt"> 直接子元素 -->
+<!-- <li v-for="(curLine, idx) of aArticle" :key="idx"
+    :class="{'writing-line': idx == iWriting}"
+>
+    <template v-if="idx == iWriting">
+        <template v-if="idx == oTopLineMatch?.iLeftLine">
+            {{
+                curLine.slice(0, oTopLineMatch.iMatchStart)
+            }}<span class="just-wrote">{{
+                curLine.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
+            }}</span>{{
+                curLine.slice(oTopLineMatch.iMatchEnd, iMatchStart)
+            }}
+        </template>
+        <template v-else>
+            {{curLine.slice(0, iMatchStart)}}
+        </template>
+        <em class="writing">{{curLine.slice(iMatchStart, iMatchEnd)}}</em>{{curLine.slice(iMatchEnd)}}
+    </template>
+    <template v-else-if="idx == oTopLineMatch?.iLeftLine">
+        {{
+            curLine.slice(0, oTopLineMatch.iMatchStart)
+        }}<span class="just-wrote">{{
+            curLine.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
+        }}</span>{{
+            curLine.slice(oTopLineMatch.iMatchEnd)
+        }}
+    </template>
+    <template v-else>
+        {{curLine}}
+    </template>
+</li> -->
 
