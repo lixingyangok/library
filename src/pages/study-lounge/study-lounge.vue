@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-06-18 17:40:05
+ * @LastEditTime: 2022-06-18 18:44:25
  * @Description: 
 -->
 <template>
@@ -81,10 +81,9 @@
             </article>
             <TodayHistory ref="oTodayBar"/>
             <article class="wave-below">
-                <el-dropdown size="small" @command="handleCommand" >
-                    <el-button type="primary" size="small">
-                        字幕&nbsp;<i class="fas fa-angle-down"/>
-                    </el-button>
+                <el-dropdown split-button type="primary" size="small" @command="handleCommand" >
+                    待定功能
+                    <!-- <el-button type="primary" size="small">字幕&nbsp;<i class="fas fa-angle-down"/></el-button> -->
                     <template #dropdown size="small">
                         <el-dropdown-menu>
                             <el-dropdown-item command="导入Srt">导入Srt</el-dropdown-item>
@@ -180,7 +179,8 @@
                     }"
                 >
                     <li v-for="(cur) of aLineForShow" :key="cur.ii"
-                        class="one-line" :class="{cur: iCurLineIdx == cur.ii}"
+                        class="one-line"
+                        :class="{cur: iCurLineIdx == cur.ii, 'key-line': (cur.ii + 1) % 10 == 0}"
                         @click="goLine(cur.ii, null, true)"
                     >
                         <i className="idx">{{cur.ii+1}}</i>

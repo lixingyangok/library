@@ -70,7 +70,7 @@
 		line-height: 1.2;
 		&[class~=ten-times] .mark{
 			height: 50%;
-			width: 2px;
+			// width: 2px;
 		}
 	}
 	.mark{
@@ -125,6 +125,14 @@
 		font-size: 10px;
 		color: var(--color);
         font-style: normal;
+		.new-step{
+			background: yellow;
+			padding: 2px;
+			color: black;
+			// &::after{
+			// 	content: " ● New Stage!!";
+			// }
+		}
 	}
 	.region:before,
 	.region:after,

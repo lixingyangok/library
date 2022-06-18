@@ -28,6 +28,9 @@
 }
 
 .one-line{
+	&[class~=key-line]{
+		background-color: var(--el-color-primary-light-9);
+	}
     .idx{
 		flex: none;
 		font-style: normal;

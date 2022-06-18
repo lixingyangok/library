@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-06-18 13:25:10
+ * @LastEditTime: 2022-06-18 18:50:04
  * @Description: 
 -->
 <template>
@@ -39,14 +39,21 @@
                             width: `${(cur.end - cur.start) * fPerSecPx}px`,
                         }"
                     >
-                        <i class="idx">{{cur.idx+1}}</i>
+                        <i class="idx">
+                            <!-- {{cur.idx+1}}/ -->
+                            <span v-if="cur.iRate"
+                                :class="{'new-step': cur.iRate >= 10 && parseInt(cur.iRate / 10) != parseInt(aGapRegions[idx-1]?.iRate / 10)}" 
+                            >
+                                {{cur.iRate}}%
+                            </span>
+                        </i>
                     </li>
                 </ul>
                 <i ref="oPointer" class="pointer" v-show="playing" />
             </div>
-            <ol class="percentage-box" >
+            <!-- <ol class="percentage-box" >
                 <li v-for="(idx) of 9" :key="idx">{{idx*10}}%</li>
-            </ol>
+            </ol> -->
         </section>
     </article>
 </template>
@@ -91,16 +98,21 @@ export default {
             return arr;
         });
         const aGapRegions = computed(() => {
+            const {duration} = oData.oMediaBuffer || {};
             const [iLeftSec, iRightSec] = aGapSeconds.v;
             if (!iRightSec) return [];
             const myArr = [];
             const {length} = props.aLineArr;
             for (let idx = 0; idx < length; idx++){
-                const {end} = props.aLineArr[idx];
+                const oCur = props.aLineArr[idx];
+                const {end} = oCur;
                 const IsShow = end > iLeftSec || end > iRightSec; // 此处正确无误
                 if (!IsShow) continue;
-                props.aLineArr[idx].idx = idx;
-                myArr.push(props.aLineArr[idx]);
+                oCur.idx = idx;
+                if (duration > 100){
+                    oCur.iRate = (oCur.start / duration * 100).toFixed(1) * 1;
+                }
+                myArr.push(oCur);
                 if (end > iRightSec) break;
             }
             return myArr;
