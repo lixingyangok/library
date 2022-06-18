@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-07 20:50:11
+ * @LastEditTime: 2022-06-18 13:25:10
  * @Description: 
 -->
 <template>
@@ -44,6 +44,9 @@
                 </ul>
                 <i ref="oPointer" class="pointer" v-show="playing" />
             </div>
+            <ol class="percentage-box" >
+                <li v-for="(idx) of 9" :key="idx">{{idx*10}}%</li>
+            </ol>
         </section>
     </article>
 </template>
