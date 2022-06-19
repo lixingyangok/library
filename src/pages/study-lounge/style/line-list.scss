@@ -29,7 +29,7 @@
 
 .one-line{
 	&[class~=key-line]{
-		background-color: var(--el-color-primary-light-9);
+		border-bottom: dashed 1px #555;
 	}
     .idx{
 		flex: none;

@@ -58,6 +58,9 @@
 		outline: none;
 		border-color: var(--el-input-focus-border, var(--el-color-primary));
 	}
+	&[class~=ten-times]{
+		background-color: #ecf5ff;
+	}
 	&[class~=space-ahead]{
 		border-color: red !important;
 		box-shadow: 0px 0px 2px 0px red inset;

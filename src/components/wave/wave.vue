@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-06-18 18:50:04
+ * @LastEditTime: 2022-06-19 21:25:34
  * @Description: 
 -->
 <template>
@@ -42,7 +42,7 @@
                         <i class="idx">
                             <!-- {{cur.idx+1}}/ -->
                             <span v-if="cur.iRate"
-                                :class="{'new-step': cur.iRate >= 10 && parseInt(cur.iRate / 10) != parseInt(aGapRegions[idx-1]?.iRate / 10)}" 
+                                :class="{'new-step': cur.iRate >= 10 && parseInt(cur.iRate / 10) > parseInt(aGapRegions[idx-1]?.iRate / 10)}"
                             >
                                 {{cur.iRate}}%
                             </span>

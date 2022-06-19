@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-06-18 18:44:25
+ * @LastEditTime: 2022-06-19 21:29:08
  * @Description: 
 -->
 <template>
@@ -103,7 +103,6 @@
                         下一个
                     </el-button>
                 </el-button-group>
-                
                 <el-button type="primary" size="small" @click="toCheckDict">
                     查字典
                 </el-button>
@@ -121,7 +120,6 @@
                         打开TXT
                     </el-button>
                 </el-button-group>
-
                 <input type="file" ref="oTxtInput" accept="text/plain"
                     @change="getArticleFile" v-show="0"
                 />
@@ -145,7 +143,10 @@
                     </template>
                 </div>
                 <textarea ref="oTextArea" class="textarea textarea-real"
-                    :class="{'space-ahead': oCurLine.text.match(/\s{2,}|^\s/g)}"
+                    :class="{
+                        'space-ahead': oCurLine.text.match(/\s{2,}|^\s/g),
+                        'ten-times': (iCurLineIdx + 1) % 10 == 0,
+                    }"
                     v-model="aLineArr[iCurLineIdx].text"
                     @keydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
