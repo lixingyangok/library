@@ -67,6 +67,7 @@ const fnAboutDB = {
 
     // ▼将某个文件夹内的媒体逐个保存媒体到DB
     async saveOneByOne(){
+        // console.log('开始入库');
         const allHasHash = this.aFolderMedia.every(cur=>cur.hash);
         if (this.aFolderMedia.length && !allHasHash) {
             return this.$message.error('没有加载完');
@@ -74,7 +75,7 @@ const fnAboutDB = {
         let idx = -1;
         while (++idx < this.aFolderMedia.length){
             const oMedia = this.aFolderMedia[idx];
-            if (!oMedia.infoAtDb) { // 不再重试保存
+            if (!oMedia.infoAtDb) { // 不再重复保存
                 const arr = oMedia.sPath.split('/');
                 const oInfo = await fnInvoke('db', 'saveMediaInfo', {
                     hash: oMedia.hash,
@@ -86,7 +87,7 @@ const fnAboutDB = {
                 }
                 oMedia.infoAtDb = oInfo;
             }
-            if (this.oLineMap[oMedia.infoAtDb.id]) return;
+            if (this.oLineMap[oMedia.infoAtDb.id]) continue; //return
             this.saveLines(oMedia);
         }
         await this.getMediaHomesArr();

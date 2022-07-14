@@ -161,12 +161,17 @@ export default function(){
         // console.log('画面已被清空');
 	}
     // ▼播放
-	function toPlay(isFromHalf=false) {
+	function toPlay(iType=0) {
 		clearInterval(oData.playing); //把之前播放的关闭
 		const { start, end } = oCurLine.value;
-		const long = end - start;
-		const { style } = oDom.oPointer; 
-		const fStartTime = start + long * (isFromHalf ? 0.4 : 0);
+		const fStartTime = (()=>{
+            if (iType===true) return start + (end - start) * 0.5;
+            const fOldVal = oDom.oAudio.currentTime;
+            if (iType>0) return fOldVal + 2;
+            if (iType<0) return Math.max(start, fOldVal - 2);
+            return start;
+        })();
+        const { style } = oDom.oPointer;
 		style.left = `${fStartTime * oData.fPerSecPx}px`;
 		oDom.oAudio.currentTime = fStartTime;
 		oDom.oAudio.play();

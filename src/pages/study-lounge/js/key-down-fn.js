@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-06-15 21:44:26
+ * @LastEditTime: 2022-07-14 22:03:35
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -18,8 +18,8 @@ let iSearchingQ = 0;
 
 export function getKeyDownFnMap(This, sType) {
     const { oMyWave } = This;
-    function playAndCheck(){
-        oMyWave.toPlay();
+    function playAndCheck(iVal){
+        oMyWave.toPlay(iVal);
         This.setLeftLine();
     }
     const withNothing = [
@@ -40,26 +40,28 @@ export function getKeyDownFnMap(This, sType) {
         { key: 'ctrl + s', name: '保存到云', fn: () => This.saveLines() },
         { key: 'ctrl + j', name: '合并上一句', fn: () => This.putTogether(-1) },
         { key: 'ctrl + k', name: '合并下一句', fn: () => This.putTogether(1) },
-        { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() },
-        { key: 'ctrl + shift + Enter', name: '播放', fn: () => oMyWave.toPlay(true) },
+        { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() }, // 是不是应使用 playAndCheck()？
+        // { key: 'ctrl + shift + Enter', name: '播放', fn: () => oMyWave.toPlay(true) },
         { key: 'ctrl + shift + z', name: '恢复', fn: () => This.setHistory(1) },
         { key: 'ctrl + shift + c', name: '分割', fn: () => This.split() },
     ];
     const withAlt = [
         // 修改选区
         { key: 'alt + ]', name: '扩选', fn: () => This.chooseMore() },
-        { key: 'alt + u', name: '起点左移', fn: () => This.fixRegion('start', -0.07) },
-        { key: 'alt + i', name: '起点右移', fn: () => This.fixRegion('start', 0.07) },
-        { key: 'alt + n', name: '终点左移', fn: () => This.fixRegion('end', -0.07) },
-        { key: 'alt + m', name: '终点右移', fn: () => This.fixRegion('end', 0.07) },
+        { key: 'alt + c', name: '起点左移', fn: () => This.fixRegion('start', -0.05) },
+        { key: 'alt + v', name: '起点右移', fn: () => This.fixRegion('start', 0.05) },
+        { key: 'alt + n', name: '终点左移', fn: () => This.fixRegion('end', -0.05) },
+        { key: 'alt + m', name: '终点右移', fn: () => This.fixRegion('end', 0.05) },
         // 选词
         { key: 'alt + a', name: '', fn: () => This.toInset(0) },
         { key: 'alt + s', name: '', fn: () => This.toInset(1) },
         { key: 'alt + d', name: '', fn: () => This.toInset(2) },
         { key: 'alt + f', name: '', fn: () => This.toInset(3) },
         // 未分类
-        { key: 'alt + j', name: '', fn: () => This.previousAndNext(-1) },
-        { key: 'alt + k', name: '', fn: () => This.previousAndNext(1) },
+        { key: '\\', name: '', fn: () => This.previousAndNext(-1) },
+        // { key: 'alt + r', name: '', fn: () => This.previousAndNext(1) },
+        { key: 'alt + j', name: '', fn: () => playAndCheck(-1) },
+        { key: 'alt + k', name: '', fn: () => playAndCheck(1) },
         { key: 'alt + l', name: '跳到最后一句', fn: () => This.goLastLine() },
         // { key: 'alt + q', name: '左侧定位', fn: () => This.setLeftLine() },
         // alt + shift

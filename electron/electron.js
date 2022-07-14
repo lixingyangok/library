@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-30 12:04:32
+ * @LastEditTime: 2022-07-14 22:02:21
  * @Description: 
  */
 
@@ -54,7 +54,7 @@ function createWindow() {
     if (isDev) sURL = 'http://localhost:3000';
     mainWindow.loadURL(sURL);
     if (!isDev) return;
-    mainWindow.webContents.openDevTools(); // Open the DevTools.
+    // mainWindow.webContents.openDevTools(); // Open the DevTools. 打开控制台
 }
 
 // ▼要放在 app.whenReady 之前执行，只能执行一次

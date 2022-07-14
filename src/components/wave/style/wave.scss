@@ -178,6 +178,7 @@
 }
 
 .viewport .percentage-box{
+	position: -webkit-sticky;
 	position: sticky;
 	left: 0;
 	bottom: 0;
