@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-16 14:57:22
+ * @LastEditTime: 2022-07-16 15:11:01
  * @Description: 
 -->
 <template>
@@ -45,7 +45,7 @@
                             <span v-if="cur.iRate" class="region-info"
                                 :class="{
                                     'small-step': parseInt(cur.iRate) % 2 == 0 && parseInt(cur.iRate) > parseInt(aGapRegions[idx-1]?.iRate),
-                                    'big-step': cur.iRate >= 10 && parseInt(cur.iRate / 10) > parseInt(aGapRegions[idx-1]?.iRate / 10)
+                                    'big-step': cur.iRate >= 5 && parseInt(cur.iRate / 5) > parseInt(aGapRegions[idx-1]?.iRate / 5)
                                 }"
                             >
                                 {{cur.iRate}}%
