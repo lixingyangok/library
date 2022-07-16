@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-16 14:28:43
+ * @LastEditTime: 2022-07-16 14:57:22
  * @Description: 
 -->
 <template>
@@ -42,9 +42,11 @@
                         }"
                     >
                         <i class="idx">
-                            <!-- {{cur.idx+1}}/ -->
-                            <span v-if="cur.iRate"
-                                :class="{'new-step': cur.iRate >= 10 && parseInt(cur.iRate / 10) > parseInt(aGapRegions[idx-1]?.iRate / 10)}"
+                            <span v-if="cur.iRate" class="region-info"
+                                :class="{
+                                    'small-step': parseInt(cur.iRate) % 2 == 0 && parseInt(cur.iRate) > parseInt(aGapRegions[idx-1]?.iRate),
+                                    'big-step': cur.iRate >= 10 && parseInt(cur.iRate / 10) > parseInt(aGapRegions[idx-1]?.iRate / 10)
+                                }"
                             >
                                 {{cur.iRate}}%
                             </span>

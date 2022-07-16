@@ -68,9 +68,12 @@
 		font-size: 10px;
 		padding: 5px 0 0 5px;
 		line-height: 1.2;
-		&[class~=ten-times] .mark{
-			height: 50%;
-			// width: 2px;
+		opacity: 0.4;
+		&[class~=ten-times]{
+			opacity: 1;
+			.mark{
+				height: 60%;
+			}
 		}
 	}
 	.mark{
@@ -125,13 +128,16 @@
 		font-size: 10px;
 		color: var(--color);
         font-style: normal;
-		.new-step{
-			background: yellow;
+		.region-info{
 			padding: 2px;
+			opacity: 0;
+		}
+		.small-step, .big-step{
+			opacity: 1;
+		}
+		.big-step{
+			background: yellow;
 			color: black;
-			// &::after{
-			// 	content: " ● New Stage!!";
-			// }
 		}
 	}
 	.region:before,
