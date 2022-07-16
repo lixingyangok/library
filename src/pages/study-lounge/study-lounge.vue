@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-06-19 21:29:08
+ * @LastEditTime: 2022-07-16 14:29:12
  * @Description: 
 -->
 <template>
@@ -73,6 +73,7 @@
                 :a-line-arr="aLineArr"
                 :i-cur-line-idx="iCurLineIdx"
                 @pipe="bufferReceiver"
+                @setTimeTube="setTime"
             />
             <article class="wave-below">
                 ◆文件：{{(oMediaInfo.dir||'').split('/').slice(-2).join('/') + `/${oMediaInfo.name}`}}&emsp;

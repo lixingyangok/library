@@ -330,6 +330,23 @@ export default function(){
             goOneLine(oCurLine.v);
         }, 200);
     }
+    // ▼处理左键点击和拖动
+    function mouseDownFn(ev){
+        if (ev.button !== 0) return; // 只处理左键事件
+        oInstance.emit(
+            'setTimeTube', 'start', getPointSec(ev.clientX),
+        );
+    }
+    // ▼处理右键点击事件
+    function clickOnWave(ev){
+        if (ev.button !== 2) return; // 只处理右键
+        oInstance.emit(
+            'setTimeTube', 'end', getPointSec(ev.clientX),
+        );
+        ev.preventDefault();
+		ev.stopPropagation();
+        return false;
+    }
     // =================================================================================================================
 
     watch(() => oDom.oMyWaveBar, (oNew)=>{
@@ -365,10 +382,12 @@ export default function(){
         moveToFirstLine();
     }, {immediate: true});
     // ▼生命周期 ==================================================================
-    onMounted(() => {
-        if(0) console.log('波形加载了');
-    });
+    // onMounted(() => {
+    //     console.log('波形加载了');
+    // });
     const oFn = {
+        mouseDownFn,
+        clickOnWave,
         wheelOnWave,
         waveWrapScroll,
         toPlay,

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-06-19 21:25:34
+ * @LastEditTime: 2022-07-16 14:28:43
  * @Description: 
 -->
 <template>
@@ -18,6 +18,8 @@
         <section class="viewport" ref="oViewport"
             @mousewheel="wheelOnWave"
             @scroll="waveWrapScroll"
+            @contextmenu="clickOnWave"
+            @mousedown="mouseDownFn"
         >
             <div class="long-bar" ref="oLongBar"
                 :style="{width: `${(oMediaBuffer.duration + 0.6) * fPerSecPx}px`}"
@@ -79,7 +81,7 @@ export default {
     },
     // ▼ 与 props 类似
     // ▼ 声明当前组件<example/>可以在行间定义的属性
-    emits: ['pipe'],
+    emits: ['pipe', 'setTimeTube'],
     setup(props){
         const {oDom, oFn, oData} = w01();
         // ▼视口范围 [起点秒，终点秒]

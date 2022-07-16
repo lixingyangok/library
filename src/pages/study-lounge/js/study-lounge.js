@@ -93,7 +93,10 @@ export function mainPart(){
 		if (!hash) throw '没有hash';
 		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
 		console.log('库中媒体信息\n', aRes[0]?.$dc());
-		if (!aRes?.[0]) return;
+		if (!aRes?.[0]) {
+			vm.$message.error('当前媒体未被收录');
+			return;
+		}
 		oData.sHash = hash;
 		oData.oMediaInfo = aRes[0];
 		getLinesFromDB();
@@ -183,8 +186,8 @@ export function mainPart(){
 			...oWord,
 			mediaId: oData.oMediaInfo.id,
 		});
-		if (!res) this.$message.error('删除单词未成功');
-		this.$message.success('已删除');
+		if (!res) vm.$message.error('删除单词未成功');
+		vm.$message.success('已删除');
 		getNewWords();
 	}
 	// ▼查询新词

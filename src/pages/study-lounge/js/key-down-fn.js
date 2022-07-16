@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-14 22:03:35
+ * @LastEditTime: 2022-07-16 14:34:19
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -308,25 +308,24 @@ export function fnAllKeydownFn() {
     // ▼合并, -1上一句，1下一句
     function putTogether(iType) {
         const { iCurLineIdx, aLineArr } = This;
-        const isMergeNext = iType === 1;
-        const oCur = aLineArr[iCurLineIdx]; // 当前自己行
+        const isIntoNext = iType === 1;
+        const oCur = aLineArr[iCurLineIdx]; // 当前自己行（将被销毁
         const oTarget = ({
-            '-1': aLineArr[iCurLineIdx - 1], // 要贴付到上一条
-            '1': aLineArr[iCurLineIdx + 1], // 要兼并下一条
+            '-1': aLineArr[iCurLineIdx - 1], // 要并入到上一条
+            '1': aLineArr[iCurLineIdx + 1], // 要并入到下一条
         }[iType]);
         if (!oTarget) return; //没有邻居不再执行
         oTarget.start = Math.min(oTarget.start, oCur.start);
         oTarget.end = Math.max(oTarget.end, oCur.end);
         oTarget.text = (() => {
-            const aResult = [oTarget.text, oCur.text];
-            if (isMergeNext) aResult.reverse();
+            const aResult = [oTarget.text];
+            aResult[isIntoNext ? 'unshift' : 'push'](oCur.text);
             return aResult.join(' ').replace(/\s{2,}/g, ' ').trim();
         })();
         fixTime(oTarget);
-        const {id} = isMergeNext ? oTarget : oCur;
-        if (id >= 0) This.deletedSet.add(id);
+        if (oCur.id >= 0) This.deletedSet.add(oCur.id); // 销毁自己
         aLineArr.splice(iCurLineIdx, 1);
-        if (!isMergeNext) This.iCurLineIdx--;
+        if (!isIntoNext) This.iCurLineIdx--;
         recordHistory();
     }
     // ▼一刀两段
@@ -517,6 +516,7 @@ export function fnAllKeydownFn() {
     }
     // ▼最终返回
     return {
+        setTime,
         previousAndNext,
         goLine,
         fixRegion,
