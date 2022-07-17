@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-07 21:34:19
+ * @LastEditTime: 2022-07-17 15:00:44
  * @Description: 这是智能断句的模块
  */
 import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
@@ -11,7 +11,7 @@ import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
 // 智能断句的方法
 // 2参是上一步的结尾的秒数，3参是在取得的区间的理想的长度（秒数）
 export function figureOut(oMediaBuffer, fEndSec, fLong = 2.5) {
-    const [iPerSecPx, iWaveHeight, iAddition] = [100, 12, 20]; // 默认每秒宽度px值，波高度，添加在两头的空隙
+    const [iPerSecPx, iWaveHeight, iAddition] = [100, 13, 20]; // 默认每秒宽度px值，波高度，添加在两头的空隙
     const aWaveArr = getWaveArr(oMediaBuffer, iPerSecPx, fEndSec); // 取得波形
     const aSection = getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight);
     let { start, end } = (() => {
@@ -90,13 +90,17 @@ function getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight) {
 
 // ▼处理尾部
 function fixTail(aWaveArr, iOldEnd, iPerSecPx, iAddition, iGapToNext) {
-    const iSupplement = (() => { // 寻找合适的尾部位置
-        for (let idx = 0; idx < iPerSecPx * 1; idx++) { //在1秒范围内进行判断
-            const iOneStepPx = 10;
+    // return iOldEnd + iAddition;
+    const iSupplement = (() => { // 寻找合适的尾部位置（返回5表示追加5个px）
+        for (let idx = 0; idx < iPerSecPx * 1; idx++) { 
+            const iOneStepPx = 10; // 向右侧尾部探测的范围（几个px）
+            const fAimHeight = 0.9; // 在 iOneStepPx 范围内平均波形高度小于此值，侧判断此处为合适的终点位置
             const iSum = aWaveArr.slice(idx, idx + iOneStepPx).reduce((result, cur) => {
                 return result + cur;
             }, 0);
-            if (iSum / iOneStepPx < 1) return idx;
+            // console.log(`循环${idx} ● iSum=${iSum} ● ${iSum / iOneStepPx}`);
+            if (iSum / iOneStepPx < fAimHeight) return idx; // + parseInt(iPerSecPx * 0.1);
+            // return idx + 5px;
         }
         return false;
     })();
