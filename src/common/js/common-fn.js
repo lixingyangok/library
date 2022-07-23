@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 21:09:54
+ * @LastEditTime: 2022-07-23 11:14:01
  * @Description: 
  */
 
@@ -67,10 +67,15 @@ export function mySort(arr, sKey) {
 }
 
 // ▼跳转到目标页
-export function goToLounage(sFilePath){
+export function goToLounage(sFilePath, iAimLine){
     console.log(sFilePath);
     ls('sFilePath', sFilePath);
-    vm.$router.push({ name: 'studyLounge' });
+    vm.$router.push({
+        name: 'studyLounge',
+        query: {
+            iAimLine,
+        },
+    });
 }
 
 // const [a1, a2=0] = (aa?.[sKey] || '').match(/\d+/g) || [];

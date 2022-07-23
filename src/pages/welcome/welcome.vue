@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-16 18:59:32
+ * @LastEditTime: 2022-07-23 12:11:28
  * @Description: 
 -->
 
@@ -12,6 +12,39 @@
             十年大计，十年一剑
         </h1>
         <!-- ▲大标题 -->
+        <div class="first-list" >
+            <el-table :data="aRecent" stripe border style="width: 100%;">
+                <el-table-column label="文件">
+                    <template #default="scope">
+                        <p class="folder-name">{{scope.row.name}}</p>
+                        <p class="the-first">{{scope.row.dir}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="sTime" label="时间" width="120"></el-table-column>
+                <el-table-column prop="iLineNo" label="位置" width="165">
+                    <template #default="scope">
+                        {{scope.row.iLineNo}}/{{scope.row.iAll}}<br/>
+                        {{scope.row.sPosition}}/{{scope.row.sDuration_}}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="fPercent" label="进度" width="250" >
+                    <template #default="scope">
+                        <el-progress :percentage="scope.row.fPercent" />
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="150">
+                    <template #default="scope">
+                        <el-button type="text" @click="goFile(scope.row)" >
+                            推进
+                        </el-button>
+                        <el-button type="text" @click="delFile(scope.row)" >
+                            删除
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+        <TodayHistory/>
         <!-- ▼进行中 -->
         <section class="first-list" >
             <el-table :data="aPending" stripe border style="width: 100%;">
@@ -42,7 +75,7 @@
                 </el-table-column>
             </el-table>
         </section>
-        <TodayHistory/>
+        <!--  -->
         <div class="btn-bar" >
             <button @click="$root.f5()" >
                 刷新
@@ -117,10 +150,12 @@ export default {
             aLog: [],
             oPending: {},
             aPending: [],
+            aRecent: [],
         };
     },
     created(){
         this.getPendingList();
+        this.updateTheRecent();
     },
     methods: {
         ...oMethods,

@@ -79,6 +79,38 @@ const oRecordFn = {
     }
 };
 
+const oFn_recentList = {
+    goFile(oTarget){
+        // console.log('oTarget', );
+        // console.log(oTarget.$dc());
+        const {iLineNo, file} = oTarget;
+        console.log('前往：', iLineNo);
+        goToLounage(file, iLineNo);
+    },
+    delFile(oTarget){
+        console.log('oTarget', );
+        console.log(oTarget.$dc());
+        ls.transact('oRecent', (oOldData)=>{
+            Reflect.deleteProperty(oOldData, oTarget.file);
+        });
+        this.updateTheRecent();
+    },
+    updateTheRecent(){
+        const oRecent = ls.get('oRecent');
+        const aList = Object.entries(oRecent).map(cur=>{
+            return {
+                file: cur[0],
+                ...cur[1],
+                sTime: getDateDiff(cur[1].iTime),
+            };
+        });
+        aList.sort((aa,bb)=>{
+            return aa.iTime - bb.iTime;
+        });
+        this.aRecent = aList;
+    },
+}
+
 
 const oVisitFn = {
     // ▼访问目录
@@ -105,6 +137,7 @@ export default {
     ...oPendingDataFn,
     ...oRecordFn,
     ...oVisitFn,
+    ...oFn_recentList,
     // ▼给主进程送信
     logFn() {
         oRenderer.send('channel01', '张三');
@@ -168,7 +201,32 @@ export default {
     },
 };
 
-
+function getDateDiff(dateTimeStamp){
+    var minute = 1000 * 60;
+    var hour = minute * 60;
+    var day = hour * 24;
+    var month = day * 30;
+    var diffValue = new Date().getTime() - dateTimeStamp;
+    if (diffValue < 0) return;
+    var monthC = diffValue / month;
+    var weekC = diffValue / (7*day);
+    var dayC = diffValue / day;
+    var hourC = diffValue / hour;
+    var minC = diffValue / minute;
+    if (monthC >= 1) {
+        if(monthC <= 12) return "" + parseInt(monthC) + "月前";
+        return "" + parseInt(monthC/12) + "年前";
+    } else if (weekC >= 1) {
+        return "" + parseInt(weekC) + "周前";
+    } else if (dayC >= 1) {
+        return "" + parseInt(dayC) + "天前";
+    } else if (hourC >= 1) {
+        return "" + parseInt(hourC) + "小时前";
+    } else if (minC >= 1) {
+        return "" + parseInt(minC) + "分钟前";
+    }
+    return "刚刚";
+}
 // ▼执行系统命令
 // child_process.exec('mspaint', function(error, stdout, stderr){
 //     if (error || stderr) {

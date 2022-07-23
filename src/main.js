@@ -51,6 +51,7 @@ window.newPromise = newPromise;
 window.oRenderer = ipcRenderer;
 window.fnInvoke = ipcRenderer.invoke;
 
+ls.set('oRecent', ls.get('oRecent') || {});
 setGlobal();
 
 // ▼查询 exe 位置

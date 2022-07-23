@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-16 14:34:19
+ * @LastEditTime: 2022-07-23 12:09:21
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -119,14 +119,39 @@ export function fnAllKeydownFn() {
         }
         setLinePosition(iAimLine);
         setLeftLine();
+        recordPlace(iAimLine)
         if (toRecord) recordHistory();
-        if (goBack) return; // 到来就建行，不保存
+        if (goBack) return; // 如果是到来就新建一行，不保存
         let iCount = 0;
         for (const cur of This.aLineArr){
             This.checkIfChanged(cur) && iCount++;
             if (iCount <= 2) continue;
             return This.saveLines(); // 保存
         }
+    }
+    async function recordPlace(iAimLine){ // 异步方法防止阻断主进程
+        const {duration, sDuration_} = This.oMediaBuffer;
+        const iAll = This.aLineArr.length;
+        let {end, start_} = This.oCurLine;
+        const {dir, name} = This.oMediaInfo;
+        const fPercent = (()=>{
+            let fResult = This.iCurLineIdx / iAll;
+            if (duration) fResult = end / duration;
+            return (fResult * 100).toFixed(2) * 1;
+        })();
+        start_ = start_.slice(0,-3).padStart(8,0);
+        ls.transact('oRecent', (oldData) => {
+            oldData[`${dir}/${name}`] = {
+                dir,
+                name,
+                iTime: new Date()* 1,
+                iLineNo: iAimLine,
+                fPercent,
+                sDuration_,
+                sPosition: start_,
+                iAll: This.aLineArr.length,
+            };
+        });
     }
     // ▼找到起始行号
     function getLeftStartIdx() {

@@ -85,6 +85,11 @@ export function mainPart(){
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
 	async function init(){
+		const {iAimLine} = vm.$route.query;
+		if (iAimLine > 0){
+			// console.log('跳转目标：', iAimLine);
+			vm.$router.push({ query: {} }); // 清空
+		}
 		oDom?.oMyWave?.cleanCanvas(true);
 		oData.iCurLineIdx = 0;
 		oData.aLineArr = [];
@@ -99,12 +104,12 @@ export function mainPart(){
 		}
 		oData.sHash = hash;
 		oData.oMediaInfo = aRes[0];
-		getLinesFromDB();
+		getLinesFromDB(iAimLine);
 		await getNeighbors();
 		getNewWords();
 	}
 	// ▼查询库中的字幕
-	async function getLinesFromDB(){
+	async function getLinesFromDB(iAimLine){
 		const aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();
@@ -124,6 +129,7 @@ export function mainPart(){
 			oResult[cur.id] = cur;
 			return oResult;
 		}, {});
+		if (iAimLine>0) oInstance.proxy.goLine(iAimLine);
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
