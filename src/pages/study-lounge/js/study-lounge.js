@@ -20,7 +20,7 @@ export function mainPart(){
 	});
 	const oOperation = { // 编辑功能
 		oIdStore: {}, // 查出来立即存在这
-		aLineArr: [],
+		aLineArr: [], // 所有行
 		oAllLine: {}, // 查出来就保存上，备份
 		iCurLineIdx: 0,
 		aHistory: [{ sLineArr: '[]', iCurLineIdx: 0 }],
@@ -85,14 +85,10 @@ export function mainPart(){
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
 	async function init(){
-		const {iAimLine} = vm.$route.query;
-		if (iAimLine > 0){
-			// console.log('跳转目标：', iAimLine);
-			vm.$router.push({ query: {} }); // 清空
-		}
-		oDom?.oMyWave?.cleanCanvas(true);
 		oData.iCurLineIdx = 0;
 		oData.aLineArr = [];
+		oDom?.oMyWave?.cleanCanvas(true);
+		const iAimLine = ls('oRecent')[ls('sFilePath')]?.iLineNo;
 		await vm.$nextTick();
 		const hash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!hash) throw '没有hash';
@@ -129,7 +125,10 @@ export function mainPart(){
 			oResult[cur.id] = cur;
 			return oResult;
 		}, {});
-		if (iAimLine>0) oInstance.proxy.goLine(iAimLine);
+		if (iAimLine>0) {
+			await vm.$nextTick();
+			oInstance.proxy.goLine(iAimLine);
+		}
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
@@ -380,6 +379,19 @@ export function mainPart(){
 		console.log('指令：', command);
 		fnLib[command]?.();
 	}
+	async function setAllEmpty(){
+		const sMsg = `清空所有行的文本？`;
+		const isSure = await vm.$confirm(sMsg, 'Warning', {
+			confirmButtonText: '确认',
+			cancelButtonText: '取消',
+			type: 'warning',
+		}).catch(()=>false);
+		if (!isSure) return;
+		const {aLineArr} = oData;
+		aLineArr.forEach(cur=>{
+			cur.text = '';
+		})
+	}
 	// ============================================================================
 	init();
 	onMounted(()=>{
@@ -387,6 +399,7 @@ export function mainPart(){
 	});
 	const oFn = {
 		init,
+		setAllEmpty,
 		bufferReceiver,
 		saveMedia,
 		toCheckDict,

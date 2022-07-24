@@ -12,12 +12,13 @@ export default function(){
         oAudio: null,
         oPointer: null,
     });
+    const {iWaveHeight = 0.4} = ls.get('oRecent')?.[ls.get('sFilePath')] || {};
     const oData = reactive({
         oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
         iPerSecPx: 100,
         fPerSecPx: 100,
-		iHeight: 0.4,
+		iHeight: iWaveHeight,
         iScrollLeft: 0,
         drawing: false,
         sWaveBarClassName: '',
@@ -287,6 +288,13 @@ export default function(){
 		if (iHeight < min) iHeight = min;
 		if (iHeight > max) iHeight = max;
 		oData.iHeight = iHeight;
+        ls.transact('oRecent', (oldData) => {
+            const old = oldData[ls.get('sFilePath')] || {};
+            oldData[ls.get('sFilePath')] = {
+                ...old,
+                iWaveHeight: iHeight, // 可能取不到值
+            };
+        });
 		toDraw();
 	}
     // ▼跳行后定位波形位置

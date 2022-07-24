@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-23 12:11:28
+ * @LastEditTime: 2022-07-23 13:47:14
  * @Description: 
 -->
 
@@ -34,7 +34,7 @@
                 </el-table-column>
                 <el-table-column label="操作" width="150">
                     <template #default="scope">
-                        <el-button type="text" @click="goFile(scope.row)" >
+                        <el-button type="text" @click="goToLounge(scope.row)" >
                             推进
                         </el-button>
                         <el-button type="text" @click="delFile(scope.row)" >
@@ -62,7 +62,7 @@
                 </el-table-column>
                 <el-table-column label="操作" width="220">
                     <template #default="scope">
-                        <el-button type="text" @click="goToLounge(scope.row)" >
+                        <el-button type="text" @click="goToLounge(scope.row.oFirst)" >
                             推进
                         </el-button>
                         <el-button type="text" @click="goFolder(scope.row)" >

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 15:54:25
+ * @LastEditTime: 2022-07-23 17:01:20
  * @Description: 
  */
 
@@ -76,6 +76,7 @@ const oFn = module.exports.oFn = {
     // ▼查询：某个媒体的字幕
     async getLineByMedia(mediaId) {
         const res = await oLine.findAll({
+            attributes: ['id', 'start', 'end', 'text'],
             where: {mediaId},
             order: [['start', 'asc']],
         });

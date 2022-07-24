@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-23 12:09:21
+ * @LastEditTime: 2022-07-24 17:32:46
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -25,6 +25,7 @@ export function getKeyDownFnMap(This, sType) {
     const withNothing = [
         { key: '`', name: '播放后半句', fn: () => oMyWave.toPlay(true) },
         { key: 'Tab', name: '播放当前句', fn: () => playAndCheck() },
+        { key: '\\', name: '上一句', fn: () => This.previousAndNext(-1) },
         { key: 'Prior', name: '上一句', fn: () => This.previousAndNext(-1) },
         { key: 'Next', name: '下一句', fn: () => This.previousAndNext(1) },
         { key: 'F1', name: '设定起点', fn: () => This.cutHere('start') },
@@ -48,20 +49,20 @@ export function getKeyDownFnMap(This, sType) {
     const withAlt = [
         // 修改选区
         { key: 'alt + ]', name: '扩选', fn: () => This.chooseMore() },
-        { key: 'alt + c', name: '起点左移', fn: () => This.fixRegion('start', -0.05) },
-        { key: 'alt + v', name: '起点右移', fn: () => This.fixRegion('start', 0.05) },
-        { key: 'alt + n', name: '终点左移', fn: () => This.fixRegion('end', -0.05) },
-        { key: 'alt + m', name: '终点右移', fn: () => This.fixRegion('end', 0.05) },
+        { key: 'alt + c', name: '起点左移', fn: () => This.fixRegion('start', -0.07) },
+        { key: 'alt + v', name: '起点右移', fn: () => This.fixRegion('start', 0.07) },
+        { key: 'alt + n', name: '终点左移', fn: () => This.fixRegion('end', -0.07) },
+        { key: 'alt + m', name: '终点右移', fn: () => This.fixRegion('end', 0.07) },
         // 选词
         { key: 'alt + a', name: '', fn: () => This.toInset(0) },
         { key: 'alt + s', name: '', fn: () => This.toInset(1) },
         { key: 'alt + d', name: '', fn: () => This.toInset(2) },
         { key: 'alt + f', name: '', fn: () => This.toInset(3) },
         // 未分类
-        { key: '\\', name: '', fn: () => This.previousAndNext(-1) },
-        // { key: 'alt + r', name: '', fn: () => This.previousAndNext(1) },
-        { key: 'alt + j', name: '', fn: () => playAndCheck(-1) },
-        { key: 'alt + k', name: '', fn: () => playAndCheck(1) },
+        { key: 'alt + j', name: '', fn: () => This.previousAndNext(-1) },
+        { key: 'alt + k', name: '', fn: () => This.previousAndNext(1) },
+        { key: 'alt + u', name: '', fn: () => playAndCheck(-1) },
+        { key: 'alt + i', name: '', fn: () => playAndCheck(1) },
         { key: 'alt + l', name: '跳到最后一句', fn: () => This.goLastLine() },
         // { key: 'alt + q', name: '左侧定位', fn: () => This.setLeftLine() },
         // alt + shift
@@ -110,9 +111,9 @@ export function fnAllKeydownFn() {
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine, toRecord) {
         if (oNewLine) This.aLineArr.push(oNewLine);
-        let goBack;
+        let isGoingUp;
         if (iAimLine >= 0) {
-            goBack = iAimLine < This.iCurLineIdx;
+            isGoingUp = iAimLine < This.iCurLineIdx;
             This.iCurLineIdx = iAimLine;
         } else {
             iAimLine = This.iCurLineIdx;
@@ -121,7 +122,7 @@ export function fnAllKeydownFn() {
         setLeftLine();
         recordPlace(iAimLine)
         if (toRecord) recordHistory();
-        if (goBack) return; // 如果是到来就新建一行，不保存
+        if (isGoingUp) return; // 如果行号在变小 return
         let iCount = 0;
         for (const cur of This.aLineArr){
             This.checkIfChanged(cur) && iCount++;
@@ -141,7 +142,9 @@ export function fnAllKeydownFn() {
         })();
         start_ = start_.slice(0,-3).padStart(8,0);
         ls.transact('oRecent', (oldData) => {
-            oldData[`${dir}/${name}`] = {
+            const old = oldData[ls.get('sFilePath')] || {};
+            oldData[ls.get('sFilePath')] = {
+                ...old,
                 dir,
                 name,
                 iTime: new Date()* 1,
@@ -269,19 +272,20 @@ export function fnAllKeydownFn() {
     }
     // ▼插入一句。 参数说明：-1=向左，1=向右
     function toInsert(iDirection) {
-        let { iCurLineIdx, aLineArr, oMediaBuffer: { duration } } = This;
+        let { iCurLineIdx, aLineArr, oMediaBuffer, oMediaBuffer: { duration } } = This;
         const { start, end } = aLineArr[iCurLineIdx]; //当前行
         if (start === 0) return; //0开头，不可向前插入
-        const isToLeft = iDirection === -1;
+        const isToLeft = iDirection === -1; // true = 向左方间隙插入
         const oAim = aLineArr[iCurLineIdx + iDirection] || {};
+        if (!aLineArr[iCurLineIdx + iDirection]){ // 用于测试
+            alert('没有左/右侧的邻居');
+        }
         const newIdx = isToLeft ? iCurLineIdx : iCurLineIdx + 1;
-        const oNewLine = fixTime({
-            start: isToLeft ? (oAim.end || 0) : end,
-            end: (() => {
-                if (isToLeft) return start;
-                return Math.min(oAim.start || end + 10, duration + 0.5);
-            })(),
-        });
+        const oNewLine = (()=>{
+            const iStart = isToLeft ? oAim.end : end;
+            const fLong = isToLeft ? (start - oAim.end) : (oAim.start - end);
+            return figureOut(oMediaBuffer, iStart); // , 0.3, fLong
+        })();
         if (oNewLine.start === oNewLine.end) return;
         aLineArr.splice(newIdx, 0, oNewLine);
         if (!isToLeft) This.iCurLineIdx++;
@@ -353,22 +357,27 @@ export function fnAllKeydownFn() {
         if (!isIntoNext) This.iCurLineIdx--;
         recordHistory();
     }
-    // ▼一刀两段
+    // ▼一刀两断 - 1刀2断
     function split() {
-        goLine();
-        const { aLineArr, iCurLineIdx, oCurLine } = This;
+        // goLine(); // 出错了：切2断的时候常弹出保存提示，不妥（停用测试于2022.07.23 18:3:2 星期六）
+        const { aLineArr, iCurLineIdx, oCurLine, oMediaBuffer } = This;
         const { selectionStart } = This.oTextArea;
         const { currentTime } = This.oMyWave.oAudio;
-        const { text } = oCurLine;
+        const { text, start, end} = oCurLine;
+        const fLeftEndAt = aLineArr[iCurLineIdx -1]?.end || (start - 0.3);
+        // const iGap01 = currentTime - start;
+        // const fNextStart = aLineArr[iCurLineIdx+1]?.start;
+        // const fRightLine = fNextStart ? fNextStart + 1 : end + 5;
+        // const iGap02 = fRightLine - currentTime;
         const aNewItems = [
             fixTime({
                 ...oCurLine,
+                start: figureOut(oMediaBuffer, fLeftEndAt).start,
                 end: currentTime,
                 text: text.slice(0, selectionStart).trim(),
             }),
             fixTime({
-                ...oCurLine,
-                start: currentTime + 0.01,
+                ...figureOut(oMediaBuffer, currentTime - 0.2), // , end-currentTime*0.6 // , 0.2, iGap02 + 2 
                 text: text.slice(selectionStart).trim(),
             }),
         ];

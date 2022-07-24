@@ -80,13 +80,6 @@ const oRecordFn = {
 };
 
 const oFn_recentList = {
-    goFile(oTarget){
-        // console.log('oTarget', );
-        // console.log(oTarget.$dc());
-        const {iLineNo, file} = oTarget;
-        console.log('前往：', iLineNo);
-        goToLounage(file, iLineNo);
-    },
     delFile(oTarget){
         console.log('oTarget', );
         console.log(oTarget.$dc());
@@ -125,7 +118,7 @@ const oVisitFn = {
     },
     // ▼访问学习页
     goToLounge(oTarget){
-        const {dir, name} = oTarget.oFirst;
+        const {dir, name} = oTarget;
         const sPath = `${dir}/${name}`;
         // console.log('oTarget', oTarget.oFirst.$dc());
         goToLounage(sPath);

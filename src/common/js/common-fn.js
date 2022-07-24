@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-23 11:14:01
+ * @LastEditTime: 2022-07-24 17:30:05
  * @Description: 
  */
 
@@ -67,14 +67,10 @@ export function mySort(arr, sKey) {
 }
 
 // ▼跳转到目标页
-export function goToLounage(sFilePath, iAimLine){
-    console.log(sFilePath);
+export function goToLounage(sFilePath){
     ls('sFilePath', sFilePath);
     vm.$router.push({
         name: 'studyLounge',
-        query: {
-            iAimLine,
-        },
     });
 }
 

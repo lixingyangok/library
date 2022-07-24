@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-17 15:00:44
+ * @LastEditTime: 2022-07-24 17:30:52
  * @Description: 这是智能断句的模块
  */
 import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
@@ -10,9 +10,15 @@ import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
 
 // 智能断句的方法
 // 2参是上一步的结尾的秒数，3参是在取得的区间的理想的长度（秒数）
-export function figureOut(oMediaBuffer, fEndSec, fLong = 2.5) {
-    const [iPerSecPx, iWaveHeight, iAddition] = [100, 13, 20]; // 默认每秒宽度px值，波高度，添加在两头的空隙
-    const aWaveArr = getWaveArr(oMediaBuffer, iPerSecPx, fEndSec); // 取得波形
+export function figureOut(
+    oMediaBuffer,
+    fEndSec,
+    fLong = 2.5, // 取的结果一定要超过x秒（此注释不是特别准）
+    fRightDuration=20 // 在右侧多少秒范围内判断？（目前似乎没用上）
+) {
+    const [iPerSecPx, iWaveHeight, iAddition] = [100, 14, 20]; // 默认每秒宽度px值，波高度，添加在两头的空隙
+    const aWaveArr = getWaveArr(oMediaBuffer, iPerSecPx, fEndSec, fRightDuration); // 取得波形
+    // console.log('秒', fRightDuration);
     const aSection = getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight);
     let { start, end } = (() => {
         const [oFirst, oSecond] = aSection;
@@ -44,13 +50,14 @@ export function figureOut(oMediaBuffer, fEndSec, fLong = 2.5) {
 }
 
 // ▼提供【波形数组】用于断句
-function getWaveArr(oMediaBuffer, iPerSecPx, fEndSec) {
+function getWaveArr(oMediaBuffer, iPerSecPx, fEndSec, fRightDuration) {
     const { aPeaks } = getPeaks(
         oMediaBuffer,
         iPerSecPx, 
         iPerSecPx * fEndSec,
-        iPerSecPx * 20 // 取当前位置往后x秒
+        iPerSecPx * fRightDuration // 取当前位置往右x秒
     );
+    // ▼或许应优化为 idx+=2 节省一半的遍历次数，
     const myArr = aPeaks.reduce((result, cur, idx, arr) => {
         if (idx % 2) return result; // 只处理0、2、4 不处理1、3、5
         // ▼此处是否需要转整形，待考究

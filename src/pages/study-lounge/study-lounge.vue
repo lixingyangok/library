@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-16 14:29:12
+ * @LastEditTime: 2022-07-23 16:54:55
  * @Description: 
 -->
 <template>
@@ -121,6 +121,9 @@
                         打开TXT
                     </el-button>
                 </el-button-group>
+                <el-button type="primary" size="small" @click="setAllEmpty">
+                    所有行置空
+                </el-button>
                 <input type="file" ref="oTxtInput" accept="text/plain"
                     @change="getArticleFile" v-show="0"
                 />
