@@ -4,7 +4,7 @@ import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '../../../common/js/fs-fn.js';
 
-// const dayjs = require("dayjs");
+const dayjs = require("dayjs");
 export function mainPart(){
 	const oDom = reactive({
 		oIframe: null,
@@ -232,9 +232,8 @@ export function mainPart(){
 			cur.done_ = !!finishedAt;
 			cur.durationStr = durationStr;
 			cur.active_ = id == oData.oMediaInfo.id;
-			if (cur.done_){
-				// console.log('dayjs', dayjs(cur.infoAtDb.finishedAt).format('YYYY-MM-DD HH:mm:ss'));
-				cur.finishedAt_ = cur.infoAtDb.finishedAt.toLocaleString();
+			if (cur.done_){ // YYYY-MM-DD HH:mm:ss
+				cur.finishedAt_ = dayjs(finishedAt).format('YYYY-MM-DD HH:mm'); 
 			}
 		});
 		oData.aSiblings = aList;

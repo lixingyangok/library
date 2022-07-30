@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 20:02:31
+ * @LastEditTime: 2022-07-30 20:11:33
  * @Description: 
 -->
 <template>
@@ -260,8 +260,8 @@
                             </p>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="durationStr" label="时长" width="95" />
-                    <el-table-column prop="finishedAt_" label="完成时间" width="210" />
+                    <el-table-column prop="durationStr" label="时长" width="100" />
+                    <el-table-column prop="finishedAt_" label="完成时间" width="160" />
                     <el-table-column label="操作" width="155">
                         <template #default="scope">
                             <el-button type="text" @click="visitSibling(scope.row)" >
