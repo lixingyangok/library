@@ -94,7 +94,7 @@ export default function(){
         const oMediaBuffer = await fetch(sPath).then(res => {
             return res.blob();
         }).then(res=>{
-            return fileToBuffer(res, true);
+            return fileToBuffer(res);
         }).catch(res=>{
             err = res;
             console.log('读取媒体buffer未成功\n', res);

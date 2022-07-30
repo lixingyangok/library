@@ -1,5 +1,45 @@
+/*
+ * @Author: 李星阳
+ * @Date: 2021-02-19 16:35:07
+ * @LastEditors: 李星阳
+ * @LastEditTime: 2022-07-30 20:03:03
+ * @Description: 
+ */
 
-// ▼ 实际上1参接收的是一个Blob对象
+// ▼ 通过文件地址得到媒体 buffer （此方法目前没用上）
+export async function getBufferByPath(sPath){
+	let err;
+	// sPath = encodeURIComponent(sPath)
+	const oMediaBuffer = await fetch(sPath).then(res => {
+		return res.blob();
+	}).then(res=>{
+		return fileToBuffer(res, true);
+	}).catch(res=>{
+		err = res;
+		console.error('读取媒体buffer未成功\n', res);
+	});
+	if (!oMediaBuffer || err) {
+		return console.error('媒体地址\n', sPath);
+	}
+	return oMediaBuffer;
+}
+
+// 通过文件路径得到时长（很快）
+export async function getMediaDuration(sFilePath){
+	// let sFilePath = 'C:/Users/Administrator/Desktop/书虫L2_MP3/鲁滨逊漂流记01.ogg';                     
+	const {oPromise, fnResolve, fnReject} = newPromise();
+	const myAudio = new Audio();
+	myAudio.oncanplay = function() {  
+		// console.log('时长', myAudio.duration);
+		fnResolve({
+			fDuration: myAudio.duration,
+			sDuration: secToStr(myAudio.duration).split(',')[0],
+		});
+	}
+	myAudio.src = sFilePath;
+	return oPromise;
+}
+
 export async function fileToBuffer(oFile){
 	const iBeginTime = new Date();
 	let resolveFn = xx => xx;

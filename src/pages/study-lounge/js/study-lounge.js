@@ -1,9 +1,10 @@
 import {toRefs, reactive, computed, onMounted, getCurrentInstance} from 'vue';
-import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings} from '../../../common/js/pure-fn.js';
+import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings, getMediaDuration} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath} from '../../../common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '../../../common/js/fs-fn.js';
 
+// const dayjs = require("dayjs");
 export function mainPart(){
 	const oDom = reactive({
 		oIframe: null,
@@ -100,7 +101,7 @@ export function mainPart(){
 		oData.sHash = hash;
 		oData.oMediaInfo = aRes[0];
 		getLinesFromDB(iAimLine);
-		await getNeighbors();
+		await getNeighbors(); // 一定要 await 下方的方法才会正常运行
 		getNewWords();
 	}
 	// ▼查询库中的字幕
@@ -163,27 +164,10 @@ export function mainPart(){
 	}
 	// ▼接收子组件波形数据
 	function bufferReceiver(oMediaBuffer){
-		// console.log('收到波形');
+		// console.log('收到了波形');
 		oData.oMediaBuffer = oMediaBuffer;
-		setTimeout(toRecordDiration, (
-			oData.oMediaInfo?.id ? 0 : 600 // 延时一下，防止收到波形时没查到库中数据
-		));
 		if (oData.iSubtitle != -1) return; // 有字幕则返回
-		// ▼需要考虑，因为可能尚没查到字幕，不是没有字幕
-		setFirstLine(); 
-	}
-	// ▼如果数据库中没有记录音频的时长，此时应该将时长记录起来
-	async function toRecordDiration(){
-		const {oMediaInfo, oMediaBuffer} = oData;
-		const noNeed = !oMediaInfo || (oMediaInfo.duration && oMediaInfo.durationStr);
-		if (noNeed) return;
-		const res = await fnInvoke("db", 'updateMediaInfo', {
-			id: oMediaInfo.id,
-			duration: oMediaBuffer.duration,
-			durationStr: oMediaBuffer.sDuration_,
-		});
-		if (!res) return;
-		vm.$message.success(`已保存媒体时长到数据库：${oMediaBuffer.sDuration_}`);
+		setFirstLine(); // 需要考虑，因为可能尚没查到字幕，不是没有字幕
 	}
 	// ▼打开字典窗口
 	function toCheckDict(){
@@ -249,10 +233,12 @@ export function mainPart(){
 			cur.durationStr = durationStr;
 			cur.active_ = id == oData.oMediaInfo.id;
 			if (cur.done_){
+				// console.log('dayjs', dayjs(cur.infoAtDb.finishedAt).format('YYYY-MM-DD HH:mm:ss'));
 				cur.finishedAt_ = cur.infoAtDb.finishedAt.toLocaleString();
 			}
 		});
 		oData.aSiblings = aList;
+		recordMediaTimeInfo(); // 检查是否所有的文件都有媒体信息
 	}
 	// ▼跳转到邻居
 	function visitSibling(oMedia){
@@ -382,6 +368,37 @@ export function mainPart(){
 			break;
 		}
 		vm.$message.warning('没有上/下一个');
+	}
+	// 保存媒体时长信息
+	async function recordMediaTimeInfo(){
+		const aTarget = oData.aSiblings.filter(cur => !cur.durationStr);
+		if (!aTarget.length) return;
+		const sMsg = `发现有 ${aTarget.length} 个文件没有时长信息，是否补充？`;
+		const isSure = await vm.$confirm(sMsg, 'Warning', {
+			confirmButtonText: '确认',
+			cancelButtonText: '取消',
+			type: 'warning',
+		}).catch(()=>false);
+		if (!isSure) return;
+		// oData.isShowMediaInfo = true;
+		// await new Promise(f1 = setTimeout(f1, 600));
+		for await(const [idx, cur] of aTarget.entries()) {
+			const {sPath, infoAtDb} = cur;
+			const oDuration = await getMediaDuration(getTubePath(sPath));
+			await toRecordDiration(infoAtDb, oDuration);
+			cur.durationStr = oDuration.sDuration;
+			const sTips = `${sPath.split('/').pop()}：${oDuration.sDuration}`;
+			vm.$message.success(sTips);
+		}
+	}
+	// ▼如果数据库中没有记录音频的时长，此时应该将时长记录起来
+	async function toRecordDiration(oMediaInfo, oDuration){
+		const res = await fnInvoke("db", 'updateMediaInfo', {
+			id: oMediaInfo.id,
+			duration: oDuration.fDuration,
+			durationStr: oDuration.sDuration,
+		});
+		return res;
 	}
 	const fnLib = {
 		'保存波形': () => oDom?.oMyWave?.toSaveTemp(),

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 16:01:27
+ * @LastEditTime: 2022-07-30 19:16:43
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -41,7 +41,7 @@ export function getKeyDownFnMap(This, sType) {
         { key: 'ctrl + s', name: '保存到云', fn: () => This.saveLines() },
         { key: 'ctrl + j', name: '合并上一句', fn: () => This.putTogether(-1) },
         { key: 'ctrl + k', name: '合并下一句', fn: () => This.putTogether(1) },
-        { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() }, // 是不是应使用 playAndCheck()？
+        // { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() }, // 将来开发此方法能打阅读标记
         // { key: 'ctrl + shift + Enter', name: '播放', fn: () => oMyWave.toPlay(true) },
         { key: 'ctrl + shift + z', name: '恢复', fn: () => This.setHistory(1) },
         { key: 'ctrl + shift + c', name: '分割', fn: () => This.split() },

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 13:48:19
+ * @LastEditTime: 2022-07-30 20:02:31
  * @Description: 
 -->
 <template>
@@ -243,9 +243,9 @@
                 <el-button size="small" type="text" @click="visitNeighbor(1)">
                     下一个
                 </el-button>
+                <!-- <el-button size="small" type="text"> 保存媒体时长 </el-button> -->
                 <br/>
             </div>
-            
             <div class="siblings-list" v-for="(i01, i02) of 2" :key="i02">
                 <el-table border
                     :data="aSiblings.filter(cur => cur.done_ == !!i02)"
