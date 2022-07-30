@@ -95,8 +95,7 @@ export function mainPart(){
 		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
 		console.log('库中媒体信息\n', aRes[0]?.$dc());
 		if (!aRes?.[0]) {
-			vm.$message.error('当前媒体未被收录');
-			return;
+			return vm.$message.error('当前媒体未被收录');
 		}
 		oData.sHash = hash;
 		oData.oMediaInfo = aRes[0];
@@ -166,9 +165,25 @@ export function mainPart(){
 	function bufferReceiver(oMediaBuffer){
 		// console.log('收到波形');
 		oData.oMediaBuffer = oMediaBuffer;
+		setTimeout(toRecordDiration, (
+			oData.oMediaInfo?.id ? 0 : 600 // 延时一下，防止收到波形时没查到库中数据
+		));
 		if (oData.iSubtitle != -1) return; // 有字幕则返回
-		// ▼需要考虑，因为可能尚没查到字幕，不是没有
+		// ▼需要考虑，因为可能尚没查到字幕，不是没有字幕
 		setFirstLine(); 
+	}
+	// ▼如果数据库中没有记录音频的时长，此时应该将时长记录起来
+	async function toRecordDiration(){
+		const {oMediaInfo, oMediaBuffer} = oData;
+		const noNeed = !oMediaInfo || (oMediaInfo.duration && oMediaInfo.durationStr);
+		if (noNeed) return;
+		const res = await fnInvoke("db", 'updateMediaInfo', {
+			id: oMediaInfo.id,
+			duration: oMediaBuffer.duration,
+			durationStr: oMediaBuffer.sDuration_,
+		});
+		if (!res) return;
+		vm.$message.success(`已保存媒体时长到数据库：${oMediaBuffer.sDuration_}`);
 	}
 	// ▼打开字典窗口
 	function toCheckDict(){
@@ -228,9 +243,10 @@ export function mainPart(){
 		aList = aList.filter(cur => cur.isMedia);
 		await addAllMediaDbInfo(aList, true);
 		aList.forEach((cur, idx)=>{
-			const {finishedAt, id} = cur.infoAtDb || {};
+			const {finishedAt, id, durationStr} = cur.infoAtDb || {};
 			cur.idx_ = idx + 1;
 			cur.done_ = !!finishedAt;
+			cur.durationStr = durationStr;
 			cur.active_ = id == oData.oMediaInfo.id;
 			if (cur.done_){
 				cur.finishedAt_ = cur.infoAtDb.finishedAt.toLocaleString();

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:33:24
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-14 20:01:34
+ * @LastEditTime: 2022-07-30 11:05:45
  * @Description: 
  */
 
@@ -24,7 +24,7 @@ const oMedia = module.exports.media = sqlize.define('media', {
     finishedAt: DataTypes.DATE, // 完成时间
     // xxxx: DataTypes.STRING, // 类型，故事，教材，似乎应该按目录解析，不记在媒体文件上
     // status: DataTypes.INTEGER, // 0默认，1进行中
-    type: {
+    type: { // 这个好像没启用
         type: DataTypes.INTEGER,
         // 1默认独生子，2有同胞(同级文件)，3有同胞(范围包含堂亲)
         defaultValue: 1,  // 修改时应改一片，需要思考

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-24 17:32:46
+ * @LastEditTime: 2022-07-30 16:01:27
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -131,6 +131,7 @@ export function fnAllKeydownFn() {
         }
     }
     async function recordPlace(iAimLine){ // 异步方法防止阻断主进程
+        // 考虑添加：1个延时与防抖
         const {duration, sDuration_} = This.oMediaBuffer;
         const iAll = This.aLineArr.length;
         let {end, start_} = This.oCurLine;
@@ -142,12 +143,14 @@ export function fnAllKeydownFn() {
         })();
         start_ = start_.slice(0,-3).padStart(8,0);
         ls.transact('oRecent', (oldData) => {
-            const old = oldData[ls.get('sFilePath')] || {};
+            const old = oldData[ls.get('sFilePath')] || {
+                startAt: new Date() * 1, // 记录开始时间
+            };
             oldData[ls.get('sFilePath')] = {
                 ...old,
                 dir,
                 name,
-                iTime: new Date()* 1,
+                iTime: new Date()* 1, // 或许 updatedAt 这个键名更好
                 iLineNo: iAimLine,
                 fPercent,
                 sDuration_,

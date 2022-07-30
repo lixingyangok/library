@@ -143,7 +143,7 @@ const oAboutTree = {
     goToLearn(sFilePath) {
         goToLounage(sFilePath);
     },
-    // ▼测试用
+    // ▼如果文件名名文件位置变化了，此方法用于记录新的信息到数据库
     async updateMediaInfo(){
         let aLast = this.aTree[this.aTree.length-1];
         for await (let [idx, val] of aLast.entries()){
