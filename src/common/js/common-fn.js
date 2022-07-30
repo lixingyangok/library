@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-24 17:30:05
+ * @LastEditTime: 2022-07-30 23:04:42
  * @Description: 
  */
 
@@ -41,6 +41,8 @@ export function listenFromMainProcess(sName, fn) {
 }
 
 export function getTubePath(sPath) {
+    // sPath = encodeURI(sPath); // 无效
+    sPath = encodeURIComponent(sPath); 
     return 'tube://abc?path=' + sPath;
 }
 

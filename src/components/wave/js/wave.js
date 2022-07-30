@@ -64,7 +64,7 @@ export default function(){
         const oTemp = (ls('aTemp') || []).find(cur=>{
             return cur.mediaPath == sPath;
         });
-        console.log('有缓存 =', !!oTemp);
+        console.log('有缓存吗 =', !!oTemp);
         let oMediaBuffer;
         if (oTemp) {
             oMediaBuffer = await getTempData(oTemp);
@@ -72,7 +72,9 @@ export default function(){
             oMediaBuffer = await getAudioData(sPath);
         }
         if (!oMediaBuffer) {
-            return vm.$message.error('读取媒体文件未成功');
+            const sTips = `读取媒体文件未成功, sPath = ${sPath.split('/').pop()}`;
+            console.log(sTips);
+            return vm.$message.error(sTips);
         }
         oData.oMediaBuffer = oMediaBuffer;
         setCanvasWidthAndDraw();
@@ -90,7 +92,6 @@ export default function(){
     // ▼加载【媒体】数据
     async function getAudioData(sPath){
         let err;
-        // sPath = encodeURIComponent(sPath)
         const oMediaBuffer = await fetch(sPath).then(res => {
             return res.blob();
         }).then(res=>{
@@ -100,8 +101,7 @@ export default function(){
             console.log('读取媒体buffer未成功\n', res);
         });
         if (!oMediaBuffer || err) {
-            console.log('媒体地址\n', sPath);
-            return;
+            return console.log('媒体地址\n', sPath);
         }
         // console.log('解析耗时：', oMediaBuffer.fElapsedSec);
         return oMediaBuffer;
@@ -367,11 +367,11 @@ export default function(){
     // 旧版本监听 oDom.oViewport 但有时滚动条会触发监听，就改为了监听 oDom.oMyWaveBar 结果还是照旧
     watch(() => oDom.oViewport, (oNew)=>{
         if (!oNew) return;
-        console.log('触发监听：', oDom.oViewport);
+        // console.log('触发监听：', oDom.oViewport);
         const myObserver = new ResizeObserver(entryArr => {
             setCanvasWidthAndDraw();
             const {width} = entryArr[0].contentRect;
-            if (1) console.log('宽度变成了：', width);
+            // if (1) console.log('宽度变成了：', width);
         });
         myObserver.observe(oNew);
     });
