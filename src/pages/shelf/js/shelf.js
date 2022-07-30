@@ -129,9 +129,11 @@ const oAboutTree = {
     // ▼点击文件夹
     async ckickTree(i1, i2) {
         const {isDirectory, sItem} = this.aTree[i1][i2];
-        if (isDirectory) {
+        if (isDirectory) { 
+            // ▼ this.aPath 正在被 watch 监听，操作会触发后续动作
             return this.aPath.splice(i1 + 1, Infinity, sItem);
         }
+        // ▲文件夹，▼文件
         const sFilePath = `${this.aPath.join('/')}/${sItem}`;
         const isMedia = await checkFile(sFilePath, oConfig.oMedia)
         if (!isMedia) return;
@@ -140,6 +142,24 @@ const oAboutTree = {
     // ▼跳转到学习页
     goToLearn(sFilePath) {
         goToLounage(sFilePath);
+    },
+    // ▼测试用
+    async updateMediaInfo(){
+        let aLast = this.aTree[this.aTree.length-1];
+        for await (let [idx, val] of aLast.entries()){
+            const {isMedia, infoAtDb, bNameRight, sPath} = val;
+            const isWrong = isMedia && infoAtDb && !bNameRight;
+            if (!isWrong) continue;
+            const aPath = sPath.split('/');
+            const res = await fnInvoke("db", 'updateMediaInfo', {
+                id: infoAtDb.id,
+                dir: aPath.slice(0,-1).join('/'),
+                name: aPath.pop(),
+            });
+            if (!res) return;
+            vm.$message.success(`文件：${idx} 位置与文件名更新完成`);
+        }
+        this.getDirChildren();
     },
 };
 

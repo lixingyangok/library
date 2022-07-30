@@ -2,14 +2,14 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 14:52:15
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-01-23 01:26:36
+ * @LastEditTime: 2022-07-30 11:10:24
  * @Description: 
  */
 
 window.oConfig = (function(){
     const aMedia = [
         '.mp4', // 视频
-        '.mp3', '.ogg', '.m4a', // 音频
+        '.mp3', '.ogg', '.m4a', '.acc', '.aac', // 音频
     ];
     const aOthers = ['.srt', '.pdf'];
     const aFileType = aMedia.concat(aOthers);

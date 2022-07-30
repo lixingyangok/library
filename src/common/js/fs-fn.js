@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-06-14 21:44:54
+ * @LastEditTime: 2022-07-30 12:54:41
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -60,7 +60,7 @@ export async function getFolderChildren(sPath){
             hasMedia: false,
             infoAtDb: null,
             srt: null,
-            bNameRight: false,
+            bNameRight: false, // false 表示文件名与库中记录不一致
         };
         if (oItem.isDirectory) {
             oItem.hasMedia = await findMedia(sCurPath);
@@ -110,7 +110,9 @@ export async function AaddMediaInfoFromDB(oMedia){
     oMedia.hash = hash;
     if (!res?.[0]) return;
     oMedia.infoAtDb = res[0];
-    oMedia.bNameRight = res[0].name == oMedia.sItem;
+    oMedia.bNameRight = oMedia.sPath == ( // 记录文件位置&名称是否与库中记录的一样
+        `${res[0].dir}/${res[0].name}`
+    );
 }
 
 // ▼查询是否为媒体文件
