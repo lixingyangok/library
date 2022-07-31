@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-11-28 13:30:34
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-14 22:02:21
+ * @LastEditTime: 2022-07-31 09:24:47
  * @Description: 
  */
 
@@ -22,7 +22,7 @@ const exePath = path.dirname(app.getPath('exe'));
 // ▼其它
 if (!exePath) console.log('exe位置 =', exePath);
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-global.toLog = ()=>null;
+global.toLog = () => null;
 global.db = db;
 global.sqlize = sqlize;
 global.newPromise = function (){

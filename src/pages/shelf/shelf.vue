@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 12:57:11
+ * @LastEditTime: 2022-07-31 09:34:55
  * @Description: 
 -->
 
@@ -29,8 +29,8 @@
         <div class="legend" >
             图标含义：
             文件夹 <i class="folder-mark fas fa-folder"/> &emsp;
-            包含媒体 <i class="folder-mark fas fa-folder has-media"/> &emsp;
-            已收录所含媒体 <i class="folder-mark fas fa-folder has-media"/><i class="fas fa-check fa-xs small-check" /> &emsp;
+            内含媒体 <i class="folder-mark fas fa-folder has-media"/> &emsp;
+            内含媒体已入库 <i class="folder-mark fas fa-folder has-media"/><i class="fas fa-check fa-xs small-check"/> &emsp;
             媒体文件 <i class="fas fa-play-circle meida-icon" /> &emsp;
             媒体+字幕 <i class="fas fa-play-circle meida-icon done" />&emsp;
             文件名与库不符 <i style="color:red">红字</i>

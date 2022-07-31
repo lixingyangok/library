@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-12 19:32:20
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 15:33:33
+ * @LastEditTime: 2022-07-31 09:31:17
  * @Description: 
  */
 const sqlite3 = require('sqlite3').verbose();
@@ -33,6 +33,7 @@ const sqlize = new Sequelize({
     },
 });
 
+// ★★★ 原则上应只用于查询 ★★★
 async function doSql(sTheSQL){
     const [results, metadata] = await sqlize.query(
         sTheSQL,

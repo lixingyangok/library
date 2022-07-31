@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:23:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-06 10:36:47
+ * @LastEditTime: 2022-07-31 09:26:07
  * @Description: 
  */
 const fs = require('fs');
@@ -23,7 +23,7 @@ module.exports.protocolRegister = function(){
         corsEnabled: true,
     };
     protocol.registerSchemesAsPrivileged([
-        { scheme: 'tube', privileges },
+        { scheme: 'tube', privileges }, // 此项已被大范围应用，其它项似乎在停用中
         { scheme: 'tb02', privileges },
         { scheme: 'pipe', privileges },
         { scheme: 'filepipe', privileges },

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-23 17:01:20
+ * @LastEditTime: 2022-07-31 09:18:23
  * @Description: 
  */
 
@@ -40,15 +40,16 @@ const oFn = module.exports.oFn = {
     },
     // ▼修改字幕
     async updateLine(obj) {
+        const {toSaveArr=[], toDelArr=[]} = obj;
         const arr = [[], 0];
-        if (obj?.toSaveArr?.length) {
+        if (toSaveArr.length) {
             obj.toSaveArr.forEach(cur => {
                 if (cur.filledAt || !cur.text) return;
                 cur.filledAt = new Date();
             });
-            arr[0] = oFn.saveLine(obj.toSaveArr);
+            arr[0] = oFn.saveLine(toSaveArr);
         }
-        if (obj?.toDelArr?.length) {
+        if (toDelArr.length) {
             arr[1] = oLine.destroy({
                 where: { id: obj.toDelArr },
             });
@@ -76,7 +77,7 @@ const oFn = module.exports.oFn = {
     // ▼查询：某个媒体的字幕
     async getLineByMedia(mediaId) {
         const res = await oLine.findAll({
-            attributes: ['id', 'start', 'end', 'text'],
+            attributes: ['id', 'start', 'end', 'text', 'filledAt'], // filledAt 是有必要的
             where: {mediaId},
             order: [['start', 'asc']],
         });
