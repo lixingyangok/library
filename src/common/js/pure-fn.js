@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 20:03:03
+ * @LastEditTime: 2022-07-31 13:45:31
  * @Description: 
  */
 
@@ -33,7 +33,7 @@ export async function getMediaDuration(sFilePath){
 		// console.log('时长', myAudio.duration);
 		fnResolve({
 			fDuration: myAudio.duration,
-			sDuration: secToStr(myAudio.duration).split(',')[0],
+			sDuration: secToStr(myAudio.duration),
 		});
 	}
 	myAudio.src = sFilePath;
@@ -72,7 +72,7 @@ export function getFakeBuffer(buffer){
 	// console.log('buffer.sampleRate-', buffer.sampleRate, buffer.sampleRate/iLeap);
 	const buffer_ = { // 原始数据
 		duration: buffer.duration,
-		sDuration_: secToStr(buffer.duration).split(',')[0],
+		sDuration_: secToStr(buffer.duration),
 		sampleRate: Math.round(buffer.sampleRate / iLeap),
 		numberOfChannels: buffer.numberOfChannels,
 	};
@@ -95,18 +95,22 @@ export function getFakeBuffer(buffer){
 }
 
 // ▼浮点秒，转为时间轴的时间
-export function secToStr(fSecond, forShow){
+export function secToStr(fSecond, sType){
 	const iHour = Math.floor(fSecond / 3600) + ''; //时
 	const iMinut = Math.floor((fSecond - iHour * 3600) / 60) + ''; //分
-	const fSec = fSecond - (iHour*3600 + iMinut*60) + ''; //秒
+	const fSec = fSecond - (iHour*3600 + iMinut*60) + ''; // 秒: 38.123
 	const [sec01, sec02='000'] = fSec.split('.');
 	let sTime = `${iHour.padStart(2, 0)}:${iMinut.padStart(2, 0)}:${sec01.padStart(2, 0)}`;
-	let iTail = `,${sec02.slice(0, 3).padEnd(3, 0)}`;
-	if (forShow){
+	if (!sType) return sTime; // 默认格式 13:20:59
+	// ▼其它特殊格式 ===============================================
+	let sTail = `,${sec02.slice(0, 3).padEnd(3, 0)}`;
+	if (sType === 'lineTime'){ // 句子时间格式 0:00:57.17
 		sTime = sTime.slice(1);
-		iTail = '.' + iTail.slice(1, 3);
+		sTail = '.' + sTail.slice(1, 3);
+	}else if (sType === 'srtTime'){
+		// 
 	}
-	return sTime + iTail;
+	return sTime + sTail; // srt 时间格式 00:00:15,000 --> 00:00:28,680
 }
 
 // ▼听写页加载时调用（解析波形的blob缓存）
@@ -153,8 +157,8 @@ export function fixTime(theTarget){
 	})().forEach(cur=>{
 		const {start, end, text} = cur;
 		cur.long = (end - start).toFixed(2) * 1;
-		cur.start_ = secToStr(start, true);
-		cur.end_ = secToStr(end, true);
+		cur.start_ = secToStr(start, 'lineTime');
+		cur.end_ = secToStr(end, 'lineTime');
 		cur.text = text || '';
 	});
 	return theTarget;
@@ -217,7 +221,8 @@ export const aAlphabet = [...Array(26).keys()].map(cur=>{
 // ▼将收到的数组转换为【字幕文件】并下载
 export function downloadSrt(aLines, fileName='字幕文件'){
 	const aStr = aLines.map(({start, end, text}, idx) => {
-		const [t01, t02] = [secToStr(start), secToStr(end)];
+		const t01 = secToStr(start, 'srtTime');
+		const t02 = secToStr(end, 'srtTime');
 		return `${idx + 1}\n${t01} --> ${t02}\n${text}\n`;
 	}).join('\n');
 	// console.log('aStr', aStr);

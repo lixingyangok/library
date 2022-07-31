@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 23:04:42
+ * @LastEditTime: 2022-07-31 11:15:24
  * @Description: 
  */
 
@@ -124,4 +124,32 @@ export function SortLikeWin(v1, v2) {
 function commonCompare(v1, v2) {
     if (v1 === v2) return 0;
     else return v1 < v2 ? -1 : 1;
+}
+
+
+export function getDateDiff(dateTimeStamp){
+    var minute = 1000 * 60;
+    var hour = minute * 60;
+    var day = hour * 24;
+    var month = day * 30;
+    var diffValue = new Date().getTime() - dateTimeStamp;
+    if (diffValue < 0) return;
+    var monthC = diffValue / month;
+    var weekC = diffValue / (7*day);
+    var dayC = diffValue / day;
+    var hourC = diffValue / hour;
+    var minC = diffValue / minute;
+    if (monthC >= 1) {
+        if(monthC <= 12) return "" + parseInt(monthC) + "月前";
+        return "" + parseInt(monthC/12) + "年前";
+    } else if (weekC >= 1) {
+        return "" + parseInt(weekC) + "周前";
+    } else if (dayC >= 1) {
+        return "" + parseInt(dayC) + "天前";
+    } else if (hourC >= 1) {
+        return "" + parseInt(hourC) + "小时前";
+    } else if (minC >= 1) {
+        return "" + parseInt(minC) + "分钟前";
+    }
+    return "刚刚";
 }

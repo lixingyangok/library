@@ -2,29 +2,40 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 20:11:33
+ * @LastEditTime: 2022-07-31 13:44:36
  * @Description: 
 -->
 <template>
-    <div class="outer" >
+    <div class="outer">
         <section class="left" v-show="isShowLeft" >
-            <iframe ref="oIframe"
-                v-if="leftType=='pdf'"
+            <iframe ref="oIframe" v-if="leftType=='pdf'"
                 src="./static/pdf-viewer/web/viewer.html"
             ></iframe>
             <!--  -->
             <div class="txt-box" ref="oLeftTxtWrap" v-else="leftType == 'txt'">
-                <!-- iShowUntil：{{iShowUntil}}<br/>
-                oTopLineMatch?.iLeftLine：{{oTopLineMatch?.iLeftLine}}<br/>
-                iWriting：{{iWriting}}<br/> -->
+                <div v-if="'测试' && 0">
+                    aArticle.length：{{aArticle.length}}<br/>
+                    iShowUntil：{{iShowUntil}}<br/>
+                    oTopLineMatch?.iLeftLine：{{oTopLineMatch?.iLeftLine}}<br/>
+                    iWriting：{{iWriting}}<br/>
+                </div>
+                <div>
+                    <h3>
+                        <br/>{{oMediaInfo.dir}}/
+                        <br/><em style="color: black; font-weight: bold;">{{oMediaInfo.name}}</em>
+                    </h3>
+                </div>
+                <hr class="hr-line" />
                 <ul ref="oLeftTxt">
-                    <li>
+                    <li name="▲当前行上方-1">
                         {{'\n' + aArticle.slice(0, iShowUntil).join('\n')}}
                     </li>
-                    <li v-if="iShowUntil > 0 && (aArticle[iShowUntil - 1].trim() == '' || iShowUntil + 1 < oTopLineMatch?.iLeftLine)"></li>
+                    <li name="▲当前行上方-2-空行"
+                        v-if="(iShowUntil > 0) && (aArticle[iShowUntil - 1].trim() == '' || iShowUntil + 1 < oTopLineMatch?.iLeftLine)"
+                    ></li>
                     <!-- <template v-if="oTopLineMatch?.iLeftLine >= 0 && oTopLineMatch?.iLeftLine < iWriting"> -->
                     <template v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (oTopLineMatch?.iLeftLine < iWriting))">
-                        <li>
+                        <li name="▲当前行上方-3" >
                             {{
                                 aArticle[oTopLineMatch.iLeftLine].slice(0, oTopLineMatch.iMatchStart)
                             }}<span class="just-wrote">{{
@@ -33,10 +44,10 @@
                                 aArticle[oTopLineMatch.iLeftLine].slice(oTopLineMatch.iMatchEnd)
                             }}
                         </li>
-                        <li v-if="oTopLineMatch?.iLeftLine + 1 != iWriting"></li>
+                        <li v-if="oTopLineMatch?.iLeftLine + 1 != iWriting" name="▲当前行上方-4-空行"></li>
                     </template>
                     <!-- ▼ writing-line ▼ -->
-                    <li class="writing-line" v-if="iWriting >= 0" ref="oWritingLine" >
+                    <li class="writing-line" v-if="iWriting >= 0" ref="oWritingLine" name="▼当前行writing-line">
                         <template v-if="oTopLineMatch?.iLeftLine == iWriting">
                             {{
                                 sWriting.slice(0, oTopLineMatch.iMatchStart)
@@ -52,13 +63,13 @@
                         </template>
                         <em class="writing">{{sWriting.slice(iMatchStart, iMatchEnd)}}</em>{{sWriting.slice(iMatchEnd)}}
                     </li>
-                    <li v-if="iWriting >= 0">
+                    <li v-if="iWriting >= 0" name="▼当前行下方1" >
                         {{aArticle.slice(iWriting + 1).join('\n')}}
                     </li>
-                    <li v-else>
+                    <li v-else name="▼当前行下方2">
                         {{
                             aArticle.slice(
-                                Math.max(iShowUntil + 1, oTopLineMatch?.iLeftLine - 1)
+                                Math.max(iShowUntil + 1, (oTopLineMatch?.iLeftLine - 1) || 0)
                             ).join('\n')
                         }}
                     </li>
@@ -117,14 +128,14 @@
                     <el-button type="primary" @click="openPDF">
                         打开PDF
                     </el-button>
-                    <el-button type="primary" @click="() => oTxtInput.click()">
+                    <el-button type="primary" @click="openTxt">
                         打开TXT
                     </el-button>
                 </el-button-group>
                 <el-button type="primary" size="small" @click="setAllEmpty">
                     所有行置空
                 </el-button>
-                <input type="file" ref="oTxtInput" accept="text/plain"
+                <input type="file" ref="oTxtInput"
                     @change="getArticleFile" v-show="0"
                 />
                 <input type="file" ref="oSrtInput"
@@ -234,20 +245,32 @@
         <el-dialog title="媒体信息" width="900px"
             v-model="isShowMediaInfo"
         >
-            <div>
-                文件夹：{{oMediaInfo.dir}}<br/>
-                文件名：{{oMediaInfo.name}}
+            <el-descriptions title="" border :column="3">
+                <el-descriptions-item label="当前文件" :span="3">
+                    {{oMediaInfo.dir}}/<em style="color: black; font-weight: bold;">{{oMediaInfo.name}}</em>
+                </el-descriptions-item>
+                <el-descriptions-item label="合计时长">{{oSiblingsInfo.sDurationSum}}</el-descriptions-item>
+                <el-descriptions-item label="平均时长">{{oSiblingsInfo.sAvg}}</el-descriptions-item>
+                <el-descriptions-item label="媒体ID">
+                    {{oMediaInfo.id}}
+                </el-descriptions-item>
+                <el-descriptions-item label="进度信息">
+                    {{aSiblings.filter(cur=>cur.done_).length}}/{{aSiblings.length}}
+                </el-descriptions-item>
+                <el-descriptions-item label="首次录入">
+                    {{oSiblingsInfo.fistFillTime}} - {{oSiblingsInfo.fDaysAgo}}
+                </el-descriptions-item>
+            </el-descriptions>
+            <div class="folder-btn-warp">
                 <el-button size="small" type="text" @click="visitNeighbor(-1)">
                     上一个
                 </el-button>
                 <el-button size="small" type="text" @click="visitNeighbor(1)">
                     下一个
                 </el-button>
-                <!-- <el-button size="small" type="text"> 保存媒体时长 </el-button> -->
-                <br/>
             </div>
             <div class="siblings-list" v-for="(i01, i02) of 2" :key="i02">
-                <el-table border
+                <el-table border123
                     :data="aSiblings.filter(cur => cur.done_ == !!i02)"
                 >
                     <el-table-column prop="idx_" label="序号" width="60" />
@@ -309,6 +332,7 @@ export default {
         const oTopLineMatch = computed(() => {
             return oData.oRightToLeft[oData.iCurLineIdx - 1];
         });
+        // "sWriting"
         const sWriting = computed(() => {
             return oData.aArticle[oData.iWriting];
         });

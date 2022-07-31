@@ -21,22 +21,24 @@
     resize: both;
     position: relative;
     border: solid 1px skyblue;
+    .hr-line{
+        height: 1px !important;
+    }
     .txt-box{
         padding: 30px;
         white-space: break-spaces;
         font-size: 16px;
         line-height:1.5;
         overflow-y: auto;
-        &>*{
+        & > ul{
             min-height: 1em;
             margin: 0 0 1em;
-        }
-        ul{
             opacity: 1;
         }
         li{
             min-height: 1em;
             margin: 0 0 0.2em;
+            line-height: 1.7;
         }
     }
     .just-wrote{

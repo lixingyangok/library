@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 12:54:41
+ * @LastEditTime: 2022-07-31 10:06:01
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -176,8 +176,8 @@ export async function getTodayHistory(){
         }
     });
     Object.assign(oResult, {
-        sCrDuration: secToStr(iCrDuration).slice(0,8),
-        sFiDuration: secToStr(iFiDuration).slice(0,8),
+        sCrDuration: secToStr(iCrDuration),
+        sFiDuration: secToStr(iFiDuration),
         iCrDuration: Number.parseInt(iCrDuration),
         iFiDuration: Number.parseInt(iFiDuration),
     });

@@ -1,5 +1,5 @@
 
-import {mySort, goToLounage} from '../../../common/js/common-fn.js';
+import {mySort, goToLounage, getDateDiff} from '../../../common/js/common-fn.js';
 
 const child_process = require("child_process");
 const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
@@ -194,32 +194,7 @@ export default {
     },
 };
 
-function getDateDiff(dateTimeStamp){
-    var minute = 1000 * 60;
-    var hour = minute * 60;
-    var day = hour * 24;
-    var month = day * 30;
-    var diffValue = new Date().getTime() - dateTimeStamp;
-    if (diffValue < 0) return;
-    var monthC = diffValue / month;
-    var weekC = diffValue / (7*day);
-    var dayC = diffValue / day;
-    var hourC = diffValue / hour;
-    var minC = diffValue / minute;
-    if (monthC >= 1) {
-        if(monthC <= 12) return "" + parseInt(monthC) + "月前";
-        return "" + parseInt(monthC/12) + "年前";
-    } else if (weekC >= 1) {
-        return "" + parseInt(weekC) + "周前";
-    } else if (dayC >= 1) {
-        return "" + parseInt(dayC) + "天前";
-    } else if (hourC >= 1) {
-        return "" + parseInt(hourC) + "小时前";
-    } else if (minC >= 1) {
-        return "" + parseInt(minC) + "分钟前";
-    }
-    return "刚刚";
-}
+
 // ▼执行系统命令
 // child_process.exec('mspaint', function(error, stdout, stderr){
 //     if (error || stderr) {

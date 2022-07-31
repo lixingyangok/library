@@ -1,7 +1,7 @@
 import {toRefs, reactive, computed, onMounted, getCurrentInstance} from 'vue';
-import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings, getMediaDuration} from '../../../common/js/pure-fn.js';
+import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings, getMediaDuration, secToStr} from '../../../common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
-import {getTubePath} from '../../../common/js/common-fn.js';
+import {getTubePath, getDateDiff} from '../../../common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '../../../common/js/fs-fn.js';
 
 const dayjs = require("dayjs");
@@ -57,6 +57,7 @@ export function mainPart(){
 		sSearching: '', // 查字典
 		iShowStart: 0,
 		aSiblings: [], // 当前媒体的邻居文件
+		oSiblingsInfo: {}, // 当前媒体的邻居信息
 		iHisMax: 30, // 最多历史记录数量
 		iLineHeight: 35, // 行高xxPx
 		isShowLeft: !!false,
@@ -226,7 +227,7 @@ export function mainPart(){
 		if (!aList) return;
 		aList = aList.filter(cur => cur.isMedia);
 		await addAllMediaDbInfo(aList, true);
-		aList.forEach((cur, idx)=>{
+		aList.forEach((cur, idx) => {
 			const {finishedAt, id, durationStr} = cur.infoAtDb || {};
 			cur.idx_ = idx + 1;
 			cur.done_ = !!finishedAt;
@@ -238,6 +239,36 @@ export function mainPart(){
 		});
 		oData.aSiblings = aList;
 		recordMediaTimeInfo(); // 检查是否所有的文件都有媒体信息
+		setFolderInfo();
+	}
+	// ▼统计文件夹音频时长
+	async function setFolderInfo(){
+		const {aSiblings} = oData;
+		let aID = [];
+		const fDurationSum = aSiblings.reduce((sum, cur) => {
+			const {duration=0, id} = cur.infoAtDb || {};
+			if (id) aID.push(id);
+			return sum + duration;
+		}, 0);
+		const sAvg = fDurationSum / aSiblings.length;
+		const oSiblingsInfo = {
+			sDurationSum: secToStr(fDurationSum),
+			sAvg: secToStr(sAvg),
+			fistFillTime: 1,
+			fDaysAgo: 0.5,
+		};
+		const [r01, r02] = await fnInvoke('db', 'doSql', `
+			SELECT *, julianday('now', 'localtime') - julianday(filledAt, 'localtime') as daysAgo
+			FROM "line"
+			where mediaId in (${aID.join(',')}) and filledAt is not null
+			ORDER BY filledAt ASC limit 5
+		`);
+		if (r01[0]){
+			// console.log('第1次提交', r01);
+			oSiblingsInfo.fistFillTime = dayjs(r01[0].filledAt).format('YYYY-MM-DD HH:mm');
+			oSiblingsInfo.fDaysAgo = getDateDiff(new Date(r01[0].filledAt) *1);
+		}
+		oData.oSiblingsInfo = oSiblingsInfo;
 	}
 	// ▼跳转到邻居
 	function visitSibling(oMedia){
@@ -275,30 +306,53 @@ export function mainPart(){
 	function showLeftColumn(){
 		oData.isShowLeft = !oData.isShowLeft;
 	}
+	// ▼复制文本所在的位置路径
+	function justCopy(){
+		// console.log('oMediaInfo\n', oData.oMediaInfo.$dc());
+		const dir = oData.oMediaInfo.dir.replaceAll('/', '\\');
+		console.log(`开始复制文件夹路径 ${dir}`);
+		const bCopy = copyString(dir);
+		bCopy && vm.$message.success('已复制路径');
+	}
 	// ▼打开PDF
 	function openPDF(){
-		console.log('oMediaInfo\n', oData.oMediaInfo.$dc());
 		oData.isShowLeft = true;
 		oData.leftType = 'pdf';
-		const dir = oData.oMediaInfo.dir.replaceAll('/', '\\');
-		const bCopy = copyString(dir);
-		if (bCopy) vm.$message.success('已复制路径');
+		justCopy();
 		const btn = oDom?.oIframe?.contentDocument?.querySelector('#openFile');
 		if (!btn) return;
 		btn.click();
 	}
-	// ▼ 打开 txt
-	async function getArticleFile(ev){
+	// ▼打开文本
+	function openTxt(){
 		oData.leftType = 'txt';
-		oData.sArticle = '';
+		justCopy();
+		oDom.oTxtInput.click()
+	}
+	// ▼ 打开 txt （在左侧显示）
+	async function getArticleFile(ev){
 		oData.isShowLeft = true;
-		const fileTxt = await fileToStrings(ev.target.files[0]);
+		oData.sArticle = '';
+		const [oFile] = ev.target.files;
+		const isSRT = oFile.path.slice(-4).toLocaleLowerCase() == '.srt';
+		const fileTxt = await fileToStrings(oFile);
 		if (!fileTxt) return;
 		ev.target.value = '';
-		const aArticle = Object.freeze(fileTxt.split('\n'));
+		// console.log('myLines', myLines);
+		const aArticle = (()=>{
+			let aResult = [];
+			if (isSRT) {
+				aResult = SubtitlesStr2Arr(fileTxt);
+				aResult = aResult.map(cur => cur.text.trim()); //.filter(Boolean);
+			}else{
+				aResult = fileTxt.split('\n');
+			}
+			aResult = aResult.map(cur => cur.replace(/，\s{0,2}/g, ', '));
+			return aResult
+		})();
 		vm.$message.success(`取得文本 ${aArticle.length} 行`);
-		oData.sArticle = fileTxt;
-		oData.aArticle = aArticle;
+		// oData.sArticle = fileTxt; // 好像没用上
+		oData.aArticle = Object.freeze(aArticle);
 	}
 	// ▼ 导入 Srt 字幕
 	async function importSrt(ev){
@@ -422,7 +476,7 @@ export function mainPart(){
 		const {aLineArr} = oData;
 		aLineArr.forEach(cur=>{
 			cur.text = '';
-		})
+		});
 	}
 	// ============================================================================
 	init();
@@ -452,6 +506,7 @@ export function mainPart(){
 		setItFinished,
 		visitNeighbor,
 		handleCommand,
+		openTxt,
 	};
     return reactive({
         ...toRefs(oDom),

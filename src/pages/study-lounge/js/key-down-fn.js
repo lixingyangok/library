@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 19:16:43
+ * @LastEditTime: 2022-07-31 13:39:10
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -179,7 +179,7 @@ export function fnAllKeydownFn() {
         Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         const text = This.oCurLine.text.trim();
         if (!text.length) return;
-        const aPieces = text.match(/[a-z ']+/ig);
+        const aPieces = text.match(/[a-z0-9'-]+/ig);
         if (!aPieces?.length) return;
         console.time('左侧句子定位');
         const {iLeftLine = -1, iMatchEnd: iLastMatchEnd} = This.oTopLineMatch || {};
