@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-24 17:30:52
+ * @LastEditTime: 2022-07-31 14:02:08
  * @Description: 这是智能断句的模块
  */
 import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
@@ -16,7 +16,7 @@ export function figureOut(
     fLong = 2.5, // 取的结果一定要超过x秒（此注释不是特别准）
     fRightDuration=20 // 在右侧多少秒范围内判断？（目前似乎没用上）
 ) {
-    const [iPerSecPx, iWaveHeight, iAddition] = [100, 14, 20]; // 默认每秒宽度px值，波高度，添加在两头的空隙
+    const [iPerSecPx, iWaveHeight, iAddition] = [100, 14, 25]; // 默认每秒宽度px值，波高度，添加在两头的空隙
     const aWaveArr = getWaveArr(oMediaBuffer, iPerSecPx, fEndSec, fRightDuration); // 取得波形
     // console.log('秒', fRightDuration);
     const aSection = getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight);

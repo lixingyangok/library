@@ -37,7 +37,6 @@
         }
         li{
             min-height: 1em;
-            margin: 0 0 0.2em;
             line-height: 1.7;
         }
     }
@@ -49,6 +48,9 @@
     }
     .writing{
         background: rgba(100, 255, 100, 1);
+    }
+    .gray-part{
+        opacity: 0.6;
     }
     .txt-box,
     iframe{

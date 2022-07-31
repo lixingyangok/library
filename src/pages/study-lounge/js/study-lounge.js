@@ -220,6 +220,7 @@ export function mainPart(){
 	async function showMediaDialog(){
 		console.log('打开邻居窗口');
 		oData.isShowMediaInfo = true;
+		setFolderInfo();
 	}
 	// ▼ 查询邻居文件列表
 	async function getNeighbors(){
@@ -239,7 +240,6 @@ export function mainPart(){
 		});
 		oData.aSiblings = aList;
 		recordMediaTimeInfo(); // 检查是否所有的文件都有媒体信息
-		setFolderInfo();
 	}
 	// ▼统计文件夹音频时长
 	async function setFolderInfo(){

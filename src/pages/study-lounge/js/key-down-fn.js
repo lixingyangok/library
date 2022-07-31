@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 13:39:10
+ * @LastEditTime: 2022-07-31 18:08:02
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -180,7 +180,7 @@ export function fnAllKeydownFn() {
         const text = This.oCurLine.text.trim();
         if (!text.length) return;
         const aPieces = text.match(/[a-z0-9'-]+/ig);
-        if (!aPieces?.length) return;
+        if (!aPieces) return;
         console.time('左侧句子定位');
         const {iLeftLine = -1, iMatchEnd: iLastMatchEnd} = This.oTopLineMatch || {};
         for (let idx = getLeftStartIdx(); idx < iLeftLines; idx++ ){
@@ -198,7 +198,7 @@ export function fnAllKeydownFn() {
             });
             if (!isInLine) continue;
             console.timeEnd('左侧句子定位');
-            console.log(`左侧句子定位到：${idx}`);
+            console.log(`左侧句子定位到：${idx}--------------`);
             return setLeftTxtTop({
                 iWriting: idx,
                 iMatchStart,
@@ -206,15 +206,15 @@ export function fnAllKeydownFn() {
             });
         }
         console.timeEnd('左侧句子定位');
-        console.log(`左侧句子定位-没成功`);
+        console.log(`左侧句子定位到：没成功------------------`);
     }
     // ▼跳转到目标行
-    async function setLeftTxtTop( obj ){
+    async function setLeftTxtTop(obj){
         Object.assign(This, obj);
         This.oRightToLeft[This.iCurLineIdx] = {
             ...obj, iLeftLine: obj.iWriting,
         };
-        console.log('当前句左行号：', obj.iWriting);
+        // console.log('当前句左行号：', obj.iWriting);
         await This.$nextTick();
         if (!This.oWritingLine) return;
         This.oWritingLine.scrollIntoView();

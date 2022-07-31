@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 13:44:36
+ * @LastEditTime: 2022-07-31 19:32:58
  * @Description: 
 -->
 <template>
@@ -44,7 +44,9 @@
                                 aArticle[oTopLineMatch.iLeftLine].slice(oTopLineMatch.iMatchEnd)
                             }}
                         </li>
-                        <li v-if="oTopLineMatch?.iLeftLine + 1 != iWriting" name="▲当前行上方-4-空行"></li>
+                        <li v-show="0" name="▲当前行上方-4-空行"
+                            v-if="oTopLineMatch?.iLeftLine + 1 != iWriting" 
+                        ></li>
                     </template>
                     <!-- ▼ writing-line ▼ -->
                     <li class="writing-line" v-if="iWriting >= 0" ref="oWritingLine" name="▼当前行writing-line">
@@ -63,10 +65,10 @@
                         </template>
                         <em class="writing">{{sWriting.slice(iMatchStart, iMatchEnd)}}</em>{{sWriting.slice(iMatchEnd)}}
                     </li>
-                    <li v-if="iWriting >= 0" name="▼当前行下方1" >
+                    <li class="gray-part" v-if="iWriting >= 0" name="▼当前行下方1" >
                         {{aArticle.slice(iWriting + 1).join('\n')}}
                     </li>
-                    <li v-else name="▼当前行下方2">
+                    <li class="gray-part" v-else name="▼当前行下方2">
                         {{
                             aArticle.slice(
                                 Math.max(iShowUntil + 1, (oTopLineMatch?.iLeftLine - 1) || 0)
@@ -247,7 +249,8 @@
         >
             <el-descriptions title="" border :column="3">
                 <el-descriptions-item label="当前文件" :span="3">
-                    {{oMediaInfo.dir}}/<em style="color: black; font-weight: bold;">{{oMediaInfo.name}}</em>
+                    {{oMediaInfo.dir}}
+                    <br/><em style="color: black; font-weight: bold;">{{oMediaInfo.name}}</em>
                 </el-descriptions-item>
                 <el-descriptions-item label="合计时长">{{oSiblingsInfo.sDurationSum}}</el-descriptions-item>
                 <el-descriptions-item label="平均时长">{{oSiblingsInfo.sAvg}}</el-descriptions-item>
