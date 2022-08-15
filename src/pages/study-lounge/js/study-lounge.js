@@ -64,6 +64,7 @@ export function mainPart(){
 		leftType: '',
 		sArticle: '',
 		aArticle: [],
+		// iLeftTxtSize: 14, // 左侧文本字号
 	});
 	const oInstance = getCurrentInstance();
 	// ▼当前行
@@ -332,7 +333,7 @@ export function mainPart(){
 	// ▼ 打开 txt （在左侧显示）
 	async function getArticleFile(ev){
 		oData.isShowLeft = true;
-		oData.sArticle = '';
+		// oData.sArticle = ''; // 好像没用上
 		const [oFile] = ev.target.files;
 		const isSRT = oFile.path.slice(-4).toLocaleLowerCase() == '.srt';
 		const fileTxt = await fileToStrings(oFile);
@@ -353,6 +354,14 @@ export function mainPart(){
 		vm.$message.success(`取得文本 ${aArticle.length} 行`);
 		// oData.sArticle = fileTxt; // 好像没用上
 		oData.aArticle = Object.freeze(aArticle);
+	}
+	// ▼ 字幕置左
+	async function showLeftArticle(){
+		oData.isShowLeft = true;
+		const arr = oData.aLineArr.map(cur => {
+			return cur.text.trim();
+		});
+		oData.aArticle = Object.freeze(arr);
 	}
 	// ▼ 导入 Srt 字幕
 	async function importSrt(ev){
@@ -507,6 +516,7 @@ export function mainPart(){
 		visitNeighbor,
 		handleCommand,
 		openTxt,
+		showLeftArticle,
 	};
     return reactive({
         ...toRefs(oDom),

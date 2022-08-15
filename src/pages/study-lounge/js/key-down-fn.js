@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 18:08:02
+ * @LastEditTime: 2022-08-15 20:18:49
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -132,10 +132,9 @@ export function fnAllKeydownFn() {
     }
     async function recordPlace(iAimLine){ // 异步方法防止阻断主进程
         // 考虑添加：1个延时与防抖
-        const {duration, sDuration_} = This.oMediaBuffer;
         const iAll = This.aLineArr.length;
         let {end, start_} = This.oCurLine;
-        const {dir, name} = This.oMediaInfo;
+        const {dir, name, duration, durationStr} = This.oMediaInfo;
         const fPercent = (()=>{
             let fResult = This.iCurLineIdx / iAll;
             if (duration) fResult = end / duration;
@@ -153,7 +152,7 @@ export function fnAllKeydownFn() {
                 iTime: new Date()* 1, // 或许 updatedAt 这个键名更好
                 iLineNo: iAimLine,
                 fPercent,
-                sDuration_,
+                durationStr, // sDuration_,
                 sPosition: start_,
                 iAll: This.aLineArr.length,
             };
@@ -167,7 +166,7 @@ export function fnAllKeydownFn() {
         while (idx--){
             if (!oRightToLeft[idx]) continue;
             const {iLeftLine} = oRightToLeft[idx];
-            return Math.max(0, iLeftLine - 1);
+            return iLeftLine; // 旧版：return Math.max(0, iLeftLine - 1);
         }
         return 0;
     }

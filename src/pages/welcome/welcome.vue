@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-23 13:47:14
+ * @LastEditTime: 2022-07-31 20:31:24
  * @Description: 
 -->
 
@@ -24,7 +24,7 @@
                 <el-table-column prop="iLineNo" label="位置" width="165">
                     <template #default="scope">
                         {{scope.row.iLineNo}}/{{scope.row.iAll}}<br/>
-                        {{scope.row.sPosition}}/{{scope.row.sDuration_}}
+                        {{scope.row.sPosition}}/{{scope.row.durationStr}}
                     </template>
                 </el-table-column>
                 <el-table-column prop="fPercent" label="进度" width="250" >

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 19:32:58
+ * @LastEditTime: 2022-07-31 19:47:47
  * @Description: 
 -->
 <template>
@@ -132,6 +132,9 @@
                     </el-button>
                     <el-button type="primary" @click="openTxt">
                         打开TXT
+                    </el-button>
+                    <el-button type="primary" @click="showLeftArticle">
+                        字幕置左
                     </el-button>
                 </el-button-group>
                 <el-button type="primary" size="small" @click="setAllEmpty">
