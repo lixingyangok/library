@@ -6,13 +6,36 @@
     margin: 20px 0 0;
     height: 80vh;
     overflow-y: auto;
+    .dir{
+        color: #999;
+    }
+    .file-name{
+        margin: 0 0 0;
+        background: #f6f6f6;
+        line-height: 1.5;
+        color: #999;
+        padding: 0 8px;
+        margin: 5px 0;
+        border-radius: 3px;
+    }
+    ul{
+        margin: 0 50px 20px 30px;
+    }
     li{
-        line-height: 2.5;
+        // line-height: 1;
+        // margin: 10px 0 0;
+        li{
+            margin: 0 0 0 0;
+            p{
+                line-height: 2;
+                margin: 0 0 0 30px;
+            }
+        }
     }
     span{
         &[class~=matched]{
-            // color: red;
-            background: rgb(255, 255, 150);
+            color: red;
+            // background: rgb(255, 255, 150);
         }
         &[class~=l-01]{
             color: red;
