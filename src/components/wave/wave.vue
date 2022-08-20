@@ -2,62 +2,66 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-16 15:11:01
+ * @LastEditTime: 2022-08-16 20:28:56
  * @Description: 
 -->
 <template>
-    <audio controls ref="oAudio"
-        v-show="0" :src="mediaPath"
-    ></audio>
-    <article class="my-wave-bar" ref="oMyWaveBar"
-        :class="sWaveBarClassName"
-    >
-        <canvas class="canvas" ref="oCanvasDom"/>
-        <!-- ▲画布 -->
-        <!-- ▼横长条的视口 -->
-        <section class="viewport" ref="oViewport"
-            @mousewheel="wheelOnWave"
-            @scroll="waveWrapScroll"
-            @contextmenu="clickOnWave"
-            @mousedown="mouseDownFn"
+    <article class="wave-coat" >
+        <video controls class="player" ref="oAudio"
+            v-show="(mediaPath || '').endsWith('.mp4')"
+            :style="{width: '600px'}"
+            :src="mediaPath"
+        ></video>
+        <section class="my-wave-bar" ref="oMyWaveBar"
+            :class="sWaveBarClassName"
         >
-            <div class="long-bar" ref="oLongBar"
-                :style="{width: `${(oMediaBuffer.duration + 0.6) * fPerSecPx}px`}"
+            <canvas class="canvas" ref="oCanvasDom"/>
+            <!-- ▲画布 -->
+            <!-- ▼横长条的视口 -->
+            <section class="viewport" ref="oViewport"
+                @mousewheel="wheelOnWave"
+                @scroll="waveWrapScroll"
+                @contextmenu="clickOnWave"
+                @mousedown="mouseDownFn"
             >
-                <ul class="scale-ul">
-                    <li v-for="(cur) of aGapMarks" :key="cur" v-show="cur"
-                        class="one-second" :class="cur % 10 == 0 ? 'ten-times' : ''"
-                        :style="{left: `${cur * fPerSecPx}px`}"
-                    >
-                        <b className="mark"/>
-                        <span>{{~~(cur/60)}}'{{cur%60}}</span>
-                    </li>
-                </ul>
-                <ul class="region-ul">
-                    <li v-for="(cur, idx) of aGapRegions" :key="idx" 
-                        class="region" :class="cur.idx === iCurLineIdx ? 'cur' : ''"
-                        :style="{
-                            left: `${cur.start * fPerSecPx}px`,
-                            width: `${(cur.end - cur.start) * fPerSecPx}px`,
-                        }"
-                    >
-                        <i class="idx">
-                            <span v-if="cur.iRate" class="region-info"
-                                :class="{
-                                    'small-step': parseInt(cur.iRate) % 2 == 0 && parseInt(cur.iRate) > parseInt(aGapRegions[idx-1]?.iRate),
-                                    'big-step': cur.iRate >= 5 && parseInt(cur.iRate / 5) > parseInt(aGapRegions[idx-1]?.iRate / 5)
-                                }"
-                            >
-                                {{cur.iRate}}%
-                            </span>
-                        </i>
-                    </li>
-                </ul>
-                <i ref="oPointer" class="pointer" v-show="playing" />
-            </div>
-            <!-- <ol class="percentage-box" >
-                <li v-for="(idx) of 9" :key="idx">{{idx*10}}%</li>
-            </ol> -->
+                <div class="long-bar" ref="oLongBar"
+                    :style="{width: `${(oMediaBuffer.duration + 0.6) * fPerSecPx}px`}"
+                >
+                    <ul class="scale-ul">
+                        <li v-for="(cur) of aGapMarks" :key="cur" v-show="cur"
+                            class="one-second" :class="cur % 10 == 0 ? 'ten-times' : ''"
+                            :style="{left: `${cur * fPerSecPx}px`}"
+                        >
+                            <b className="mark"/>
+                            <span>{{~~(cur/60)}}'{{cur%60}}</span>
+                        </li>
+                    </ul>
+                    <ul class="region-ul">
+                        <li v-for="(cur, idx) of aGapRegions" :key="idx" 
+                            class="region" :class="cur.idx === iCurLineIdx ? 'cur' : ''"
+                            :style="{
+                                left: `${cur.start * fPerSecPx}px`,
+                                width: `${(cur.end - cur.start) * fPerSecPx}px`,
+                            }"
+                        >
+                            <i class="idx">
+                                <span v-if="cur.iRate" class="region-info"
+                                    :class="{
+                                        'small-step': parseInt(cur.iRate) % 2 == 0 && parseInt(cur.iRate) > parseInt(aGapRegions[idx-1]?.iRate),
+                                        'big-step': cur.iRate >= 5 && parseInt(cur.iRate / 5) > parseInt(aGapRegions[idx-1]?.iRate / 5)
+                                    }"
+                                >
+                                    {{cur.iRate}}%
+                                </span>
+                            </i>
+                        </li>
+                    </ul>
+                    <i ref="oPointer" class="pointer" v-show="playing" />
+                </div>
+                <!-- <ol class="percentage-box" >
+                    <li v-for="(idx) of 9" :key="idx">{{idx*10}}%</li>
+                </ol> -->
+            </section>
         </section>
     </article>
 </template>
