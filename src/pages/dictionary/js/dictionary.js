@@ -10,13 +10,13 @@
 // }
 
 export function groupThem(arr){
+    if (!arr.length) return [];
     const aResult = [];
     for (const cur of arr){
         let oLastOne = aResult.at(-1) || {};
         if (oLastOne.dir == cur.dir){
-            oLastOne = aResult.at(-1);
-        }else{
             oLastOne.aList.push(cur);
+        }else{
             aResult.push({dir: cur.dir, aList: [cur]});
         }
     }

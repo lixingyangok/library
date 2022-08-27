@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-08-20 20:00:39
+ * @LastEditTime: 2022-08-21 16:22:21
  * @Description: 
 -->
 <template>
@@ -67,7 +67,7 @@ const isShowSelf = computed({
         emit('update:dialogVisible', val);
     },
 });
-const sKey = ref('media'); // group
+const sKey = ref(''); // 可填入测试用的搜索关键字
 const iResult = ref(0); // 搜索结果数量
 const aResult = ref({});
 let iSearchingQ = 0;
