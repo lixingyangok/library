@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-08-15 20:18:49
+ * @LastEditTime: 2022-08-27 14:52:31
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -105,7 +105,7 @@ export function fnAllKeydownFn() {
         if (oNewLine === null) {
             return This.$message.warning('后面没有了');
         }
-        setLeftLine();
+        // setLeftLine();
         goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行
@@ -119,7 +119,7 @@ export function fnAllKeydownFn() {
             iAimLine = This.iCurLineIdx;
         }
         setLinePosition(iAimLine);
-        setLeftLine();
+        setLeftLine(); // 被上层方法 previousAndNext() 调用时此方法重复了
         recordPlace(iAimLine)
         if (toRecord) recordHistory();
         if (isGoingUp) return; // 如果行号在变小 return
@@ -130,7 +130,8 @@ export function fnAllKeydownFn() {
             return This.saveLines(); // 保存
         }
     }
-    async function recordPlace(iAimLine){ // 异步方法防止阻断主进程
+    // ▼记录当前文件进行到哪一行了
+    async function recordPlace(iAimLine){ // 用异步方法防止阻断主进程
         // 考虑添加：1个延时与防抖
         const iAll = This.aLineArr.length;
         let {end, start_} = This.oCurLine;
@@ -170,10 +171,11 @@ export function fnAllKeydownFn() {
         }
         return 0;
     }
-    // ▼设定左侧位置
+    // ▼设定【左侧文本】的当前句位置
     async function setLeftLine(){
         const iLeftLines = This.aArticle.length;
-        if (!iLeftLines) return;
+        const stop = !iLeftLines || !(This.isShowLeft && This.leftType == 'txt');
+        if (stop) return;
         This.iWriting = -1;
         Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         const text = This.oCurLine.text.trim();
@@ -222,7 +224,7 @@ export function fnAllKeydownFn() {
         if (This.oLeftTxtWrap.scrollTop == maxVal) return;
         This.oLeftTxtWrap.scrollTop -= 190;
     }
-    // ▼跳行后定位（oSententList => oSententWrap）
+    // ▼跳行后定位下方的文本位置（oSententList => oSententWrap）
     function setLinePosition(iAimLine) {
         const { oSententWrap, iLineHeight } = This;
         const { scrollTop: sTop, offsetHeight: oHeight } = oSententWrap;

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-08-16 20:28:56
+ * @LastEditTime: 2022-08-27 14:53:31
  * @Description: 
 -->
 <template>
@@ -45,7 +45,7 @@
                             }"
                         >
                             <i class="idx">
-                                <span v-if="cur.iRate" class="region-info"
+                                <span v-if="cur.iRate && cur.iRate < 100" class="region-info"
                                     :class="{
                                         'small-step': parseInt(cur.iRate) % 2 == 0 && parseInt(cur.iRate) > parseInt(aGapRegions[idx-1]?.iRate),
                                         'big-step': cur.iRate >= 5 && parseInt(cur.iRate / 5) > parseInt(aGapRegions[idx-1]?.iRate / 5)
@@ -92,9 +92,10 @@ export default {
         const {oDom, oFn, oData} = w01();
         // ▼视口范围 [起点秒，终点秒]
         const aGapSeconds = computed(() => {
-            const iWidth = window.innerWidth;
+            const iWidth = oDom?.oViewport?.offsetWidth || window.innerWidth;
             const start = ~~(oData.iScrollLeft / oData.fPerSecPx);
             const end = ~~((oData.iScrollLeft + iWidth) / oData.fPerSecPx);
+            // end = math.min(end, duration*oData.fPerSecPx) // 这行留着做将来的参考，有必要就打开
             return [Math.max(start, 0), end];
         });
         const aGapMarks = computed(() => {
