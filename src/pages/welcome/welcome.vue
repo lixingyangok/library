@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 20:31:24
+ * @LastEditTime: 2022-08-27 13:49:42
  * @Description: 
 -->
 
@@ -45,6 +45,9 @@
             </el-table>
         </div>
         <TodayHistory/>
+        <section>
+            <div class="box1" ref="box1"></div>
+        </section>
         <!-- ▼进行中 -->
         <section class="first-list" >
             <el-table :data="aPending" stripe border style="width: 100%;">
@@ -137,6 +140,7 @@
 import oMethods from './js/welcome.js';
 import myInputing from '../study-lounge/inputing.vue';
 import TodayHistory from '@/components/today-history/today-history.vue';
+import * as echarts from 'echarts';
 
 export default {
     name: "welcome",
@@ -157,8 +161,33 @@ export default {
         this.getPendingList();
         this.updateTheRecent();
     },
+    mounted(){
+        this.showChart();
+    },  
     methods: {
         ...oMethods,
+        showChart(){
+            const oBox1 = this.$refs.box1;
+            var myChart = echarts.init(oBox1); // 基于准备好的dom，初始化echarts实例
+            const oData = {
+                title: {
+                    text: 'ECharts 入门示例'
+                },
+                tooltip: {},
+                xAxis: {
+                    data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+                },
+                yAxis: {},
+                series: [
+                    {
+                        name: '销量',
+                        type: 'bar',
+                        data: [5, 20, 36, 10, 10, 20]
+                    }
+                ],
+            };
+            myChart.setOption(oData); // 绘制图表
+        },
     },
 };
 

@@ -21,6 +21,7 @@
     "@ffmpeg/ffmpeg": "^0.10.1",
     "cors": "^2.8.5",
     "dayjs": "^1.11.4",
+    "echarts": "^5.3.3",
     "electron-devtools-installer": "^3.2.0",
     "element-plus": "^2.0.1",
     "express": "^4.17.1",
