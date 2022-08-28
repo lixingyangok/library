@@ -357,6 +357,7 @@ export function mainPart(){
 	}
 	// ▼ 字幕置左
 	async function showLeftArticle(){
+		oData.leftType = 'txt';
 		oData.isShowLeft = true;
 		const arr = oData.aLineArr.map(cur => {
 			return cur.text.trim();

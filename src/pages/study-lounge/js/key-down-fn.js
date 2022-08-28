@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-08-27 14:52:31
+ * @LastEditTime: 2022-08-28 19:44:01
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -105,7 +105,7 @@ export function fnAllKeydownFn() {
         if (oNewLine === null) {
             return This.$message.warning('后面没有了');
         }
-        // setLeftLine();
+        // setLeftLine(); // 在下方 goLine 中也调用了
         goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行
@@ -174,8 +174,8 @@ export function fnAllKeydownFn() {
     // ▼设定【左侧文本】的当前句位置
     async function setLeftLine(){
         const iLeftLines = This.aArticle.length;
-        const stop = !iLeftLines || !(This.isShowLeft && This.leftType == 'txt');
-        if (stop) return;
+        const willDo = iLeftLines && This.isShowLeft && This.leftType == 'txt';
+        if (!willDo) return;
         This.iWriting = -1;
         Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         const text = This.oCurLine.text.trim();
