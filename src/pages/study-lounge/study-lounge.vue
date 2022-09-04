@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 19:47:47
+ * @LastEditTime: 2022-09-04 21:00:08
  * @Description: 
 -->
 <template>
@@ -161,6 +161,9 @@
                         </span>
                         <template v-else>{{word}}</template>
                     </template>
+                    <div class="line-info" v-show="(iCurLineIdx+1) % 10 == 0">
+                        {{(iCurLineIdx+1) / 10}}
+                    </div>
                 </div>
                 <textarea ref="oTextArea" class="textarea textarea-real"
                     :class="{

@@ -176,8 +176,8 @@ export default function(){
 		style.left = `${fStartTime * oData.fPerSecPx}px`;
 		oDom.oAudio.currentTime = fStartTime;
 		oDom.oAudio.play();
-        style.opacity = 1;
 		const playing = setInterval(() => {
+            style.opacity = 1;
             if (!oDom.oAudio || !oCurLine.value) {
                 return clearInterval(oData.playing);
             }
@@ -314,10 +314,11 @@ export default function(){
     // ▼定位滚动条
     function rollTheWave(iNewLeft){
 		clearInterval(oData.scrollTimer);
-        const {oViewport} = oDom;
+        const {oViewport, oLongBar} = oDom;
 		const iOldVal = oViewport['scrollLeft'];
 		if (~~iOldVal === ~~iNewLeft) return;
         iNewLeft = Math.max(0, iNewLeft);
+        iNewLeft = Math.min(iNewLeft, oLongBar.offsetWidth - oViewport.offsetWidth);
 		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
 		const [iTakeTime, iTimes] = [400, 30]; // 走完全程耗时, x毫秒走一步
 		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes)); // 步长

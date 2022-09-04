@@ -2,14 +2,21 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-08-27 13:49:42
+ * @LastEditTime: 2022-09-04 12:24:16
  * @Description: 
 -->
 
 <template>
     <section class="welcome-page">
         <h1 class="big-title" >
-            十年大计，十年一剑
+            十年一剑&emsp;&emsp;
+            <ruby>34<rt>2022</rt></ruby>
+            <ruby>35<rt>2023</rt></ruby>
+            <ruby>36<rt>2024</rt></ruby>
+            <ruby>37<rt>2025</rt></ruby>
+            <ruby>38<rt>2026</rt></ruby>
+            <ruby>39<rt>2027</rt></ruby>
+            <ruby>40<rt>2028</rt></ruby>
         </h1>
         <!-- ▲大标题 -->
         <div class="first-list" >

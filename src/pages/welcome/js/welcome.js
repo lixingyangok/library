@@ -98,7 +98,7 @@ const oFn_recentList = {
             };
         });
         aList.sort((aa,bb)=>{
-            return aa.iTime - bb.iTime;
+            return bb.iTime - aa.iTime;
         });
         this.aRecent = aList;
     },
