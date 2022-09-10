@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-16 10:40:40
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 09:18:23
+ * @LastEditTime: 2022-09-10 21:10:17
  * @Description: 
  */
 
@@ -33,8 +33,8 @@ const oFn = module.exports.oFn = {
     // ▼批量保存（导入用）
     async saveLine(arr) {
         const res = await oLine.bulkCreate(arr, {
-            updateOnDuplicate: ['start', 'end', 'text', 'trans', 'filledAt'],
-            // updateOnDuplicate是在插入的时候如果主键冲突就执行更新操作
+            // ▼ updateOnDuplicate 是在插入的时候如果主键冲突就执行更新操作，且在数据中声明的键才会被更新
+            updateOnDuplicate: ['start', 'end', 'text', 'trans', 'filledAt', 'updatedAt'],
         });
         return res;
     },
