@@ -51,11 +51,24 @@
 		position: absolute;
 		left: var(--side-padding);
 		right: var(--side-padding);
-		padding: 1px 6px;
+		padding: 1px 20px;
 		bottom: 10px;
 		background-color: rgba($color: green, $alpha: 0.08);
 		border-radius: 3px;
 		font-size: 12px;
+		width: 260px;
+		&>*{
+			margin: 0 18px 0 0;
+			&[class~=light]{
+				color: red;
+				font-weight: bold;
+			}
+		}
+		small{
+			font-size: 0.8em;
+			opacity: 0.8;
+			margin: 0 0 0 1px;
+		}
 	}
 }
 

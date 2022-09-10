@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-09-04 21:00:08
+ * @LastEditTime: 2022-09-10 21:20:05
  * @Description: 
 -->
 <template>
@@ -161,10 +161,15 @@
                         </span>
                         <template v-else>{{word}}</template>
                     </template>
-                    <div class="line-info" v-show="(iCurLineIdx+1) % 10 == 0">
-                        {{(iCurLineIdx+1) / 10}}
+                    <div class="line-info" v-show="aProcess.some(cur=>cur.bLight)">
+                        <span v-for="(cur, iCurIdx) of aProcess" :key="iCurIdx"
+                            :class="{light: cur.bLight}"
+                        >
+                            {{cur.myVal}}<small>{{cur.sUnit}}</small>
+                        </span>
                     </div>
                 </div>
+                <!-- ▲下层内容，▼上层输入框 -->
                 <textarea ref="oTextArea" class="textarea textarea-real"
                     :class="{
                         'space-ahead': oCurLine.text.match(/\s{2,}|^\s/g),
@@ -190,6 +195,7 @@
                     </li>
                 </ul>
             </div>
+            <!-- ▲输入框 -->
             <!-- ▼字幕大列表 -->
             <article class="last-part" ref="oSententWrap"
                 @scroll="lineScroll"
@@ -330,6 +336,7 @@ export default {
     },
     setup(){
         const oData = mainPart();
+        // ▼位于可见范围的字幕
         const aLineForShow = computed(() => {
             const {iShowStart} = oData;
             return oData.aLineArr.slice(iShowStart, iShowStart + 28).map((cur, idx)=>{
