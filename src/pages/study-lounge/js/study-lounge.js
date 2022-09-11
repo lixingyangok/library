@@ -90,32 +90,29 @@ export function mainPart(){
 			if (idx === 1) return sCur * 1 + iResult;
 			return iResult;
 		}, 0);
-		if (iMinutes <= 2 || iCurLineIdx <= 1) return [];
+		if (iMinutes <= 1 || iCurLineIdx <= 1) return [];
 		const bMinutLight = Number.parseInt(oCurLine.v.start / 60) > Number.parseInt(iPreviousStart / 60);
 		const oMinute = {
 			myVal: `${Number.parseInt(oCurLine.v.start / 60)}/${Number.parseInt(duration / 60)}`,
-			sUnit: 'min',
+			sUnit: 'Min',
 			bLight: bMinutLight,
 		};
-		const iStep = 1; // 应按音频时间定个时间，
 		const iCurPercent = (oCurLine.v.start / duration * 100).toFixed(1).split('.')[0] * 1; // 当前行进度
 		const iPrevPercent = (iPreviousStart / duration * 100).toFixed(1).split('.')[0] * 1; // 上一行进度
-		const bPercentLight = !bMinutLight && (iCurPercent - iPrevPercent >= iStep);
-		// console.log(`${iCurPercent} - ${iPrevPercent}`);
 		const oPercent = {
-			myVal: (iCurPercent),
-			sUnit: '%',
-			bLight: bPercentLight,
+			myVal: iCurPercent,
+			sUnit: `%`,
+			bLight: (iCurPercent > iPrevPercent) && (iCurPercent % 10 === 0),
 		};
 		const oLine = {
 			myVal: iCurLineIdx+1,
-			sUnit: 'row',
-			bLight: !bMinutLight && !bPercentLight && ((iCurLineIdx+1) % 10 === 0),
+			sUnit: 'Row',
+			bLight: (iCurLineIdx+1) % 10 === 0,
 		};
 		return [
-			oPercent,
 			oLine,
 			oMinute,
+			oPercent,
 		];
 	});
 	// ▼ 字幕文件位置（todo 用tube管道取

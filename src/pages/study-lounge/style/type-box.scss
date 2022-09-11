@@ -56,7 +56,7 @@
 		background-color: rgba($color: green, $alpha: 0.08);
 		border-radius: 3px;
 		font-size: 12px;
-		width: 260px;
+		width: 310px;
 		&>*{
 			margin: 0 18px 0 0;
 			&[class~=light]{
@@ -66,8 +66,8 @@
 		}
 		small{
 			font-size: 0.8em;
-			opacity: 0.8;
-			margin: 0 0 0 1px;
+			opacity: 0.5;
+			margin: 0 0 0 2px;
 		}
 	}
 }
