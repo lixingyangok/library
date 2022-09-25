@@ -2,17 +2,17 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-09-10 21:20:05
+ * @LastEditTime: 2022-09-17 16:31:54
  * @Description: 
 -->
 <template>
     <div class="outer">
         <section class="left" v-show="isShowLeft" >
-            <iframe ref="oIframe" v-if="leftType=='pdf'"
+            <iframe ref="oIframe" v-show="leftType=='pdf'"
                 src="./static/pdf-viewer/web/viewer.html"
             ></iframe>
             <!--  -->
-            <div class="txt-box" ref="oLeftTxtWrap" v-else="leftType == 'txt'">
+            <div class="txt-box" ref="oLeftTxtWrap" v-if="leftType == 'txt'">
                 <div v-if="'测试' && 0">
                     aArticle.length：{{aArticle.length}}<br/>
                     iShowUntil：{{iShowUntil}}<br/>

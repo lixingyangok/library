@@ -84,18 +84,12 @@ export function mainPart(){
 	const aProcess = computed(()=>{
 		const {oMediaInfo, iCurLineIdx, aLineArr} = oData;
 		const iPreviousStart = aLineArr[iCurLineIdx-1]?.start;
-		const {durationStr='', duration} = oMediaInfo;
-		const iMinutes = durationStr.split(':').reduce((iResult, sCur, idx)=>{
-			if (idx === 0) return sCur * 60 + iResult;
-			if (idx === 1) return sCur * 1 + iResult;
-			return iResult;
-		}, 0);
-		if (iMinutes <= 1 || iCurLineIdx <= 1) return [];
-		const bMinutLight = Number.parseInt(oCurLine.v.start / 60) > Number.parseInt(iPreviousStart / 60);
+		const {duration = 0} = oMediaInfo;
+		if (duration <= 60 || iCurLineIdx <= 1) return [];
 		const oMinute = {
 			myVal: `${Number.parseInt(oCurLine.v.start / 60)}/${Number.parseInt(duration / 60)}`,
 			sUnit: 'Min',
-			bLight: bMinutLight,
+			bLight: Number.parseInt(oCurLine.v.start / 60) > Number.parseInt(iPreviousStart / 60),
 		};
 		const iCurPercent = (oCurLine.v.start / duration * 100).toFixed(1).split('.')[0] * 1; // 当前行进度
 		const iPrevPercent = (iPreviousStart / duration * 100).toFixed(1).split('.')[0] * 1; // 上一行进度
@@ -356,9 +350,9 @@ export function mainPart(){
 		oData.isShowLeft = true;
 		oData.leftType = 'pdf';
 		justCopy();
-		const btn = oDom?.oIframe?.contentDocument?.querySelector('#openFile');
-		if (!btn) return;
-		btn.click();
+		const {document: dcmt} = document.querySelector('iframe').contentWindow;
+		const btn = dcmt.querySelector('#openFile');
+		btn && btn.click();
 	}
 	// ▼打开文本
 	function openTxt(){

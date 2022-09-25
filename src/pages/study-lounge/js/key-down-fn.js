@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-08-28 19:44:01
+ * @LastEditTime: 2022-09-25 22:02:59
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -111,13 +111,12 @@ export function fnAllKeydownFn() {
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine, toRecord) {
         if (oNewLine) This.aLineArr.push(oNewLine);
-        let isGoingUp;
-        if (iAimLine >= 0) {
-            isGoingUp = iAimLine < This.iCurLineIdx;
-            This.iCurLineIdx = iAimLine;
-        } else {
-            iAimLine = This.iCurLineIdx;
-        }
+        const {iCurLineIdx: iOldLine} = This;
+        iAimLine ??= iOldLine;
+        This.iCurLineIdx = iAimLine;
+        let isGoingUp = iAimLine < iOldLine;
+        // let goOneStep = iAimLine - iOldLine == 1;
+        // goOneStep && showAchievement(iOldLine, iAimLine);
         setLinePosition(iAimLine);
         setLeftLine(); // 被上层方法 previousAndNext() 调用时此方法重复了
         recordPlace(iAimLine)
@@ -130,6 +129,10 @@ export function fnAllKeydownFn() {
             return This.saveLines(); // 保存
         }
     }
+    // ▼弹出提示（成就）
+    // async function showAchievement(iOldLine, iAimLine){
+    //     vm.$message(`${iOldLine} > ${iAimLine}`);
+    // }
     // ▼记录当前文件进行到哪一行了
     async function recordPlace(iAimLine){ // 用异步方法防止阻断主进程
         // 考虑添加：1个延时与防抖
@@ -179,7 +182,8 @@ export function fnAllKeydownFn() {
         This.iWriting = -1;
         Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         const text = This.oCurLine.text.trim();
-        if (!text.length) return;
+        // if (!text.length) return;
+        if (!text.length || text.length <= 2) return;
         const aPieces = text.match(/[a-z0-9'-]+/ig);
         if (!aPieces) return;
         console.time('左侧句子定位');
@@ -277,22 +281,32 @@ export function fnAllKeydownFn() {
     // ▼插入一句。 参数说明：-1=向左，1=向右
     function toInsert(iDirection) {
         let { iCurLineIdx, aLineArr, oMediaBuffer, oMediaBuffer: { duration } } = This;
-        const { start, end } = aLineArr[iCurLineIdx]; //当前行
-        if (start === 0) return; //0开头，不可向前插入
-        const isToLeft = iDirection === -1; // true = 向左方间隙插入
-        const oAim = aLineArr[iCurLineIdx + iDirection] || {};
+        const { start, end } = aLineArr[iCurLineIdx]; // 当前行
+        const isInsertToLeft = iDirection === -1; // true = 向左方间隙插入
+        if (start === 0 && isInsertToLeft) return; // 0开头，不可向左插入
+        const oAim = aLineArr[iCurLineIdx + iDirection] || {}; // 邻居
         if (!aLineArr[iCurLineIdx + iDirection]){ // 用于测试
-            alert('没有左/右侧的邻居');
+            return alert('调试信息：没有左/右侧的邻居');
         }
-        const newIdx = isToLeft ? iCurLineIdx : iCurLineIdx + 1;
+        const newIdx = isInsertToLeft ? iCurLineIdx : iCurLineIdx + 1;
         const oNewLine = (()=>{
-            const iStart = isToLeft ? oAim.end : end;
-            const fLong = isToLeft ? (start - oAim.end) : (oAim.start - end);
+            const iStart = isInsertToLeft ? oAim.end : end;
+            // const fLong = isInsertToLeft ? (start - oAim.end) : (oAim.start - end);
             return figureOut(oMediaBuffer, iStart); // , 0.3, fLong
         })();
-        if (oNewLine.start === oNewLine.end) return;
+        if (oNewLine.start === oNewLine.end) {
+            return alert('插入取消，什么情况下会到达这里？');
+        }
+        const {start: nlStart, end: nlEnd} = oNewLine; // nl = newLine
+        if (isInsertToLeft){
+            if (nlEnd > start) oNewLine.end = start - 0.1;
+            if (nlStart >= oNewLine.end) oNewLine.start = Math.max(oAim.end + 0.1, oNewLine.end - 1);
+        }else{
+            if (nlEnd > oAim.start) oNewLine.end = oAim.start - 0.1;
+            if (nlStart >= oNewLine.end) oNewLine.start = Math.max(end + 0.1, oNewLine.end - 1);
+        }
         aLineArr.splice(newIdx, 0, oNewLine);
-        if (!isToLeft) This.iCurLineIdx++;
+        if (!isInsertToLeft) This.iCurLineIdx++;
         recordHistory();
     }
     // ▼删除某行（当前行）
