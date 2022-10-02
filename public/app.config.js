@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 14:52:15
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-30 11:10:24
+ * @LastEditTime: 2022-10-01 10:59:53
  * @Description: 
  */
 
@@ -23,8 +23,8 @@ window.oConfig = (function(){
         oMedia,
         oFileType,
         aRoot: [
-            'D:/天翼云盘同步盘/English dictation',
             'D:/天翼云盘同步盘/English Story',
+            'D:/天翼云盘同步盘/English dictation',
             'D:/English',
         ],
         sTempDir: 'D:/Program Files (gree)/my-library/temp-data/',

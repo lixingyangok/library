@@ -121,8 +121,6 @@ export function mainPart(){
 		oData.iCurLineIdx = 0;
 		oData.aLineArr = [];
 		oDom?.oMyWave?.cleanCanvas(true);
-		const iAimLine = ls('oRecent')[ls('sFilePath')]?.iLineNo;
-		await vm.$nextTick();
 		const hash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!hash) throw '没有hash';
 		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
@@ -132,12 +130,12 @@ export function mainPart(){
 		}
 		oData.sHash = hash;
 		oData.oMediaInfo = aRes[0];
-		getLinesFromDB(iAimLine);
+		getLinesFromDB();
 		await getNeighbors(); // 一定要 await 下方的方法才会正常运行
 		getNewWords();
 	}
 	// ▼查询库中的字幕
-	async function getLinesFromDB(iAimLine){
+	async function getLinesFromDB(){
 		const aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();
@@ -157,10 +155,9 @@ export function mainPart(){
 			oResult[cur.id] = cur;
 			return oResult;
 		}, {});
-		if (iAimLine>0) {
-			await vm.$nextTick();
-			oInstance.proxy.goLine(iAimLine);
-		}
+		await vm.$nextTick();
+		const {iLineNo=0} = ls('oRecent')[ls('sFilePath')] || {};
+		oInstance.proxy.goLine(iLineNo); // 没有目标行就跳到0行（防止纵向滚动条不在顶部）
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){

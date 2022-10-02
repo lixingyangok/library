@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 09:34:55
+ * @LastEditTime: 2022-10-02 21:47:24
  * @Description: 
 -->
 
@@ -32,8 +32,8 @@
             内含媒体 <i class="folder-mark fas fa-folder has-media"/> &emsp;
             内含媒体已入库 <i class="folder-mark fas fa-folder has-media"/><i class="fas fa-check fa-xs small-check"/> &emsp;
             媒体文件 <i class="fas fa-play-circle meida-icon" /> &emsp;
-            媒体+字幕 <i class="fas fa-play-circle meida-icon done" />&emsp;
-            文件名与库不符 <i style="color:red">红字</i>
+            听写完成 <i class="fas fa-play-circle meida-icon done" />&emsp;
+            文件路径/名称与数据库不符 <i style="color:red">红字</i>
         </div>
         <div>
             <button @click="updateMediaInfo">更新异常文件</button>
@@ -68,7 +68,9 @@
             </ul>
         </article>
     </section>
-    <!-- ▼弹窗 -->
+    <!-- 
+        ▼弹窗 ▼弹窗 ▼弹窗
+    -->
     <el-dialog title="初始化" width="960px"
         v-model="dialogVisible"
     >
