@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-09 12:55:25
+ * @LastEditTime: 2022-10-09 16:42:03
  * @Description: 
 -->
 <template>
@@ -34,7 +34,7 @@
                         v-if="(iShowUntil > 0) && (aArticle[iShowUntil - 1].trim() == '' || iShowUntil + 1 < oTopLineMatch?.iLeftLine)"
                     ></li>
                     <!-- v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (oTopLineMatch?.iLeftLine < iWriting))" -->
-                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (oTopLineMatch?.iLeftLine - iWriting == 1))">
+                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (iWriting - oTopLineMatch?.iLeftLine == 1))" >
                         <li name="▲当前行上方-3">
                             {{
                                 aArticle[oTopLineMatch.iLeftLine].slice(0, oTopLineMatch.iMatchStart)
