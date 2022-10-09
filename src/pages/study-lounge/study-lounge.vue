@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-09-17 16:31:54
+ * @LastEditTime: 2022-10-09 12:55:25
  * @Description: 
 -->
 <template>
@@ -28,14 +28,14 @@
                 <hr class="hr-line" />
                 <ul ref="oLeftTxt">
                     <li name="▲当前行上方-1">
-                        {{'\n' + aArticle.slice(0, iShowUntil).join('\n')}}
+                        <br/>{{aArticle.slice(0, iShowUntil).join('\n')}}
                     </li>
                     <li name="▲当前行上方-2-空行"
                         v-if="(iShowUntil > 0) && (aArticle[iShowUntil - 1].trim() == '' || iShowUntil + 1 < oTopLineMatch?.iLeftLine)"
                     ></li>
-                    <!-- <template v-if="oTopLineMatch?.iLeftLine >= 0 && oTopLineMatch?.iLeftLine < iWriting"> -->
-                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (oTopLineMatch?.iLeftLine < iWriting))">
-                        <li name="▲当前行上方-3" >
+                    <!-- v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (oTopLineMatch?.iLeftLine < iWriting))" -->
+                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (oTopLineMatch?.iLeftLine - iWriting == 1))">
+                        <li name="▲当前行上方-3">
                             {{
                                 aArticle[oTopLineMatch.iLeftLine].slice(0, oTopLineMatch.iMatchStart)
                             }}<span class="just-wrote">{{
@@ -44,12 +44,12 @@
                                 aArticle[oTopLineMatch.iLeftLine].slice(oTopLineMatch.iMatchEnd)
                             }}
                         </li>
-                        <li v-show="0" name="▲当前行上方-4-空行"
+                        <li name="▲当前行上方-4-空行" v-show="0"
                             v-if="oTopLineMatch?.iLeftLine + 1 != iWriting" 
                         ></li>
                     </template>
                     <!-- ▼ writing-line ▼ -->
-                    <li class="writing-line" v-if="iWriting >= 0" ref="oWritingLine" name="▼当前行writing-line">
+                    <li name="▼当前行writing-line" class="writing-line" ref="oWritingLine" v-if="iWriting >= 0" >
                         <template v-if="oTopLineMatch?.iLeftLine == iWriting">
                             {{
                                 sWriting.slice(0, oTopLineMatch.iMatchStart)
@@ -65,10 +65,10 @@
                         </template>
                         <em class="writing">{{sWriting.slice(iMatchStart, iMatchEnd)}}</em>{{sWriting.slice(iMatchEnd)}}
                     </li>
-                    <li class="gray-part" v-if="iWriting >= 0" name="▼当前行下方1" >
+                    <li name="▼当前行下方1" class="gray-part" v-if="iWriting >= 0">
                         {{aArticle.slice(iWriting + 1).join('\n')}}
                     </li>
-                    <li class="gray-part" v-else name="▼当前行下方2">
+                    <li name="▼当前行下方2" class="gray-part" v-else >
                         {{
                             aArticle.slice(
                                 Math.max(iShowUntil + 1, (oTopLineMatch?.iLeftLine - 1) || 0)
@@ -344,7 +344,7 @@ export default {
                 return cur;
             });
         });
-        // ▼上一行的匹配信息
+        // ▼上一行(次)的匹配信息
         const oTopLineMatch = computed(() => {
             return oData.oRightToLeft[oData.iCurLineIdx - 1];
         });
@@ -389,59 +389,4 @@ export default {
 <style scoped src="./style/type-box.scss"></style>
 <style scoped src="./style/line-list.scss"></style>
 <style scoped src="./style/dialog.scss"></style>
-
-
-<!-- <el-button-group size="small">
-    <el-button type="primary" @click="() => oSrtInput.click()">
-        导入Srt
-    </el-button>
-    <el-button type="primary" size="small" @click="saveSrt">
-        导出Srt
-    </el-button>
-</el-button-group> -->
-
-<!-- <el-dropdown size="small" @command="handleCommand" >
-    <el-button type="primary" size="small">
-        菜单&nbsp;<i class="fas fa-angle-down"/>
-    </el-button>
-    <template #dropdown size="small">
-        <el-dropdown-menu>
-            <el-dropdown-item command="保存波形">保存波形</el-dropdown-item>
-            <el-dropdown-item command="媒体入库">媒体入库</el-dropdown-item>
-        </el-dropdown-menu>
-    </template>
-</el-dropdown> -->
-
-<!-- <ul ref="oLeftTxt"> 直接子元素 -->
-<!-- <li v-for="(curLine, idx) of aArticle" :key="idx"
-    :class="{'writing-line': idx == iWriting}"
->
-    <template v-if="idx == iWriting">
-        <template v-if="idx == oTopLineMatch?.iLeftLine">
-            {{
-                curLine.slice(0, oTopLineMatch.iMatchStart)
-            }}<span class="just-wrote">{{
-                curLine.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
-            }}</span>{{
-                curLine.slice(oTopLineMatch.iMatchEnd, iMatchStart)
-            }}
-        </template>
-        <template v-else>
-            {{curLine.slice(0, iMatchStart)}}
-        </template>
-        <em class="writing">{{curLine.slice(iMatchStart, iMatchEnd)}}</em>{{curLine.slice(iMatchEnd)}}
-    </template>
-    <template v-else-if="idx == oTopLineMatch?.iLeftLine">
-        {{
-            curLine.slice(0, oTopLineMatch.iMatchStart)
-        }}<span class="just-wrote">{{
-            curLine.slice(oTopLineMatch.iMatchStart, oTopLineMatch.iMatchEnd)
-        }}</span>{{
-            curLine.slice(oTopLineMatch.iMatchEnd)
-        }}
-    </template>
-    <template v-else>
-        {{curLine}}
-    </template>
-</li> -->
 

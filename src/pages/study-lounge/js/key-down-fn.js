@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-09-25 22:02:59
+ * @LastEditTime: 2022-10-09 12:52:03
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -182,38 +182,37 @@ export function fnAllKeydownFn() {
         This.iWriting = -1;
         Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         const text = This.oCurLine.text.trim();
-        // if (!text.length) return;
         if (!text.length || text.length <= 2) return;
-        const aPieces = text.match(/[a-z0-9'-]+/ig);
+        const aPieces = text.match(/\b[a-z0-9'-]+\b/ig); // 将当前句分割
         if (!aPieces) return;
         console.time('左侧句子定位');
-        const {iLeftLine = -1, iMatchEnd: iLastMatchEnd} = This.oTopLineMatch || {};
-        for (let idx = getLeftStartIdx(); idx < iLeftLines; idx++ ){
-            const sLeftFull = This.aArticle[idx];
-            // if (sLeftFull.includes('oomed!')) debugger;
-            let iMatchStart = -1;
-            let iLastMatch = idx == iLeftLine ? iLastMatchEnd : 0;
-            const isInLine = aPieces.every(onePiece => {
-                const sLeftPiece = sLeftFull.slice(iLastMatch);
-                const oMatchInfo = sLeftPiece.match(new RegExp(onePiece.trim(), 'i'));
-                if (!oMatchInfo) return;
-                if (iMatchStart == -1) iMatchStart = oMatchInfo.index + (iLeftLine == idx ? iLastMatchEnd : 0);
-                iLastMatch += oMatchInfo.index + onePiece.length;
-                return true;
-            });
-            if (!isInLine) continue;
-            console.timeEnd('左侧句子定位');
-            console.log(`左侧句子定位到：${idx}--------------`);
-            return setLeftTxtTop({
-                iWriting: idx,
-                iMatchStart,
-                iMatchEnd: iLastMatch,
-            });
-        }
+        const {iLeftLine = -1, iMatchEnd: iLastMatchEnd} = This.oTopLineMatch || {}; // 取得之前匹配到的位置信息
+        const oResult = (()=>{
+            for (let idx = getLeftStartIdx(); idx < iLeftLines; idx++ ){
+                const sLeftFull = This.aArticle[idx]; // if (sLeftFull.includes('oomed!')) debugger;
+                let iMatchStart = -1;
+                let iLastMatch = idx == iLeftLine ? iLastMatchEnd : 0;
+                const isInLine = aPieces.every(onePiece => {
+                    const sLeftPiece = sLeftFull.slice(iLastMatch);
+                    const oMatchInfo = sLeftPiece.match(new RegExp(onePiece.trim(), 'i'));
+                    if (!oMatchInfo) return;
+                    if (iMatchStart == -1) iMatchStart = oMatchInfo.index + (iLeftLine == idx ? iLastMatchEnd : 0);
+                    iLastMatch += oMatchInfo.index + onePiece.length;
+                    return true;
+                });
+                if (!isInLine) continue;
+                return {
+                    iWriting: idx,
+                    iMatchStart,
+                    iMatchEnd: iLastMatch,
+                };
+            }
+        })();
         console.timeEnd('左侧句子定位');
-        console.log(`左侧句子定位到：没成功------------------`);
+        console.log(`左侧句子定位到：---- ${oResult.iWriting ?? '没成功'} `);
+        oResult && setLeftTxtTop(oResult);
     }
-    // ▼跳转到目标行
+    // ▼跳转到目标行（将来补充动画效果）
     async function setLeftTxtTop(obj){
         Object.assign(This, obj);
         This.oRightToLeft[This.iCurLineIdx] = {

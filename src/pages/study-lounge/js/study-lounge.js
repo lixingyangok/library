@@ -355,7 +355,8 @@ export function mainPart(){
 	function openTxt(){
 		oData.leftType = 'txt';
 		justCopy();
-		oDom.oTxtInput.click()
+		// todo 将来修改为用 node 读取目标目录，然后记忆起来
+		oDom.oTxtInput.click(); 
 	}
 	// ▼ 打开 txt （在左侧显示）
 	async function getArticleFile(ev){
