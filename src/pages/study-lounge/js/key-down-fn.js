@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-09 12:52:03
+ * @LastEditTime: 2022-10-12 21:55:33
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -105,7 +105,6 @@ export function fnAllKeydownFn() {
         if (oNewLine === null) {
             return This.$message.warning('后面没有了');
         }
-        // setLeftLine(); // 在下方 goLine 中也调用了
         goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行
@@ -209,7 +208,7 @@ export function fnAllKeydownFn() {
             }
         })();
         console.timeEnd('左侧句子定位');
-        console.log(`左侧句子定位到：---- ${oResult.iWriting ?? '没成功'} `);
+        console.log(`左侧句子定位到：---- ${oResult?.iWriting ?? '没成功'} `);
         oResult && setLeftTxtTop(oResult);
     }
     // ▼跳转到目标行（将来补充动画效果）
@@ -218,14 +217,18 @@ export function fnAllKeydownFn() {
         This.oRightToLeft[This.iCurLineIdx] = {
             ...obj, iLeftLine: obj.iWriting,
         };
-        // console.log('当前句左行号：', obj.iWriting);
         await This.$nextTick();
         if (!This.oWritingLine) return;
         This.oWritingLine.scrollIntoView();
+        // console.log('This.oWritingLine', This.oWritingLine); // 当前行的 DOM 节点 .offsetTop 可得到到顶部的距离
         const maxVal = This.oLeftTxtWrap.scrollHeight - This.oLeftTxtWrap.offsetHeight;
         // console.log('不动？', This.oLeftTxtWrap.scrollTop == maxVal);
         if (This.oLeftTxtWrap.scrollTop == maxVal) return;
         This.oLeftTxtWrap.scrollTop -= 190;
+        // scrollTo
+        // window.scrollTo({ top: 0, behavior: "smooth" });
+        // ▼ https://zhuanlan.zhihu.com/p/438652229
+        // requestAnimationFrame //  是一个新兴的API，专门为执行动画而生，这个方法每秒会执行60次，其实这个60并不是固定值，和刷新率有关系；
     }
     // ▼跳行后定位下方的文本位置（oSententList => oSententWrap）
     function setLinePosition(iAimLine) {

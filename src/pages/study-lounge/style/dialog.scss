@@ -53,5 +53,15 @@
 	}
 }
 
-
-
+// 字幕文件列表
+.txt-file-list{
+	li{
+		cursor: pointer;
+		&:hover{
+			background-color: lightblue;
+		}
+	}
+	.gap{
+		margin: 15px 0 0;
+	}
+}

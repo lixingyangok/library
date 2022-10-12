@@ -2,14 +2,15 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-09 16:42:03
+ * @LastEditTime: 2022-10-12 21:54:29
  * @Description: 
 -->
 <template>
     <div class="outer">
         <section class="left" v-show="isShowLeft" >
+            <!-- iframe 内有全局变量 window.pdfjsLib -->
             <iframe ref="oIframe" v-show="leftType=='pdf'"
-                src="./static/pdf-viewer/web/viewer.html"
+                :src="sPdfViewer"
             ></iframe>
             <!--  -->
             <div class="txt-box" ref="oLeftTxtWrap" v-if="leftType == 'txt'">
@@ -313,6 +314,19 @@
                 </el-table>
             </div>
         </el-dialog>
+        <!-- ▼文本文件列表选择器 -->
+        <el-dialog title="文本文件列表" width="700px"
+            v-model="isShowFileList"
+        >
+            <ul class="txt-file-list" >
+                <li v-for="(cur, idx) of aTxtFileList" :key="idx"
+                    :class="{gap: idx && (cur.sTail != aTxtFileList[idx-1].sTail)}"
+                    @click="chooseFile(cur)"
+                >
+                    {{cur.sFileName}}
+                </li>
+            </ul>
+        </el-dialog>
     </div>
 </template>
 
@@ -321,7 +335,7 @@ import {toRefs, computed} from 'vue';
 import {mainPart} from './js/study-lounge.js';
 import {getKeyDownFnMap, fnAllKeydownFn} from './js/key-down-fn.js';
 import MyWave from '../../components/wave/wave.vue';
-import {registerKeydownFn} from '../../common/js/common-fn.js'
+import {registerKeydownFn, getTubePath} from '@/common/js/common-fn.js'
 import dictionaryVue from '../dictionary/dictionary.vue';
 import myInputing from './inputing.vue';
 import TodayHistory from '@/components/today-history/today-history.vue';
@@ -343,6 +357,13 @@ export default {
                 cur.ii = idx + iShowStart;
                 return cur;
             });
+        });
+        const sPdfViewer = computed(()=>{
+            let sRoot = './static/pdf-viewer/web/viewer.html';
+            if (oData.sReadingFile.toLowerCase().endsWith('.pdf')){
+                sRoot += `?file=${getTubePath(oData.sReadingFile)}`;
+            }
+            return sRoot;
         });
         // ▼上一行(次)的匹配信息
         const oTopLineMatch = computed(() => {
@@ -371,6 +392,7 @@ export default {
         return {
             ...toRefs(oData),
             ...fnAllKeydownFn(),
+            sPdfViewer,
             aLineForShow,
             sWriting,
             oTopLineMatch,

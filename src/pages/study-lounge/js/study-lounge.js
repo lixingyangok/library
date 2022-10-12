@@ -1,9 +1,10 @@
 // 
 import {toRefs, reactive, computed, onMounted, getCurrentInstance} from 'vue';
-import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings, getMediaDuration, secToStr} from '../../../common/js/pure-fn.js';
+import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings, getMediaDuration, secToStr} from '@/common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
-import {getTubePath, getDateDiff} from '../../../common/js/common-fn.js';
-import {getFolderChildren, addAllMediaDbInfo} from '../../../common/js/fs-fn.js';
+import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
+import {getFolderChildren, addAllMediaDbInfo} from '@/common/js/fs-fn.js';
+const fsp = require('fs').promises;
 
 const dayjs = require("dayjs");
 export function mainPart(){
@@ -45,6 +46,7 @@ export function mainPart(){
 		isShowDictionary: false,
 		isShowNewWords: false,
 		isShowMediaInfo: false,
+		isShowFileList: false,
 	};
 	const oData = reactive({
 		...oOperation,
@@ -58,11 +60,13 @@ export function mainPart(){
 		sSearching: '', // 查字典
 		iShowStart: 0,
 		aSiblings: [], // 当前媒体的邻居文件
+		aTxtFileList: [], // 文本类型的文件列表
 		oSiblingsInfo: {}, // 当前媒体的邻居信息
 		iHisMax: 30, // 最多历史记录数量
 		iLineHeight: 35, // 行高xxPx
 		isShowLeft: !!false,
-		leftType: '',
+		leftType: '', // pdf
+		sReadingFile: '', // *.txt  *.pdf
 		sArticle: '',
 		aArticle: [],
 		// iLeftTxtSize: 14, // 左侧文本字号
@@ -103,11 +107,7 @@ export function mainPart(){
 			sUnit: 'Row',
 			bLight: (iCurLineIdx+1) % 10 === 0,
 		};
-		return [
-			oLine,
-			oMinute,
-			oPercent,
-		];
+		return [ oLine, oMinute, oPercent, ];
 	});
 	// ▼ 字幕文件位置（todo 用tube管道取
 	const sSubtitleSrc = (()=>{
@@ -156,8 +156,34 @@ export function mainPart(){
 			return oResult;
 		}, {});
 		await vm.$nextTick();
-		const {iLineNo=0} = ls('oRecent')[ls('sFilePath')] || {};
-		oInstance.proxy.goLine(iLineNo); // 没有目标行就跳到0行（防止纵向滚动条不在顶部）
+		const {iLineNo=0, sTxtFile} = ls('oRecent')[ls('sFilePath')] || {};
+		oInstance.proxy.goLine(iLineNo); // 没有目标行就跳到0行（防止纵向滚动条没回顶部）
+		oData.sReadingFile || showFileAotuly(sTxtFile);
+	}
+	// ▼通过文本文件路径读取其中内容
+	async function showFileAotuly(sTxtFile){
+		if (!sTxtFile) return;
+		oData.isShowLeft = true;
+		const sTail = sTxtFile.split('.').pop().toLowerCase();
+		const isPDF = sTail == 'pdf';
+		oData.leftType = isPDF ? 'pdf' : 'txt';
+		oData.sReadingFile = sTxtFile;
+		if (isPDF) return;
+		let fileTxt = await fsp.readFile(sTxtFile, 'utf8');
+		const aArticle = (()=>{
+			let aResult = [];
+			if (sTail=='srt') {
+				aResult = SubtitlesStr2Arr(fileTxt);
+				aResult = aResult.map(cur => cur.text.trim()); //.filter(Boolean);
+			}else{
+				aResult = fileTxt.split('\n');
+			}
+			aResult = aResult.map(cur => cur.replace(/，\s{0,2}/g, ', '));
+			return aResult;
+		})();
+		vm.$message.success(`取得文本 ${aArticle.length} 行`);
+		oData.aArticle = Object.freeze(aArticle);
+
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
@@ -352,11 +378,29 @@ export function mainPart(){
 		btn && btn.click();
 	}
 	// ▼打开文本
-	function openTxt(){
-		oData.leftType = 'txt';
-		justCopy();
-		// todo 将来修改为用 node 读取目标目录，然后记忆起来
-		oDom.oTxtInput.click(); 
+	async function openTxt(){
+		oData.isShowFileList = true;
+		const dir = oData.oMediaInfo.dir.replaceAll('/', '\\');
+		let aItems = await fsp.readdir(dir);
+		aItems = aItems.map(cur => {
+			const sTail = cur.split('.').pop().toLowerCase();
+			return {
+				sTail,
+				sFileName: cur,
+				sFullPath: `${dir}/${cur}`.replaceAll('\\', '/'),
+				bStay: ['pdf', 'srt', 'ass', 'txt'].includes(sTail),
+			};
+		}).filter(cur => {
+			return cur.bStay;
+		}).sort((aa, bb)=>{
+			return aa.sTail.localeCompare(bb.sTail);
+		});
+		oData.aTxtFileList = aItems;
+		console.log('aItems', aItems);
+		// ▼旧的
+		// oData.leftType = 'txt';
+		// justCopy(); // 媒体文件更路径
+		// oDom.oTxtInput.click(); 
 	}
 	// ▼ 打开 txt （在左侧显示）
 	async function getArticleFile(ev){
@@ -460,6 +504,21 @@ export function mainPart(){
 		}
 		vm.$message.warning('没有上/下一个');
 	}
+	// ▼点击文本文件后打开文件的方法
+	async function chooseFile(oTarget){
+		// oData.isShowFileList = false; // 关闭窗口
+		const {sFullPath} = oTarget;
+		ls.transact('oRecent', (oldData) => {
+            const old = oldData[ls.get('sFilePath')] || {
+                startAt: new Date() * 1, // 记录开始时间
+            };
+            oldData[ls.get('sFilePath')] = {
+                ...old,
+				sTxtFile: sFullPath,
+            };
+        });
+		showFileAotuly(sFullPath);
+	}
 	// 保存媒体时长信息
 	async function recordMediaTimeInfo(){
 		const aTarget = oData.aSiblings.filter(cur => !cur.durationStr);
@@ -522,6 +581,7 @@ export function mainPart(){
 		// console.log('oDom', oDom.oMyWave);
 	});
 	const oFn = {
+		chooseFile,
 		init,
 		setAllEmpty,
 		bufferReceiver,
