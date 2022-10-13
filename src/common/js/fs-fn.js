@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 10:06:01
+ * @LastEditTime: 2022-10-13 20:36:01
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -169,7 +169,7 @@ export async function getTodayHistory(){
         const sKey = filledAt ? 'iFilled' : 'iCreated';
         oResult[sKey]++;
         if (filledAt){
-            oResult.iFilledWords += text.match(/\S+/g).length;
+            oResult.iFilledWords += text.match(/\S+/g)?.length || 0;
             iFiDuration += (end - start);
         }else{
             iCrDuration += (end - start);

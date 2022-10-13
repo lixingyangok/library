@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-12 21:54:29
+ * @LastEditTime: 2022-10-13 22:23:40
  * @Description: 
 -->
 <template>
@@ -20,6 +20,7 @@
                     oTopLineMatch?.iLeftLine：{{oTopLineMatch?.iLeftLine}}<br/>
                     iWriting：{{iWriting}}<br/>
                 </div>
+                <!-- ▼媒体信息 -->
                 <div>
                     <h3>
                         <br/>{{oMediaInfo.dir}}/
@@ -27,15 +28,16 @@
                     </h3>
                 </div>
                 <hr class="hr-line" />
-                <ul ref="oLeftTxt">
+                <!-- ▼文本 -->
+                <ul ref="oLeftTxt" class="article-text">
                     <li name="▲当前行上方-1">
-                        <br/>{{aArticle.slice(0, iShowUntil).join('\n')}}
+                        {{aArticle.slice(0, iShowUntil).join('\n')}}
                     </li>
                     <li name="▲当前行上方-2-空行"
                         v-if="(iShowUntil > 0) && (aArticle[iShowUntil - 1].trim() == '' || iShowUntil + 1 < oTopLineMatch?.iLeftLine)"
                     ></li>
                     <!-- v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (oTopLineMatch?.iLeftLine < iWriting))" -->
-                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (iWriting - oTopLineMatch?.iLeftLine == 1))" >
+                    <template v-if="oTopLineMatch?.iLeftLine >= 0 && (iWriting < 0 || (iWriting - oTopLineMatch?.iLeftLine >= 1))" >
                         <li name="▲当前行上方-3">
                             {{
                                 aArticle[oTopLineMatch.iLeftLine].slice(0, oTopLineMatch.iMatchStart)
@@ -45,9 +47,11 @@
                                 aArticle[oTopLineMatch.iLeftLine].slice(oTopLineMatch.iMatchEnd)
                             }}
                         </li>
-                        <li name="▲当前行上方-4-空行" v-show="0"
+                        <li name="▲当前行上方-4-空行"
                             v-if="oTopLineMatch?.iLeftLine + 1 != iWriting" 
-                        ></li>
+                        >
+                            {{aArticle.slice(oTopLineMatch?.iLeftLine + 1, iWriting).join('\n')}}
+                        </li>
                     </template>
                     <!-- ▼ writing-line ▼ -->
                     <li name="▼当前行writing-line" class="writing-line" ref="oWritingLine" v-if="iWriting >= 0" >

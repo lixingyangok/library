@@ -21,54 +21,29 @@
     resize: both;
     position: relative;
     border: solid 1px skyblue;
-    .hr-line{
-        height: 1px !important;
-    }
-    .txt-box{
-        padding: 30px;
-        white-space: break-spaces;
-        font-size: 16px;
-        line-height:1.5;
-        overflow-y: auto;
-        & > ul{
-            min-height: 1em;
-            margin: 0 0 1em;
-            opacity: 1;
-        }
-        li{
-            min-height: 1em;
-            line-height: 1.7;
-        }
-    }
-    .just-wrote{
-        background-color: rgb(255, 255, 150);
-    }
-    .writing-line{
-        background-color: #f1f1f1;
-    }
-    .writing{
-        background: rgba(100, 255, 100, 1);
-    }
-    .gray-part{
-        opacity: 0.6;
-    }
     .txt-box,
     iframe{
         display: block;
         width: 100%;
         height: 100%;
     }
-    textarea{
-        display: block;
-        resize: horizontal;
-        height: 50%;
-        width: 100%;
-        width: calc(100% + 5px);
-        pointer-events: none;
-        transform: translateY(-200%);
-        background: rgba($color: #000000, $alpha: 0);
-        border: none;
+}
+
+.left{
+    .hr-line{
+        height: 1px !important;
     }
+    // textarea{
+    //     display: block;
+    //     resize: horizontal;
+    //     height: 50%;
+    //     width: 100%;
+    //     width: calc(100% + 5px);
+    //     pointer-events: none;
+    //     transform: translateY(-200%);
+    //     background: rgba($color: #000000, $alpha: 0);
+    //     border: none;
+    // }
     .handler{
         position: absolute;
         top: 38%;
@@ -82,6 +57,34 @@
     }
 }
 
+.txt-box{
+    padding: 30px;
+    white-space: break-spaces;
+    font-size: 16px;
+    line-height:1.5;
+    overflow-y: auto;
+    .article-text{
+        min-height: 1em;
+        margin: 0 0 1em;
+        li{
+            min-height: 1em;
+            line-height: 1.7;
+        }
+        .just-wrote{
+            background-color: rgb(255, 255, 150);
+        }
+        .writing-line{
+            background-color: #f1f1f1;
+        }
+        .writing{
+            background: rgba(100, 255, 100, 1);
+        }
+        .gray-part{
+            opacity: 0.6;
+        }
+    }
+}
+
 
 .right{
     resize: both;
@@ -91,7 +94,6 @@
     display: flex;
     flex-flow: column;
     overflow: hidden;
-    // width: 900px;
     height: 100%;
     max-height: 100%;
     &>*{
