@@ -165,33 +165,32 @@ export default function(){
 	function toPlay(iType=0) {
 		clearInterval(oData.playing); //把之前播放的关闭
 		const { start, end } = oCurLine.value;
-		const fStartTime = (()=>{
-            if (iType===true) return start + (end - start) * 0.5;
+		const fStartTime = (() => {
+            if (iType === true) return start + (end - start) * 0.5; // 从中间播放
             const fOldVal = oDom.oAudio.currentTime;
-            if (iType>0) return fOldVal + 2;
-            if (iType<0) return Math.max(start, fOldVal - 2);
+            if (iType > 0) return fOldVal + 2; // 快进x秒
+            if (iType < 0) return Math.max(start, fOldVal - 2); // 快退x秒
             return start;
         })();
         const { style } = oDom.oPointer;
 		style.left = `${fStartTime * oData.fPerSecPx}px`;
 		oDom.oAudio.currentTime = fStartTime;
 		oDom.oAudio.play();
-		const playing = setInterval(() => {
-            style.opacity = 1;
+        oData.playing = setInterval(runner, ~~(1000 / 80)); // 每秒执行 x 次
+        runner();
+        function runner(){
             if (!oDom.oAudio || !oCurLine.value) {
                 return clearInterval(oData.playing);
             }
 			const { currentTime: cTime } = oDom.oAudio;
 			const {end} = oCurLine.value;
-            if (end - cTime < 0.1) style.opacity = 0;
 			if (cTime < end && oData.playing) {
-				return style.left = `${~~(cTime * oData.fPerSecPx)}px`;
+				return style.left = cTime * oData.fPerSecPx + 'px';
 			}
-			oDom.oAudio.pause();
 			clearInterval(oData.playing);
+			oDom.oAudio.pause();
 			oData.playing = false;
-		}, ~~(1000 / 70)); //每秒执行次数70
-		oData.playing = playing;
+        }
 	}
     // ▼保存波形缓存 blob
     async function toSaveTemp(){

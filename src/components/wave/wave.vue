@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-08-27 14:53:31
+ * @LastEditTime: 2022-10-16 16:18:12
  * @Description: 
 -->
 <template>
@@ -56,7 +56,7 @@
                             </i>
                         </li>
                     </ul>
-                    <i ref="oPointer" class="pointer" v-show="playing" />
+                    <i ref="oPointer" class="pointer" :class="{playing: playing}"/>
                 </div>
                 <!-- <ol class="percentage-box" >
                     <li v-for="(idx) of 9" :key="idx">{{idx*10}}%</li>

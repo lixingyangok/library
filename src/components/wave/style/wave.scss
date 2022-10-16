@@ -191,8 +191,10 @@
     top: calc(var(--canvas-top) + 1px);
     background: white;
     opacity: 0;
-    transition: 0.4s opacity;
 	z-index: 99;
+	&[class~=playing]{
+		opacity: 1;
+	}
 }
 
 .viewport .percentage-box{
