@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-12 21:55:33
+ * @LastEditTime: 2022-10-16 15:18:53
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -105,6 +105,7 @@ export function fnAllKeydownFn() {
         if (oNewLine === null) {
             return This.$message.warning('后面没有了');
         }
+        setLeftLine(); // ★去新一行之前定位
         goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行
@@ -117,7 +118,7 @@ export function fnAllKeydownFn() {
         // let goOneStep = iAimLine - iOldLine == 1;
         // goOneStep && showAchievement(iOldLine, iAimLine);
         setLinePosition(iAimLine);
-        setLeftLine(); // 被上层方法 previousAndNext() 调用时此方法重复了
+        setLeftLine(); // ★ 到新一行之后定位
         recordPlace(iAimLine)
         if (toRecord) recordHistory();
         if (isGoingUp) return; // 如果行号在变小 return
@@ -176,6 +177,7 @@ export function fnAllKeydownFn() {
     // ▼设定【左侧文本】的当前句位置
     async function setLeftLine(){
         const iLeftLines = This.aArticle.length;
+        // TODO 应该删除 isShowLeft 然后用 leftType 的布尔性来替代
         const willDo = iLeftLines && This.isShowLeft && This.leftType == 'txt';
         if (!willDo) return;
         This.iWriting = -1;
@@ -184,7 +186,7 @@ export function fnAllKeydownFn() {
         if (!text.length || text.length <= 2) return;
         const aPieces = text.match(/\b[a-z0-9'-]+\b/ig); // 将当前句分割
         if (!aPieces) return;
-        console.time('左侧句子定位');
+        console.time('定位耗时');
         const {iLeftLine = -1, iMatchEnd: iLastMatchEnd} = This.oTopLineMatch || {}; // 取得之前匹配到的位置信息
         const oResult = (()=>{
             for (let idx = getLeftStartIdx(); idx < iLeftLines; idx++ ){
@@ -207,8 +209,8 @@ export function fnAllKeydownFn() {
                 };
             }
         })();
-        console.timeEnd('左侧句子定位');
-        console.log(`左侧句子定位到：---- ${oResult?.iWriting ?? '没成功'} `);
+        console.timeEnd('定位耗时');
+        console.log(`定位行号: ${oResult?.iWriting ?? '没成功'} ---`);
         oResult && setLeftTxtTop(oResult);
     }
     // ▼跳转到目标行（将来补充动画效果）
@@ -439,12 +441,15 @@ export function fnAllKeydownFn() {
         clearTimeout(inputTimer);
         clearTimeout(candidateTimer);
         const Backspace = ev.inputType == "deleteContentBackward";
-        const iTimes = ev.data == ' ' ? 0 : 800;
+        const isLetter = ev.data?.match(/[a-z]/i);
+        // console.log('输入了 =', ev.data);
+        const iTimes = isLetter ? 800 : 0; // 如果输入了非字母，立即匹配左侧字幕
         inputTimer = setTimeout(()=>{
             recordHistory();
             setLeftLine();
         }, iTimes);
-        if (!oAlphabetObj[ev.data] && !Backspace) return;
+        // if (!oAlphabetObj[ev.data] && !Backspace) return;
+        if (!isLetter && !Backspace) return;
         const sText = ev.target.value; // 当前文字
         const idx = ev.target.selectionStart; // 光标位置
         // const sLeft = (sText.slice(0, idx) || '').split(' ').pop().trim();

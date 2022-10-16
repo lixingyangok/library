@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-04-15 18:02:43
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-16 18:04:41
+ * @LastEditTime: 2022-10-16 17:31:12
  * @Description: 
 -->
 <template>
@@ -59,20 +59,14 @@ function setValue(oRes){
         const sKeyNew = `${key}_`;
         const iAddition = val - oInfo.value[key];
         oInfo.value[key] = val;
-        if (iAddition > 0){
-            oInfo.value[sKeyNew] = iAddition;
-        }else{
-            oInfo.value[sKeyNew] = 0;
-        }
+        oInfo.value[sKeyNew] = iAddition > 0 ? iAddition : 0;
     });
-    console.log('oInfo.value\n', oInfo.value.$dc());
     setTimeout(()=>{
         Object.keys(oInfo.value).forEach((key)=>{
             if (!key.endsWith('_')) return;
             oInfo.value[key] = 0;
         });
     }, 2 * 1000);
-    // oInfo.value = oRes;
 }
 
 function showUp(){
@@ -80,7 +74,7 @@ function showUp(){
     console.log('hello');
 }
 
-//关键点 把 方法暴露给父组件
+//关键点 把方法暴露给父组件
 defineExpose({
     init,
 });

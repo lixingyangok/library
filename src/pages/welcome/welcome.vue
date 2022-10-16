@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-09-04 12:24:16
+ * @LastEditTime: 2022-10-09 21:09:23
  * @Description: 
 -->
 
@@ -18,6 +18,10 @@
             <ruby>39<rt>2027</rt></ruby>
             <ruby>40<rt>2028</rt></ruby>
         </h1>
+        <div>
+            <br/>
+            <button>打卡</button>
+        </div>
         <!-- ▲大标题 -->
         <div class="first-list" >
             <el-table :data="aRecent" stripe border style="width: 100%;">
