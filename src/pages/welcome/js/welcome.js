@@ -71,11 +71,21 @@ const oPendingDataFn = {
         });
         this.setListOrder();
     },
+
 };
 
 const oRecordFn = {
-    async getToday(){
-
+    async setRecordTime(){
+        const res = await fnInvoke('db', 'setClockRecord');
+        console.log('打卡返回');
+        console.log(res);
+    },
+    async getRecordTime(){
+		const [r01, r02] = await fnInvoke('db', 'doSql', `
+			SELECT *
+			FROM "clock_record"
+		`);
+        console.log('打卡记录\n', r01);
     }
 };
 

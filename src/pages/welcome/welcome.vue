@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-09 21:09:23
+ * @LastEditTime: 2022-10-22 11:33:28
  * @Description: 
 -->
 
@@ -20,7 +20,9 @@
         </h1>
         <div>
             <br/>
-            <button>打卡</button>
+            <button @click="setRecordTime">
+                打卡
+            </button>
         </div>
         <!-- ▲大标题 -->
         <div class="first-list" >
@@ -174,6 +176,7 @@ export default {
     },
     mounted(){
         this.showChart();
+        this.getRecordTime();
     },  
     methods: {
         ...oMethods,

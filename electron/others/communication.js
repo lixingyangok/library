@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-10 20:03:47
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-04-15 15:35:20
+ * @LastEditTime: 2022-10-22 12:25:02
  * @Description: 
  */
 const fsp = require('fs').promises;
@@ -16,6 +16,7 @@ const oDbFn = { // 所有的数据库方法
     ...require('../database/line.js').oFn,
     ...require('../database/dictionary.js').oFn,
     ...require('../database/new-word.js').oFn,
+    ...require('../database/click-in-off.js').oFn,
     doSql,
 };
 
