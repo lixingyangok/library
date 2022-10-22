@@ -2,14 +2,14 @@
  * @Author: 李星阳
  * @Date: 2022-01-24 19:50:21
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-02-12 22:05:25
+ * @LastEditTime: 2022-10-22 12:29:00
  * @Description: 开发历史
  */
 // const fsp = require('fs').promises;
 const { Op, DataTypes } = require('sequelize');
 const { sqlize } = require('./init-db.js');
 
-const oDict = module.exports.line = sqlize.define('dictionary', {
+const oDict = module.exports.dictionary = sqlize.define('dictionary', {
     word: {
         type: DataTypes.STRING,
         unique: true,

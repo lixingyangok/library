@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-16 16:18:12
+ * @LastEditTime: 2022-10-22 14:29:13
  * @Description: 
 -->
 <template>
@@ -33,7 +33,7 @@
                             :style="{left: `${cur * fPerSecPx}px`}"
                         >
                             <b className="mark"/>
-                            <span>{{~~(cur/60)}}'{{cur%60}}</span>
+                            <span v-show="(cur % 2 == 0) || iPerSecPx >= 50">{{~~(cur/60)}}'{{cur%60}}</span>
                         </li>
                     </ul>
                     <ul class="region-ul">
