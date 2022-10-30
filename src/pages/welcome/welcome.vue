@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-22 11:33:28
+ * @LastEditTime: 2022-10-30 21:42:04
  * @Description: 
 -->
 
@@ -18,11 +18,19 @@
             <ruby>39<rt>2027</rt></ruby>
             <ruby>40<rt>2028</rt></ruby>
         </h1>
-        <div>
-            <br/>
-            <button @click="setRecordTime">
-                打卡
-            </button>
+        <div class="click-in-bar" >
+            {{sNowDate}}
+            &nbsp;
+            <el-button type="primary" @click="setRecordTime">
+                <i class="fas fa-solid fa-thumbs-up"></i>&nbsp;打卡
+            </el-button>
+            &nbsp;
+            <span v-if="oTodayClockIn">
+                {{oTodayClockIn.first}} - {{oTodayClockIn.iCount > 1 ? oTodayClockIn.last : '?'}}
+            </span>
+            <span v-else>
+                暂未打卡
+            </span>
         </div>
         <!-- ▲大标题 -->
         <div class="first-list" >
@@ -168,7 +176,21 @@ export default {
             oPending: {},
             aPending: [],
             aRecent: [],
+            aClockIn: [], // 打卡数据
         };
+    },
+    computed:{
+        sNowDate(){
+            const oNow = new Date();
+            const sDate = `${oNow.getFullYear()}-${String(oNow.getMonth()+1).padStart(2,0)}-${String(oNow.getDate()).padStart(2,0)}`;
+            return sDate;
+        },
+        oTodayClockIn(){
+            const obj = this.aClockIn.find(cur => {
+                return cur.lcDate == this.sNowDate;
+            });
+            return obj;
+        },
     },
     created(){
         this.getPendingList();
@@ -180,23 +202,50 @@ export default {
     },  
     methods: {
         ...oMethods,
-        showChart(){
+        async showChart(){
+            const baseTime = '2022-1-1';
+            const aRecord = await this.getRecordTime();
+            const aDate = this.getDateList();
+            const xAxisData = aDate.map(cur => cur.slice(5));
+            const seriesArr = aDate.map(cur => {
+                const oTime = aRecord.find(item => item.lcDate == cur);
+                if (!oTime) return null;
+                // return oTime.first.slice(0,5).replace(':', '.') * 1;
+                return `${baseTime} ` + oTime.first.slice(0,5); //.replace(':', '.') * 1;
+            });
             const oBox1 = this.$refs.box1;
-            var myChart = echarts.init(oBox1); // 基于准备好的dom，初始化echarts实例
-            const oData = {
+            const myChart = echarts.init(oBox1); // 基于准备好的dom，初始化echarts实例
+            const oFixed = {
                 title: {
-                    text: 'ECharts 入门示例'
+                    text: '打卡时间表',
                 },
                 tooltip: {},
-                xAxis: {
-                    data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+                yAxis: {
+                    type: "time",
+                    min: `${baseTime} 05:00`,
+                    max: `${baseTime} 10:00`,
                 },
-                yAxis: {},
+            };
+            const oData = {
+                ...oFixed,
+                xAxis: {
+                    data: xAxisData, // ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+                    axisLabel: {
+                        rotate: -50, interval: 0,
+                    },
+                    
+                },
                 series: [
                     {
-                        name: '销量',
+                        name: '时间',
                         type: 'bar',
-                        data: [5, 20, 36, 10, 10, 20]
+                        data: seriesArr, // [5, 20, 36, 10, 10, 20]
+                        markLine: {
+                            data: [
+                                // { type: 'average', name: 'Avg' },
+                                { type: 'average', name: 'Avg', yAxis: `${baseTime} 06:30` },
+                            ],
+                        },
                     }
                 ],
             };

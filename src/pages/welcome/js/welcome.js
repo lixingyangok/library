@@ -75,17 +75,45 @@ const oPendingDataFn = {
 };
 
 const oRecordFn = {
+    getDateList(){
+        const iNow = new Date().getTime();
+        const iOneDay = 24 * (1000* 60*60);
+        const iQty = 30; // x天
+        const aList = [];
+        for (let idx = 0; idx<iQty; idx++){
+            const iCurData = new Date(iNow - iOneDay *idx);
+            const sDate = `${iCurData.getFullYear()}-${String(iCurData.getMonth()+1).padStart(2,0)}-${String(iCurData.getDate()).padStart(2,0)}`;
+            aList.push(sDate);
+        }
+        return aList.reverse();
+    },
     async setRecordTime(){
         const res = await fnInvoke('db', 'setClockRecord');
         console.log('打卡返回');
         console.log(res);
     },
     async getRecordTime(){
-		const [r01, r02] = await fnInvoke('db', 'doSql', `
-			SELECT *
-			FROM "clock_record"
-		`);
-        console.log('打卡记录\n', r01);
+        const sql = `
+            SELECT
+                lcDate,
+                min(lcTime) as first,
+                max(lcTime) as last,
+                count(lcDate) as iCount
+            from (
+                SELECT
+                    strftime('%Y-%m-%d', createdAt, 'localtime') as lcDate,
+                    strftime('%H:%M:%S', createdAt, 'localtime') as lcTime
+                FROM "clock_record"
+            ) as t01
+            group by t01.lcDate
+            order by t01.lcDate desc
+            LIMIT 50
+        `;
+		const [r01, r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
+            console.log('err', err);
+        });
+        this.aClockIn = r01;
+        return r01;
     }
 };
 
