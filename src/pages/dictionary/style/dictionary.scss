@@ -18,35 +18,43 @@
         margin: 5px 0;
         border-radius: 3px;
     }
-    ul{
-        margin: 0 50px 20px 30px;
+}
+
+ul.one-file{
+    margin: 0 50px 20px 20px;
+}
+
+li.one-dir{
+    .dir-name{
+        opacity: 1;
     }
-    li{
-        // line-height: 1;
-        // margin: 10px 0 0;
-        li{
-            margin: 0 0 0 0;
-            p{
-                line-height: 2;
-                margin: 0 0 0 30px;
-            }
+    li.one-sentence{
+        margin: 0 0 0 0;
+        p{
+            line-height: 2;
+            margin: 0 0 0 30px;
         }
     }
-    span{
-        &[class~=matched]{
-            color: red;
-            // background: rgb(255, 255, 150);
-        }
-        &[class~=l-01]{
-            color: red;
-            background: rgb(255, 255, 100);
-        }
-        &[class~=l-02]{
-            background: rgb(255, 255, 100);
-        }
-        &[class~=l-03]{
-            background: rgb(255, 255, 180);
-        }
+}
+
+time.start{
+    margin: 0 8px 0 0;
+    opacity: 0.5;
+}
+
+span.one-word{
+    &[class~=matched]{
+        color: red;
+    }
+    &[class~=l-01]{
+        color: red;
+        background: rgb(255, 255, 100);
+    }
+    &[class~=l-02]{
+        background: rgb(255, 255, 100);
+    }
+    &[class~=l-03]{
+        background: rgb(255, 255, 180);
     }
 }
 

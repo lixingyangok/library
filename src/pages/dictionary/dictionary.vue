@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-08-21 16:22:21
+ * @LastEditTime: 2022-10-30 19:13:01
  * @Description: 
 -->
 <template>
@@ -26,17 +26,19 @@
                     结果{{iResult}}条
                 </span>
             </div>
-            <ul class="result-list" >
-                <li v-for="(cur,idx) of aResult" :key="idx">
-                    <h3 class="dir" >{{cur.dir.split('/').slice(2).join(' > ')}}</h3>
-                    <ul>
-                        <li v-for="(item, i02) of cur.aList" :key="i02">
+            <!-- ▼结果列表 -->
+            <ul class="result-list">
+                <li class="one-dir" v-for="(cur,idx) of aResult" :key="idx">
+                    <h3 class="dir-name" >{{cur.dir.split('/').slice(2).join(' > ')}}</h3>
+                    <ul class="one-file" >
+                        <li class="one-sentence" v-for="(item, i02) of cur.aList" :key="i02">
                             <h4 class="file-name" v-if="(i02 === 0) || item.name != cur.aList[i02-1].name">
                                 {{item.name}}
                             </h4>
-                            <p>
-                                <span v-for="(sWord, i02) of splitSentence(item.text, sKey || word)" :key="`${idx}-${i02}`"
-                                    :class="{'matched': sWord.word}"
+                            <p title="secToStr(item.start)">
+                                <time class="start">{{secToStr(item.start)}}</time>
+                                <span class="one-word" :class="{'matched': sWord.word}"
+                                    v-for="(sWord, i02) of splitSentence(item.text, sKey || word)" :key="`${idx}-${i02}`"
                                 >
                                     {{sWord.word || sWord}}
                                 </span>
@@ -52,6 +54,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { splitSentence, groupThem } from './js/dictionary.js';
+import {secToStr} from '@/common/js/pure-fn.js';
 
 const props = defineProps({
     dialogVisible: Boolean,
@@ -79,10 +82,10 @@ function toSearch(){
     (async idx => {
         const sWhere = `WHERE text like '%${sAim}%' and text like '% %'`; // 至少包含1个空格  
         const searchRows = fnInvoke('db', 'doSql', `
-			SELECT line.text, media.id, media.dir, media.name
+			SELECT line.text, line.start, media.id, media.dir, media.name
             FROM line left join media
             ON line.mediaId = media.id ${sWhere}
-            ORDER BY media.dir, media.name
+            ORDER BY media.dir, media.name, line.start
             limit 50
 		`);
         const searchCount = fnInvoke('db', 'doSql', `

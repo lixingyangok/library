@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-16 15:18:53
+ * @LastEditTime: 2022-10-27 07:42:08
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -105,11 +105,11 @@ export function fnAllKeydownFn() {
         if (oNewLine === null) {
             return This.$message.warning('后面没有了');
         }
-        setLeftLine(); // ★去新一行之前定位
         goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine, toRecord) {
+        setLeftLine(); // ★去新一行之前定位
         if (oNewLine) This.aLineArr.push(oNewLine);
         const {iCurLineIdx: iOldLine} = This;
         iAimLine ??= iOldLine;
