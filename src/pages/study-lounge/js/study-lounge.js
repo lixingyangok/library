@@ -118,8 +118,6 @@ export function mainPart(){
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
 	async function init(){
-		oData.iCurLineIdx = 0;
-		oData.aLineArr = [];
 		oDom?.oMyWave?.cleanCanvas(true);
 		const hash = await fnInvoke("getHash", ls('sFilePath'));
 		if (!hash) throw '没有hash';
@@ -325,10 +323,12 @@ export function mainPart(){
 		oData.oSiblingsInfo = oSiblingsInfo;
 	}
 	// ▼跳转到邻居
-	function visitSibling(oMedia){
-		console.log('oMedia', oMedia.$dc());
+	async function visitSibling(oMedia){
+		oData.iCurLineIdx = 0;
+		oData.aLineArr = [{text:''}];
 		ls('sFilePath', oMedia.sPath);
 		oData.sMediaSrc = getTubePath(oMedia.sPath);
+		await vm.$nextTick();
 		init();
 	}
 	// ▼切割句子

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-13 22:23:40
+ * @LastEditTime: 2022-11-05 09:48:34
  * @Description: 
 -->
 <template>
@@ -181,7 +181,7 @@
                         'ten-times': (iCurLineIdx + 1) % 10 == 0,
                     }"
                     v-model="aLineArr[iCurLineIdx].text"
-                    @keydown.enter.prevent="() => previousAndNext(1)"
+                    abckeydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
                 ></textarea>
                 <!-- @keydown.backspace="typed" -->
@@ -219,9 +219,7 @@
                         @click="goLine(cur.ii, null, true)"
                     >
                         <i className="idx">{{cur.ii+1}}</i>
-                        <time className="time">
-                            {{cur.start_}} - {{cur.end_}}
-                        </time>
+                        <time className="time">{{cur.start_}} - {{cur.end_}}</time>
                         <p class="text" :class="{changed: checkIfChanged(cur)}">
                             <template v-for="word of splitSentence(cur.text, cur.ii)">
                                 <span v-if="word.sClassName" :class="word.sClassName">

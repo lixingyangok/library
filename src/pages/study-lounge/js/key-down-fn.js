@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-27 07:42:08
+ * @LastEditTime: 2022-11-05 11:42:39
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -23,11 +23,13 @@ export function getKeyDownFnMap(This, sType) {
         This.setLeftLine();
     }
     const withNothing = [
-        { key: '`', name: '播放后半句', fn: () => oMyWave.toPlay(true) },
-        { key: 'Tab', name: '播放当前句', fn: () => playAndCheck() },
-        { key: '\\', name: '上一句', fn: () => This.previousAndNext(-1) },
         { key: 'Prior', name: '上一句', fn: () => This.previousAndNext(-1) },
         { key: 'Next', name: '下一句', fn: () => This.previousAndNext(1) },
+        { key: '\\', name: '上一句', fn: () => This.previousAndNext(-1) },
+        { key: 'Enter', name: '下一句', fn: () => This.previousAndNext(1) },
+        // ▲换行
+        { key: '`', name: '播放后半句', fn: () => oMyWave.toPlay(true) },
+        { key: 'Tab', name: '播放当前句', fn: () => playAndCheck() },
         { key: 'F1', name: '设定起点', fn: () => This.cutHere('start') },
         { key: 'F2', name: '设定终点', fn: () => This.cutHere('end') },
         { key: 'F3', name: '抛弃当前句', fn: () => This.giveUpThisOne() },
