@@ -89,9 +89,11 @@ const oRecordFn = {
     },
     async setRecordTime(){
         const res = await fnInvoke('db', 'setClockRecord');
+        this.showChart();
         console.log('打卡返回');
         console.log(res);
     },
+    // ▼打卡统计
     async getRecordTime(){
         const sql = `
             SELECT
@@ -114,7 +116,18 @@ const oRecordFn = {
         });
         this.aClockIn = r01;
         return r01;
-    }
+    },
+    async getLinesInfo(){
+        const sql = `
+            SELECT count(*) as iCount
+            from line
+        `;
+        const [r01, r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
+            console.log('err', err);
+        });
+        if (!r01) return;
+        console.log('r01', r01);
+    },
 };
 
 const oFn_recentList = {

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-30 21:42:04
+ * @LastEditTime: 2022-11-13 12:11:42
  * @Description: 
 -->
 
@@ -31,6 +31,8 @@
             <span v-else>
                 暂未打卡
             </span>
+            &nbsp;
+            <el-button @click="$root.f5()">刷新</el-button>
         </div>
         <!-- ▲大标题 -->
         <div class="first-list" >
@@ -195,6 +197,7 @@ export default {
     created(){
         this.getPendingList();
         this.updateTheRecent();
+        this.getLinesInfo();
     },
     mounted(){
         this.showChart();
@@ -219,34 +222,46 @@ export default {
                 title: {
                     text: '打卡时间表',
                 },
-                tooltip: {},
+                tooltip: {
+                    trigger: "axis",
+                    axisPointer: {
+                        type: "shadow"
+                    }
+                },
                 yAxis: {
                     type: "time",
                     min: `${baseTime} 05:00`,
-                    max: `${baseTime} 10:00`,
+                    max: `${baseTime} 10:01`,
+                    // splitNumber: 4,
+                    minInterval: 1000 * 60 * 60,
+                    splitArea: {
+                        show: true,
+                        areaStyle: {
+                            color: ['', '', 'rgba(0,255,0,0.12)', 'rgba(246, 138, 30, 0.12)', 'rgba(236, 66, 36, 0.12)', ''],
+                        },
+                    },
+                    splitLine: {
+                        show: true,
+                    },
                 },
             };
             const oData = {
                 ...oFixed,
                 xAxis: {
-                    data: xAxisData, // ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+                    data: xAxisData,
                     axisLabel: {
                         rotate: -50, interval: 0,
                     },
-                    
                 },
                 series: [
                     {
                         name: '时间',
-                        type: 'bar',
-                        data: seriesArr, // [5, 20, 36, 10, 10, 20]
+                        type: 'line',
+                        data: seriesArr,
                         markLine: {
-                            data: [
-                                // { type: 'average', name: 'Avg' },
-                                { type: 'average', name: 'Avg', yAxis: `${baseTime} 06:30` },
-                            ],
+                            data: [ /* { type: 'average', name: 'Avg', yAxis: `${baseTime} 08:00` }, */ ],
                         },
-                    }
+                    },
                 ],
             };
             myChart.setOption(oData); // 绘制图表
