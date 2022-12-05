@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-11-05 09:48:34
+ * @LastEditTime: 2022-11-28 13:42:26
  * @Description: 
 -->
 <template>
@@ -273,7 +273,8 @@
                     {{oMediaInfo.id}}
                 </el-descriptions-item>
                 <el-descriptions-item label="进度信息">
-                    {{aSiblings.filter(cur=>cur.done_).length}}/{{aSiblings.length}}
+                    {{oSiblingsInfo.sDoneRate}}
+                    （{{oSiblingsInfo.iDoneItems}}/{{aSiblings.length}}）
                 </el-descriptions-item>
                 <el-descriptions-item label="首次录入">
                     {{oSiblingsInfo.fistFillTime}} - {{oSiblingsInfo.fDaysAgo}}

@@ -303,11 +303,15 @@ export function mainPart(){
 			return sum + duration;
 		}, 0);
 		const sAvg = fDurationSum / aSiblings.length;
+		const iDoneItems = aSiblings.filter(cur=>cur.done_).length;
+		const sDoneRate = (iDoneItems / aSiblings.length * 100).toFixed(2) + '%';
 		const oSiblingsInfo = {
 			sDurationSum: secToStr(fDurationSum),
 			sAvg: secToStr(sAvg),
 			fistFillTime: 1,
 			fDaysAgo: 0.5,
+			iDoneItems,
+			sDoneRate,
 		};
 		const [r01, r02] = await fnInvoke('db', 'doSql', `
 			SELECT *, julianday('now', 'localtime') - julianday(filledAt, 'localtime') as daysAgo
