@@ -103,13 +103,14 @@ const oRecordFn = {
                 count(lcDate) as iCount
             from (
                 SELECT
+                    julianday('now', 'localtime') - julianday(createdAt, 'localtime') as daysAgo,
                     strftime('%Y-%m-%d', createdAt, 'localtime') as lcDate,
                     strftime('%H:%M:%S', createdAt, 'localtime') as lcTime
                 FROM "clock_record"
+                where daysAgo <= 50
             ) as t01
             group by t01.lcDate
             order by t01.lcDate desc
-            LIMIT 50
         `;
 		const [r01, r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
             console.log('err', err);
@@ -117,16 +118,35 @@ const oRecordFn = {
         this.aClockIn = r01;
         return r01;
     },
-    async getLinesInfo(){
+    // ▼总行数
+    async getAllLines(){
+        const sql = ` SELECT count(*) as iCount from line `;
+        const [r01, r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
+            console.log('err', err);
+        });
+        if (!r01) return;
+        console.log('总行数：', r01[0]);
+    },
+    async getLineData(){
         const sql = `
-            SELECT count(*) as iCount
-            from line
+            SELECT
+                lcDate,
+                count(lcDate) as iCount
+            from (
+                SELECT
+                    strftime('%Y-%m-%d', filledAt, 'localtime') as lcDate,
+                    julianday('now', 'localtime') - julianday(filledAt, 'localtime') as daysAgo
+                FROM "line"
+                where daysAgo <= 50
+            ) as t01
+            group by t01.lcDate
+            order by t01.lcDate desc
         `;
         const [r01, r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
             console.log('err', err);
         });
         if (!r01) return;
-        console.log('r01', r01);
+        console.log('行统计', r01);
     },
 };
 

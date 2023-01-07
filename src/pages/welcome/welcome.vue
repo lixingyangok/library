@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-11-13 12:11:42
+ * @LastEditTime: 2022-11-13 12:39:15
  * @Description: 
 -->
 
@@ -197,7 +197,8 @@ export default {
     created(){
         this.getPendingList();
         this.updateTheRecent();
-        this.getLinesInfo();
+        this.getAllLines();
+        this.getLineData();
     },
     mounted(){
         this.showChart();

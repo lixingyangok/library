@@ -5,6 +5,7 @@ import {figureOut} from './figure-out-region.js';
 import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '@/common/js/fs-fn.js';
 const fsp = require('fs').promises;
+let isMediaChanged = false; // 是否加载了一个新的媒体
 
 const dayjs = require("dayjs");
 export function mainPart(){
@@ -123,10 +124,9 @@ export function mainPart(){
 		if (!hash) throw '没有hash';
 		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
 		console.log('库中媒体信息\n', aRes[0]?.$dc());
-		if (!aRes?.[0]) {
-			return vm.$message.error('当前媒体未被收录');
-		}
+		if (!aRes?.[0]) return vm.$message.error('当前媒体未被收录');
 		oData.sHash = hash;
+		isMediaChanged = aRes[0].id != oData.oMediaInfo.id;
 		oData.oMediaInfo = aRes[0];
 		getLinesFromDB();
 		await getNeighbors(); // 一定要 await 下方的方法才会正常运行
@@ -155,10 +155,13 @@ export function mainPart(){
 		}, {});
 		await vm.$nextTick();
 		const {iLineNo=0, sTxtFile} = ls('oRecent')[ls('sFilePath')] || {};
-		oInstance.proxy.goLine(iLineNo); // 没有目标行就跳到0行（防止纵向滚动条没回顶部）
+		// ▼只有媒体变更了才重新定位行
+		if (isMediaChanged){  // 没有目标行就跳到0行（防止纵向滚动条没回顶部）
+			oInstance.proxy.goLine(iLineNo);
+		}
 		oData.sReadingFile || showFileAotuly(sTxtFile);
 	}
-	// ▼通过文本文件路径读取其中内容
+	// ▼通过文本文件路径读取其中内容（音频的原文文件）
 	async function showFileAotuly(sTxtFile){
 		if (!sTxtFile) return;
 		oData.isShowLeft = true;
@@ -181,7 +184,6 @@ export function mainPart(){
 		})();
 		vm.$message.success(`取得文本 ${aArticle.length} 行`);
 		oData.aArticle = Object.freeze(aArticle);
-
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
@@ -581,9 +583,6 @@ export function mainPart(){
 	}
 	// ============================================================================
 	init();
-	onMounted(()=>{
-		// console.log('oDom', oDom.oMyWave);
-	});
 	const oFn = {
 		chooseFile,
 		init,

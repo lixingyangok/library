@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-11-05 11:42:39
+ * @LastEditTime: 2023-01-07 19:52:41
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -516,7 +516,7 @@ export function fnAllKeydownFn() {
     async function saveLines() {
         const toSaveArr = [];
         This.aLineArr.forEach(cur => {
-            cur.id && This.deletedSet.delete(cur.id); // 防止误删
+            This.deletedSet.delete(cur.id); // 防止误删
             if (!This.checkIfChanged(cur)) return; // 没变动不删除
             ['start', 'end'].forEach(key=>{
                 cur[key] = Number.parseFloat(cur[key].toFixed(2));
@@ -532,7 +532,6 @@ export function fnAllKeydownFn() {
         });
         This.getLinesFromDB();
         console.log('保存字幕\n', toSaveArr, toDelArr);
-        // console.log('保存结果\n', res);
         const sTips = `成功：修改 ${res0.length} 条，删除 ${res1} 条`;
         This.$message.success(sTips);
         This.deletedSet.clear();
