@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2023-01-07 19:52:41
+ * @LastEditTime: 2023-01-18 20:27:34
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -179,20 +179,23 @@ export function fnAllKeydownFn() {
     // ▼设定【左侧文本】的当前句位置
     async function setLeftLine(){
         const iLeftLines = This.aArticle.length;
-        // TODO 应该删除 isShowLeft 然后用 leftType 的布尔性来替代
+        // TODO 可考虑删除 isShowLeft 然后用 leftType 的布尔性来替代
         const willDo = iLeftLines && This.isShowLeft && This.leftType == 'txt';
         if (!willDo) return;
         This.iWriting = -1;
         Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         const text = This.oCurLine.text.trim();
-        if (!text.length || text.length <= 2) return;
+        if ((text.length || 0) <= 2) return;
         const aPieces = text.match(/\b[a-z0-9'-]+\b/ig); // 将当前句分割
         if (!aPieces) return;
         console.time('定位耗时');
+        // ▼输入的上一行没有成功匹配时，会取到 -1 很不好
         const {iLeftLine = -1, iMatchEnd: iLastMatchEnd} = This.oTopLineMatch || {}; // 取得之前匹配到的位置信息
+        // console.log("上次匹配：", (This.oTopLineMatch || {}).$dc());
         const oResult = (()=>{
             for (let idx = getLeftStartIdx(); idx < iLeftLines; idx++ ){
-                const sLeftFull = This.aArticle[idx]; // if (sLeftFull.includes('oomed!')) debugger;
+                const sLeftFull = This.aArticle[idx]; 
+                // if (sLeftFull.includes("xxx")) debugger;
                 let iMatchStart = -1;
                 let iLastMatch = idx == iLeftLine ? iLastMatchEnd : 0;
                 const isInLine = aPieces.every(onePiece => {
