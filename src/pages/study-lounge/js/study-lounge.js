@@ -156,8 +156,9 @@ export function mainPart(){
 		await vm.$nextTick();
 		const {iLineNo=0, sTxtFile} = ls('oRecent')[ls('sFilePath')] || {};
 		// ▼只有媒体变更了才重新定位行
-		if (isMediaChanged){  // 没有目标行就跳到0行（防止纵向滚动条没回顶部）
+		if (isMediaChanged){ // 没有目标行就跳到0行（防止纵向滚动条没回顶部
 			oInstance.proxy.goLine(iLineNo);
+			isMediaChanged = false; // 复位
 		}
 		oData.sReadingFile || showFileAotuly(sTxtFile);
 	}

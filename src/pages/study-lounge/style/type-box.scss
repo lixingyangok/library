@@ -77,6 +77,7 @@
 	margin-top: calc(-1 * var(--box-height));
 	caret-color: #000;
 	background-color: transparent;
+	transition: all 0.3s;
 	&:hover{
 		border-color: var(--el-input-hover-border, var(--el-border-color-hover));
 	}
@@ -87,9 +88,12 @@
 	// &[class~=ten-times]{
 	// 	background-color: rgba($color: green, $alpha: 0.06);
 	// }
-	&[class~=space-ahead]{
+	&[class~=being-wrong]{
 		border-color: red !important;
 		box-shadow: 0px 0px 2px 0px red inset;
+	}
+	&[class~=may-wrong]{
+		border-bottom: solid 2px orange !important;
 	}
 }
 

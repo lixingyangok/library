@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-11-28 13:42:26
+ * @LastEditTime: 2023-02-15 21:11:10
  * @Description: 
 -->
 <template>
@@ -177,7 +177,8 @@
                 <!-- ▲下层内容，▼上层输入框 -->
                 <textarea ref="oTextArea" class="textarea textarea-real"
                     :class="{
-                        'space-ahead': oCurLine.text.match(/\s{2,}|^\s/g),
+                        'being-wrong': oCurLine.text.match(/\s{2,}|^\s/g),
+                        'may-wrong': oCurLine.text.includes('*'),
                         'ten-times': (iCurLineIdx + 1) % 10 == 0,
                     }"
                     v-model="aLineArr[iCurLineIdx].text"
@@ -213,10 +214,13 @@
                         'padding-top': `calc(${iShowStart} * var(--height))`,
                     }"
                 >
-                    <li v-for="(cur) of aLineForShow" :key="cur.ii"
-                        class="one-line"
-                        :class="{cur: iCurLineIdx == cur.ii, 'key-line': (cur.ii + 1) % 10 == 0}"
+                    <li v-for="(cur) of aLineForShow" :key="cur.ii" class="one-line"
                         @click="goLine(cur.ii, null, true)"
+                        :class="{
+                            cur: iCurLineIdx == cur.ii,
+                            'key-line': (cur.ii + 1) % 10 == 0,
+                            not_done: cur?.text?.includes('*'),
+                        }"
                     >
                         <i className="idx">{{cur.ii+1}}</i>
                         <time className="time">{{cur.start_}} - {{cur.end_}}</time>
