@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2023-01-18 20:27:34
+ * @LastEditTime: 2023-04-08 19:06:55
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -15,6 +15,7 @@ const oAlphabetObj = Object.values(oAlphabet).reduce((result, cur) => {
     return result;
 }, {});
 let iSearchingQ = 0;
+let isSavingToDB = false; //保存事件防抖
 
 export function getKeyDownFnMap(This, sType) {
     const { oMyWave } = This;
@@ -40,7 +41,7 @@ export function getKeyDownFnMap(This, sType) {
         { key: 'ctrl + b', name: '显示左栏', fn: () => This.showLeftColumn() },
         { key: 'ctrl + d', name: '删除一行', fn: () => This.toDel() },
         { key: 'ctrl + z', name: '撤销', fn: () => This.setHistory(-1) },
-        { key: 'ctrl + s', name: '保存到云', fn: () => This.saveLines() },
+        { key: 'ctrl + s', name: '保存到DB', fn: () => This.saveLines() },
         { key: 'ctrl + j', name: '合并上一句', fn: () => This.putTogether(-1) },
         { key: 'ctrl + k', name: '合并下一句', fn: () => This.putTogether(1) },
         // { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() }, // 将来开发此方法能打阅读标记
@@ -517,28 +518,31 @@ export function fnAllKeydownFn() {
     }
     // ▼保存到数据库
     async function saveLines() {
+        if (isSavingToDB) return; // 防抖
         const toSaveArr = [];
         This.aLineArr.forEach(cur => {
             This.deletedSet.delete(cur.id); // 防止误删
             if (!This.checkIfChanged(cur)) return; // 没变动不删除
-            ['start', 'end'].forEach(key=>{
+            ['start', 'end'].forEach(key => {
                 cur[key] = Number.parseFloat(cur[key].toFixed(2));
             });
-            toSaveArr.push({ ...cur, mediaId: This.oMediaInfo.id }); 
+            toSaveArr.push({ ...cur, mediaId: This.oMediaInfo.id });
         });
         const toDelArr = [...This.deletedSet];
         if (!toSaveArr.length && !toDelArr.length) {
             return This.$message.warning(`没有修改，无法保存`);
         }
+        isSavingToDB = true;
         const [res0, res1] = await fnInvoke('db', 'updateLine', {
             toSaveArr, toDelArr,
         });
-        This.getLinesFromDB();
-        console.log('保存字幕\n', toSaveArr, toDelArr);
+        // console.log('保存了字幕\n', toSaveArr, toDelArr);
         const sTips = `成功：修改 ${res0.length} 条，删除 ${res1} 条`;
         This.$message.success(sTips);
         This.deletedSet.clear();
         This.oTodayBar.init();
+        await This.getLinesFromDB(); // 异步加载新字幕
+        isSavingToDB = false;
     }
     // ▼撤销-恢复
     function setHistory(iType) {
