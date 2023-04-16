@@ -299,7 +299,7 @@ export function mainPart(){
 	// ▼统计文件夹音频时长
 	async function setFolderInfo(){
 		const {aSiblings} = oData;
-		let aID = [];
+		const aID = [];
 		const fDurationSum = aSiblings.reduce((sum, cur) => {
 			const {duration=0, id} = cur.infoAtDb || {};
 			if (id) aID.push(id);
@@ -528,7 +528,9 @@ export function mainPart(){
 	}
 	// 保存媒体时长信息
 	async function recordMediaTimeInfo(){
-		const aTarget = oData.aSiblings.filter(cur => !cur.durationStr);
+		const aTarget = oData.aSiblings.filter(cur => {
+			return !cur.durationStr && cur?.infoAtDb?.id;
+		});
 		if (!aTarget.length) return;
 		const sMsg = `发现有 ${aTarget.length} 个文件没有时长信息，是否补充？`;
 		const isSure = await vm.$confirm(sMsg, 'Warning', {

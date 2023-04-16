@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2023-04-08 19:06:55
+ * @LastEditTime: 2023-04-09 20:56:13
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -47,7 +47,7 @@ export function getKeyDownFnMap(This, sType) {
         // { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() }, // 将来开发此方法能打阅读标记
         // { key: 'ctrl + shift + Enter', name: '播放', fn: () => oMyWave.toPlay(true) },
         { key: 'ctrl + shift + z', name: '恢复', fn: () => This.setHistory(1) },
-        { key: 'ctrl + shift + c', name: '分割', fn: () => This.split() },
+        { key: 'ctrl + shift + c', name: '分割', fn: () => This.split() }, // 一刀两段
     ];
     const withAlt = [
         // 修改选区
@@ -393,6 +393,7 @@ export function fnAllKeydownFn() {
         const { currentTime } = This.oMyWave.oAudio;
         const { text, start, end} = oCurLine;
         const fLeftEndAt = aLineArr[iCurLineIdx -1]?.end || (start - 0.3);
+        const fRightStartAt = aLineArr[iCurLineIdx +1]?.start || end;
         // const iGap01 = currentTime - start;
         // const fNextStart = aLineArr[iCurLineIdx+1]?.start;
         // const fRightLine = fNextStart ? fNextStart + 1 : end + 5;
@@ -409,6 +410,8 @@ export function fnAllKeydownFn() {
                 text: text.slice(selectionStart).trim(),
             }),
         ];
+        aNewItems[1].start = Math.max(aNewItems[1].start, currentTime);
+        aNewItems[1].end = Math.min(aNewItems[1].end, fRightStartAt);
         Reflect.deleteProperty(aNewItems[1], 'id');
         aLineArr.splice(iCurLineIdx, 1, ...aNewItems);
         recordHistory();

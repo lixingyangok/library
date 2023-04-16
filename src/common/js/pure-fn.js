@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-07-31 13:45:31
+ * @LastEditTime: 2023-04-16 19:07:38
  * @Description: 
  */
 
@@ -48,8 +48,9 @@ export async function fileToBuffer(oFile){
 		const {result} = evt.currentTarget; // arrayBuffer
 		let audioContext = new window.AudioContext();
 		const oRealBuffer = await audioContext.decodeAudioData(result).catch(err=>{
-			console.log('decodeAudioData() 出错\n', err);
+			console.error('执行 decodeAudioData() 出错\n无法解析波形信息 👇\n', err);
 		});
+		if (!oRealBuffer) return;
 		audioContext = null; // 据说：如果不销毁audioContext，audio标签无法播放
 		const oBuffer = getFakeBuffer(oRealBuffer);
 		const sizeMB = (oFile.size/1024/1024).toFixed(2);

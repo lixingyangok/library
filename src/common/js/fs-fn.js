@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: 李星阳
- * @LastEditTime: 2022-10-13 20:36:01
+ * @LastEditTime: 2023-04-16 21:13:23
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -108,11 +108,15 @@ export async function AaddMediaInfoFromDB(oMedia){
     const hash = await fnInvoke('getHash', oMedia.sPath);
     const res = await fnInvoke('db', 'getMediaInfo', {hash});
     oMedia.hash = hash;
-    if (!res?.[0]) return;
-    oMedia.infoAtDb = res[0];
-    oMedia.bNameRight = oMedia.sPath == ( // 记录文件位置&名称是否与库中记录的一样
-        `${res[0].dir}/${res[0].name}`
-    );
+    if (res?.[0]){
+        oMedia.infoAtDb = res[0];
+        oMedia.bNameRight = oMedia.sPath == ( // 记录文件位置&名称是否与库中记录的一样
+            `${res[0].dir}/${res[0].name}`
+        );
+    }
+    // if ('调试' && oMedia.sItem.includes('邦蒂')){
+    //     console.log('oMedia', oMedia.$dc());
+    // }
 }
 
 // ▼查询是否为媒体文件
