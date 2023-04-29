@@ -2,18 +2,13 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: 李星阳
- * @LastEditTime: 2023-04-23 20:17:00
+ * @LastEditTime: 2023-04-26 20:59:43
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
 import { fixTime } from '../../../common/js/pure-fn.js';
 import { figureOut } from './figure-out-region.js';
-import { oAlphabet } from '../../../common/js/key-map.js';
 
-const oAlphabetObj = Object.values(oAlphabet).reduce((result, cur) => {
-    result[cur] = true;
-    return result;
-}, {});
 let iSearchingQ = 0;
 let isSavingToDB = false; //保存事件防抖
 
@@ -183,17 +178,15 @@ export function fnAllKeydownFn() {
     // ▼设定【左侧文本】的当前句位置
     async function setLeftLine(){
         const iLeftLines = This.aArticle.length;
-        // TODO 可考虑删除 isShowLeft 然后用 leftType 的布尔性来替代
         const willDo = iLeftLines && This.isShowLeft && This.leftType == 'txt';
         if (!willDo) return;
-        // This.iWriting = -1; // 这2行注释了，放在下边，
-        // Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
+        // ▼下方2行的位置不可向下移动
+        This.iWriting = -1;
+        Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         const text = This.oCurLine.text.trim();
         if (text.length <= 2) return;
         const aPieces = text.match(wordsReExp); // 将当前句分割
         if (!aPieces) return;
-        This.iWriting = -1;
-        Reflect.deleteProperty(This.oRightToLeft, This.iCurLineIdx);
         console.time('定位耗时');
         // ▼输入的上一行没有成功匹配时，会取到 -1 很不好
         const {iLeftLine = -1, iMatchEnd: iLastMatchEnd} = This.oTopLineMatch || {}; // 取得之前匹配到的位置信息
@@ -461,7 +454,7 @@ export function fnAllKeydownFn() {
         const Backspace = ev.inputType == "deleteContentBackward";
         const isLetter = ev.data?.match(/[a-z]/i);
         // console.log('输入了 =', ev.data);
-        const iTimes = isLetter ? 800 : 0; // 如果输入了非字母，立即匹配左侧字幕
+        const iTimes = isLetter ? 300 : 0; // 如果输入了非字母，立即匹配左侧字幕
         inputTimer = setTimeout(()=>{
             recordHistory();
             setLeftLine();
